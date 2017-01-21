@@ -8,6 +8,15 @@ const User = require('./models/user');
 const app = express()
 const token = process.env.FB_PAGE_ACCESS_TOKEN
 
+// Check if mongoose is running
+mongoose.connect(config.database, function(err) {
+  if(err) {
+    console.log(err);
+  } else {
+    console.log("Yeeee");
+  }
+})
+
 app.set('port', (process.env.PORT || 5000))
 
 // Process application/x-www-form-urlencoded
