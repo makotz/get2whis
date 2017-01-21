@@ -39,6 +39,7 @@ app.post('/webhook/', function (req, res) {
   for (let i = 0; i < messaging_events.length; i++) {
     let event = req.body.entry[0].messaging[i]
     let sender = event.sender.id
+    saveNewUser(sender)
     if (event.message && event.message.text) {
       let text = event.message.text
       if (text === 'Generic') {
@@ -123,3 +124,16 @@ function sendGenericMessage(sender) {
         }
     })
 }
+
+function saveNewUser(senderID){
+  var user = new User({
+      sender: senderID
+  });
+  user.save(function(err) {
+    if(err) {
+      console.log(err);
+    } else {
+      console.log("User created!");
+    }
+  })
+};
