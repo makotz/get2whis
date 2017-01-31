@@ -51,10 +51,19 @@ app.post('/webhook/', function (req, res) {
     let sender = event.sender.id
     saveNewUser(sender)
     if (event.message && event.message.text) {
-      let text = event.message.text
-      if (text === 'Generic') {
-          sendGenericMessage(sender)
+      let text = event.message.text.toLowerCase();
+      if (text == "hi") {
+          sendTextMessage(sender, "Aloha, are you riding or driving?" + text.substring(0, 200))
           continue
+      } else if (text == "driving") {
+        sendTextMessage(sender, "Shoots, let me get you some company" + text.substring(0, 200))
+        continue
+      } else if (text == "riding") {
+        sendTextMessage(sender, "Chee, lets find you a ride" + text.substring(0, 200))
+        continue
+      } else if (text === 'generic') {
+        sendGenericMessage(sender)
+        continue
       }
       sendTextMessage(sender, "Text received, echo: " + text.substring(0, 200))
     }
