@@ -52,14 +52,14 @@ app.post('/webhook/', function (req, res) {
     saveNewUser(sender)
     if (event.message && event.message.text) {
       let text = event.message.text.toLowerCase();
-      if (text == "hi") {
-          sendTextMessage(sender, "Aloha, are you riding or driving?" + text.substring(0, 200))
-          continue
+      if (text == "aloha") {
+        sendTextMessage(sender, "Aloha, are you riding or driving?")
+        continue
       } else if (text == "driving") {
-        sendTextMessage(sender, "Shoots, let me get you some company" + text.substring(0, 200))
+        sendTextMessage(sender, "Shoots, let me get you some company")
         continue
       } else if (text == "riding") {
-        sendTextMessage(sender, "Chee, lets find you a ride" + text.substring(0, 200))
+        sendTextMessage(sender, "Chee, lets find you a ride")
         continue
       } else if (text === 'generic') {
         sendGenericMessage(sender)
@@ -156,3 +156,14 @@ function saveNewUser(senderID){
     }
   })
 };
+
+function getSenderInfo(sender){
+    request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      console.log("first name is"+response.body[0])
+      var first_name = response.body[0]
+    } else {
+      console.log('something went wrong...')
+    }
+  })
+}
