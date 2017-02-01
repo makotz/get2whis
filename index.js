@@ -144,17 +144,25 @@ function sendGenericMessage(sender) {
     })
 }
 
-function saveNewUser(senderID){
-  var user = new User({
-      sender: senderID
-  });
-  user.save(function(err) {
-    if(err) {
-      console.log(err);
+function saveNewUser(sender){
+  request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token,       function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+    console.log("response is"+response.body)
     } else {
-      console.log("User created!");
+    console.log('something went wrong...')
     }
   })
+  // var user = new User({
+  //     first_name: first_name,
+  //     last_name: last_name
+  // });
+  // user.save(function(err) {
+  //   if(err) {
+  //     console.log(err);
+  //   } else {
+  //     console.log("User created!");
+  //   }
+  // })
 };
 
 function getSenderInfo(sender){
