@@ -149,9 +149,9 @@ function saveNewUser(sender){
     if (!error && response.statusCode == 200) {
       var user = new User({
         first_name: response.body[0],
-        last_name: response.body[1];
-        profile_pic: response.body[2];
-        gender: response.body[6];
+        last_name: response.body[1],
+        profile_pic: response.body[2],
+        gender: response.body[6]
       });
       user.save(function(err) {
         if(err) {
