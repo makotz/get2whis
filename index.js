@@ -147,22 +147,23 @@ function sendGenericMessage(sender) {
 function saveNewUser(sender){
   request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token,       function (error, response, body) {
     if (!error && response.statusCode == 200) {
-    console.log("response is"+response.body)
+      var user = new User({
+        first_name: response.body[0],
+        last_name: response.body[1];
+        profile_pic: response.body[2];
+        gender: response.body[6];
+      });
+      user.save(function(err) {
+        if(err) {
+          console.log(err);
+        } else {
+          console.log("User created!");
+        }
+      })
     } else {
-    console.log('something went wrong...')
+    console.log('User API did not go through.')
     }
   })
-  // var user = new User({
-  //     first_name: first_name,
-  //     last_name: last_name
-  // });
-  // user.save(function(err) {
-  //   if(err) {
-  //     console.log(err);
-  //   } else {
-  //     console.log("User created!");
-  //   }
-  // })
 };
 
 function getSenderInfo(sender){
