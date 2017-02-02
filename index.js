@@ -147,14 +147,13 @@ function sendGenericMessage(sender) {
 function saveNewUser(sender){
   request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token,       function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      console.log(response.body);
-      console.log(response.body["first_name"]);
+      var ddd = response.body
       var user = new User({
         sender: sender,
-        first_name: response.body["first_name"],
-        last_name: response.body["last_name"],
-        profile_pic: response.body["profile_pic"],
-        gender: response.body["gender"]
+        first_name: ddd["first_name"],
+        last_name: ddd["last_name"],
+        profile_pic: ddd"profile_pic"],
+        gender: ddd.["gender"]
       });
       user.save(function(err) {
         if(err) {
