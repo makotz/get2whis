@@ -45,10 +45,6 @@ app.listen(app.get('port'), function() {
 })
 
 app.post('/webhook/', function (req, res) {
-  var Schema = mongoose.Schema;
-  var UserSchema = new Schema;
-  UserSchema.add({first_name: 'string', last_name: 'string'});
-
   let messaging_events = req.body.entry[0].messaging
   for (let i = 0; i < messaging_events.length; i++) {
     let event = req.body.entry[0].messaging[i]
@@ -153,8 +149,8 @@ function saveNewUser(sender){
     if (!error && response.statusCode == 200) {
       var user = new User({
         sender: sender,
-        first_name: response.body[0],
-        last_name: response.body[1],
+        first_name: "first",
+        last_name: "last",
       });
       user.save(function(err) {
         if(err) {
