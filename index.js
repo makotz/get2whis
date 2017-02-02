@@ -153,7 +153,7 @@ function saveNewUser(sender){
         first_name: ddd["first_name"],
         last_name: ddd["last_name"],
         profile_pic: ddd"profile_pic"],
-        gender: ddd.["gender"]
+        gender: ddd["gender"]
       });
       user.save(function(err) {
         if(err) {
