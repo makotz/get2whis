@@ -148,6 +148,7 @@ function saveNewUser(sender){
   request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token,       function (error, response, body) {
     if (!error && response.statusCode == 200) {
       console.log(response.body);
+      console.log(response.body["first_name"]);
       var user = new User({
         sender: sender,
         first_name: response.body["first_name"],
