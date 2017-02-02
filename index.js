@@ -147,10 +147,11 @@ function sendGenericMessage(sender) {
 function saveNewUser(sender){
   request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token,       function (error, response, body) {
     if (!error && response.statusCode == 200) {
+      console.log(response.body);
       var user = new User({
         sender: sender,
-        first_name: "first",
-        last_name: "last",
+        first_name: response.body[0],
+        last_name: response.body[1],
       });
       user.save(function(err) {
         if(err) {
