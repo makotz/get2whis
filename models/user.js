@@ -6,8 +6,9 @@ var UserSchema = new Schema({
 
   sender: {
     type: Number,
-    required: true
-    },
+    required: true,
+    index: { unique: true }
+  },
   first_name: String,
   last_name: String,
   profile_pic: String,
