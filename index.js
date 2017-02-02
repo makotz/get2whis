@@ -150,8 +150,10 @@ function saveNewUser(sender){
       console.log(response.body);
       var user = new User({
         sender: sender,
-        first_name: response.body[0],
-        last_name: response.body[1],
+        first_name: response.body["first_name"],
+        last_name: response.body["last_name"],
+        profile_pic: response.body["profile_pic"],
+        gender: response.body["gender"]
       });
       user.save(function(err) {
         if(err) {
