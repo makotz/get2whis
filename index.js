@@ -332,9 +332,10 @@ function callSendAPI(messageData) {
 
 
 function findFBProfile(sender){
+  var user = "";
   request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token,       function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      var user = response.body;
+      user = response.body;
       console.log('Found profile of: %s %s', user.first_name, user.last_name);
     } else {
       console.log("Could not locate %s's Facebook Profile", senderID);
