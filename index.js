@@ -265,7 +265,7 @@ function receivedPostback(event) {
   var payload = event.postback.payload;
   if (payload == "Ride Offered") {
     sendTextMessage(senderID, "Sweet, lets find you some company!");
-  else if (payload == "Ride Requested") {
+  } else if (payload == "Ride Requested") {
     sendTextMessage(senderID, "Nice, lets find you a ride!");
   }
 }
