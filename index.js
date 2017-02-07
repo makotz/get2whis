@@ -333,7 +333,8 @@ function callSendAPI(messageData) {
 
 function findFBProfile(sender){
   var user = "";
-  request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token,       function (error, response, body) {
+  request('https://graph.facebook.com/v2.6/'+sender+'?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token='+token,
+  function (error, response, body) {
     if (!error && response.statusCode == 200) {
       user = response.body;
       console.log(JSON.stringify(user))
