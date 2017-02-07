@@ -47,7 +47,7 @@ app.listen(app.get('port'), function() {
 app.post('/webhook/', function (req, res) {
 // Experiment
   var data = req.body;
-  console.log("data is "JSON.stringify(data));
+  console.log("data is "+JSON.stringify(data));
 
 
   // Old format
