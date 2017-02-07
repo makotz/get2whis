@@ -248,7 +248,7 @@ function sendDriveOrRide(recipientId) {
             }, {
               type: "postback",
               title: "Ride",
-              payload: "Ride Requested",
+              payload: "Ride Requested"
             }]
           }]
         }
