@@ -45,61 +45,160 @@ app.listen(app.get('port'), function() {
 })
 
 app.post('/webhook/', function (req, res) {
-// Experiment
   var data = req.body;
-  console.log("data is "+JSON.stringify(data));
 
+  // Make sure this is a page subscription
+  if (data.object == 'page') {
+     // Iterate over each entry
+     // There may be multiple if batched
+     data.entry.forEach(function(pageEntry) {
+       var pageID = pageEntry.id;
+       var timeOfEvent = pageEntry.time;
 
-  // Old format
-  let messaging_events = req.body.entry[0].messaging
-  // console.log(JSON.stringify(messaging_events))
-  for (let i = 0; i < messaging_events.length; i++) {
-    let event = req.body.entry[0].messaging[i]
-    let sender = event.sender.id
-    // saveNewUser(sender)
-    if (event.message && event.message.text) {
-      let text = event.message.text.toLowerCase();
-      if (text == "aloha") {
-        sendTextMessage(sender, "Aloha, are you riding or driving?")
-        continue
-      } else if (text == "driving") {
-        sendTextMessage(sender, "Shoots, let me get you some company")
-        continue
-      } else if (text == "riding") {
-        sendTextMessage(sender, "Chee, lets find you a ride")
-        continue
-      } else if (text === 'generic') {
-        sendGenericMessage(sender)
-        continue
-      }
-      sendTextMessage(sender, "Text received, echo: " + text.substring(0, 200))
-    }
+       // Iterate over each messaging event
+       pageEntry.messaging.forEach(function(messagingEvent) {
+        //  if (messagingEvent.optin) {
+        //    receivedAuthentication(messagingEvent);
+        //  } else
+            if (messagingEvent.message) {
+              receivedMessage(messagingEvent);
+        //  } else if (messagingEvent.delivery) {
+        //    receivedDeliveryConfirmation(messagingEvent);
+        //  } else if (messagingEvent.postback) {
+        //    receivedPostback(messagingEvent);
+        //  } else if (messagingEvent.read) {
+        //    receivedMessageRead(messagingEvent);
+        //  } else if (messagingEvent.account_linking) {
+        //    receivedAccountLink(messagingEvent);
+        //  }
+            } else {
+           console.log("Webhook received unknown messagingEvent: ", messagingEvent);
+         }
+       });
+     });
+     res.sendStatus(200)
+   }
+
+  // // Old format
+  // let messaging_events = req.body.entry[0].messaging
+  // // console.log(JSON.stringify(messaging_events))
+  // for (let i = 0; i < messaging_events.length; i++) {
+  //   let event = req.body.entry[0].messaging[i]
+  //   let sender = event.sender.id
+  //   // saveNewUser(sender)
+  //   if (event.message && event.message.text) {
+  //     let text = event.message.text.toLowerCase();
+  //     if (text == "aloha") {
+  //       sendTextMessage(sender, "Aloha, are you riding or driving?")
+  //       continue
+  //     } else if (text == "driving") {
+  //       sendTextMessage(sender, "Shoots, let me get you some company")
+  //       continue
+  //     } else if (text == "riding") {
+  //       sendTextMessage(sender, "Chee, lets find you a ride")
+  //       continue
+  //     } else if (text === 'generic') {
+  //       sendGenericMessage(sender)
+  //       continue
+  //     }
+  //     sendTextMessage(sender, "Text received, echo: " + text.substring(0, 200))
+  //   }
     // if (event.postback) {
     //   let text = JSON.stringify(event.postback)
     //   sendTextMessage(sender, "Postback received: "+text.substring(0, 200), token)
     //   continue
     // }
-  }
-  res.sendStatus(200)
-})
+});
 
-function sendTextMessage(sender, text) {
-    let messageData = { text:text }
-    request({
-        url: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: {access_token:token},
-        method: 'POST',
-        json: {
-            recipient: {id:sender},
-            message: messageData,
-        }
-    }, function(error, response, body) {
-        if (error) {
-            console.log('Error sending messages: ', error)
-        } else if (response.body.error) {
-            console.log('Error: ', response.body.error)
-        }
-    })
+function receivedMessage(event) {
+  var senderID = event.sender.id;
+  var recipientID = event.recipient.id;
+  var timeOfMessage = event.timestamp;
+  var message = event.message;
+
+  console.log("Received message for user %d and page %d at %d with message:",
+    senderID, recipientID, timeOfMessage);
+  console.log(JSON.stringify(message));
+
+  var isEcho = message.is_echo;
+  var messageId = message.mid;
+  var appId = message.app_id;
+  var metadata = message.metadata;
+
+  // You may get a text or attachment but not both
+  var messageText = message.text;
+  var messageAttachments = message.attachments;
+  var quickReply = message.quick_reply;
+
+  if (isEcho) {
+    // Just logging message echoes to console
+    console.log("Received echo for message %s and app %d with metadata %s",
+      messageId, appId, metadata);
+    return;
+  } else if (quickReply) {
+    var quickReplyPayload = quickReply.payload;
+    console.log("Quick reply for message %s with payload %s",
+      messageId, quickReplyPayload);
+
+    sendTextMessage(senderID, "Quick reply tapped");
+    return;
+  }
+
+if (messageText) {
+
+    // If we receive a text message, check to see if it matches any special
+    // keywords and send back the corresponding example. Otherwise, just echo
+    // the text we received.
+    switch (messageText) {
+
+      default:
+        sendTextMessage(senderID, messageText);
+    }
+  } else if (messageAttachments) {
+    sendTextMessage(senderID, "Message with attachment received");
+  }
+}
+
+
+function sendTextMessage(recipientId, messageText) {
+
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: messageText,
+      metadata: "DEVELOPER_DEFINED_METADATA"
+    }
+  };
+
+  callSendAPI(messageData);
+}
+
+// all API requests
+function callSendAPI(messageData) {
+  request({
+    uri: 'https://graph.facebook.com/v2.6/me/messages',
+    qs: { access_token: token },
+    method: 'POST',
+    json: messageData
+
+  }, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      var recipientId = body.recipient_id;
+      var messageId = body.message_id;
+
+      if (messageId) {
+        console.log("Successfully sent message with id %s to recipient %s",
+          messageId, recipientId);
+      } else {
+      console.log("Successfully called Send API for recipient %s",
+        recipientId);
+      }
+    } else {
+      console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
+    }
+  });
 }
 
 function sendGenericMessage(sender) {
@@ -174,14 +273,3 @@ function saveNewUser(sender){
     }
   })
 };
-
-function getSenderInfo(sender){
-    request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      console.log("first name is"+response.body[0])
-      var first_name = response.body[0]
-    } else {
-      console.log('something went wrong...')
-    }
-  })
-}
