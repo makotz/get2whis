@@ -337,7 +337,8 @@ function findFBProfile(sender){
   function (error, response, body) {
     if (!error && response.statusCode == 200) {
       user = response.body;
-      console.log(JSON.stringify(user))
+      console.log(response);
+      console.log(user);
       console.log('Found profile of: %s %s', user["first_name"], user["last_name"]);
     } else {
       console.log("Could not locate %s's Facebook Profile", senderID);
