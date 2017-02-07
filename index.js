@@ -337,7 +337,7 @@ function findFBProfile(sender){
   function (error, response, body) {
     if (!error && response.statusCode == 200) {
       user = body;
-      console.log(user)
+      console.log(typeof(user));
       console.log(user[0]);
       console.log(user["first_name"]);
       console.log('Found profile of: '+ user["first_name"]);
