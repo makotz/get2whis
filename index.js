@@ -249,6 +249,14 @@ function sendDriveOrRide(recipientId) {
               type: "postback",
               title: "Ride",
               payload: "Ride Requested"
+            },{
+              type: "postback",
+              title: "Ride",
+              payload: "Ride Requested"
+            },{
+              type: "postback",
+              title: "Ride",
+              payload: "Ride Requested"
             }]
           }]
         }
@@ -264,7 +272,9 @@ function receivedPostback(event) {
   var timeOfPostback = event.timestamp;
   var payload = event.postback.payload;
   if (payload == "Ride Offered") {
+    findFBProfile(senderID);
     sendTextMessage(senderID, "Sweet, lets find you some company!");
+    sendTextMessage(senderID, "When are you driving up?")
   } else if (payload == "Ride Requested") {
     sendTextMessage(senderID, "Nice, lets find you a ride!");
   }
@@ -297,26 +307,30 @@ function callSendAPI(messageData) {
 }
 
 
-function saveNewUser(sender){
+function findFBProfile(sender){
   request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token,       function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      var ddd = response.body
-      var user = new User({
-        sender: sender,
-        first_name: ddd["first_name"],
-        last_name: ddd["last_name"],
-        profile_pic: ddd["profile_pic"],
-        gender: ddd["gender"]
-      });
-      user.save(function(err) {
-        if(err) {
-          console.log(err);
-        } else {
-          console.log("User created!");
-        }
-      })
+      var user = response.body;
+      console.log('Found profile of: %s %s', user.first_name, user.last_name);
     } else {
-    console.log('User API did not go through.')
+      console.log("Could not locate %s's Facebook Profile", senderID);
     }
-  })
+  });
+  return user;
 };
+
+
+// var user = new User({
+//   sender: sender,
+//   first_name: ddd["first_name"],
+//   last_name: ddd["last_name"],
+//   profile_pic: ddd["profile_pic"],
+//   gender: ddd["gender"]
+// });
+// user.save(function(err) {
+//   if(err) {
+//     console.log(err);
+//   } else {
+//     console.log("User created!");
+//   }
+// })
