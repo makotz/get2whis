@@ -64,8 +64,8 @@ app.post('/webhook/', function (req, res) {
               receivedMessage(messagingEvent);
         //  } else if (messagingEvent.delivery) {
         //    receivedDeliveryConfirmation(messagingEvent);
-        //  } else if (messagingEvent.postback) {
-        //    receivedPostback(messagingEvent);
+            } else if (messagingEvent.postback) {
+              receivedPostback(messagingEvent);
         //  } else if (messagingEvent.read) {
         //    receivedMessageRead(messagingEvent);
         //  } else if (messagingEvent.account_linking) {
@@ -150,6 +150,57 @@ if (messageText) {
     // keywords and send back the corresponding example. Otherwise, just echo
     // the text we received.
     switch (messageText) {
+      case 'aloha':
+        sendDriveOrRide(senderID);
+        break;
+      //
+      //       case 'gif':
+      //         sendGifMessage(senderID);
+      //         break;
+      //
+      //       case 'audio':
+      //         sendAudioMessage(senderID);
+      //         break;
+      //
+      //       case 'video':
+      //         sendVideoMessage(senderID);
+      //         break;
+      //
+      //       case 'file':
+      //         sendFileMessage(senderID);
+      //         break;
+      //
+      //       case 'button':
+      //         sendButtonMessage(senderID);
+      //         break;
+      //
+      //       case 'generic':
+      //         sendGenericMessage(senderID);
+      //         break;
+      //
+      //       case 'receipt':
+      //         sendReceiptMessage(senderID);
+      //         break;
+      //
+      //       case 'quick reply':
+      //         sendQuickReply(senderID);
+      //         break;
+      //
+      //       case 'read receipt':
+      //         sendReadReceipt(senderID);
+      //         break;
+      //
+      //       case 'typing on':
+      //         sendTypingOn(senderID);
+      //         break;
+      //
+      //       case 'typing off':
+      //         sendTypingOff(senderID);
+      //         break;
+      //
+      //       case 'account linking':
+      //         sendAccountLinking(senderID);
+      //         break;
 
       default:
         sendTextMessage(senderID, messageText);
@@ -173,6 +224,50 @@ function sendTextMessage(recipientId, messageText) {
   };
 
   callSendAPI(messageData);
+}
+
+function sendDriveOrRide(recipientId) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: [{
+            title: "PowHunt",
+            subtitle: "Welcome! Do you wanna Drive or Ride?",
+            item_url: "https://www.nfl.com",
+            image_url: "http://i.imgur.com/K1WNRhX.jpg",
+            buttons: [{
+              type: "postback",
+              title: "Drive",
+              payload: "Ride Offered"
+            }, {
+              type: "postback",
+              title: "Ride",
+              payload: "Ride Requested",
+            }]
+          }]
+        }
+      }
+    }
+  };
+  callSendAPI(messageData);
+}
+
+function receivedPostback(event) {
+  var senderID = event.sender.id;
+  var recipientID = event.recipient.id;
+  var timeOfPostback = event.timestamp;
+  var payload = event.postback.payload;
+  if (payload == "Ride Offered") {
+    sendTextMessage(senderID, "Sweet, lets find you some company!");
+  else if (payload == "Ride Requested") {
+    sendTextMessage(senderID, "Nice, lets find you a ride!");
+  }
 }
 
 // all API requests
@@ -201,54 +296,6 @@ function callSendAPI(messageData) {
   });
 }
 
-function sendGenericMessage(sender) {
-    let messageData = {
-        "attachment": {
-            "type": "template",
-            "payload": {
-                "template_type": "generic",
-                "elements": [{
-                    "title": "First card",
-                    "subtitle": "Element #1 of an hscroll",
-                    "image_url": "http://messengerdemo.parseapp.com/img/rift.png",
-                    "buttons": [{
-                        "type": "web_url",
-                        "url": "https://www.messenger.com",
-                        "title": "web url"
-                    }, {
-                        "type": "postback",
-                        "title": "Postback",
-                        "payload": "Payload for first element in a generic bubble",
-                    }],
-                }, {
-                    "title": "Second card",
-                    "subtitle": "Element #2 of an hscroll",
-                    "image_url": "http://messengerdemo.parseapp.com/img/gearvr.png",
-                    "buttons": [{
-                        "type": "postback",
-                        "title": "Postback",
-                        "payload": "Payload for second element in a generic bubble",
-                    }],
-                }]
-            }
-        }
-    }
-    request({
-        url: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: {access_token:token},
-        method: 'POST',
-        json: {
-            recipient: {id:sender},
-            message: messageData,
-        }
-    }, function(error, response, body) {
-        if (error) {
-            console.log('Error sending messages: ', error)
-        } else if (response.body.error) {
-            console.log('Error: ', response.body.error)
-        }
-    })
-}
 
 function saveNewUser(sender){
   request('https://graph.facebook.com/v2.6/'+sender+'?access_token='+token,       function (error, response, body) {
