@@ -249,14 +249,6 @@ function sendDriveOrRide(recipientId) {
               type: "postback",
               title: "Ride",
               payload: "Ride Requested"
-            },{
-              type: "postback",
-              title: "Ride",
-              payload: "Ride Requested"
-            },{
-              type: "postback",
-              title: "Ride",
-              payload: "Ride Requested"
             }]
           }]
         }
@@ -266,6 +258,38 @@ function sendDriveOrRide(recipientId) {
   callSendAPI(messageData);
 }
 
+// function askFromWhereAndWhe(recipientId) {
+//   var messageData = {
+//     recipient: {
+//       id: recipientId
+//     },
+//     message: {
+//       attachment: {
+//         type: "template",
+//         payload: {
+//           template_type: "generic",
+//           elements: [{
+//             title: "PowHunt",
+//             subtitle: "Welcome! Do you wanna Drive or Ride?",
+//             item_url: "https://www.nfl.com",
+//             image_url: "http://i.imgur.com/K1WNRhX.jpg",
+//             buttons: [{
+//               type: "postback",
+//               title: "Drive",
+//               payload: "Ride Offered"
+//             }, {
+//               type: "postback",
+//               title: "Ride",
+//               payload: "Ride Requested"
+//             }]
+//           }]
+//         }
+//       }
+//     }
+//   };
+//   callSendAPI(messageData);
+// }
+
 function receivedPostback(event) {
   var senderID = event.sender.id;
   var recipientID = event.recipient.id;
@@ -274,7 +298,7 @@ function receivedPostback(event) {
   if (payload == "Ride Offered") {
     findFBProfile(senderID);
     sendTextMessage(senderID, "Sweet, lets find you some company!");
-    sendTextMessage(senderID, "When are you driving up?")
+
   } else if (payload == "Ride Requested") {
     sendTextMessage(senderID, "Nice, lets find you a ride!");
   }
