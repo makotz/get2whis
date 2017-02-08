@@ -153,10 +153,10 @@ if (messageText) {
       case 'aloha':
         sendDriveOrRide(senderID);
         break;
-      //
-      //       case 'gif':
-      //         sendGifMessage(senderID);
-      //         break;
+
+      case 'shoots':
+        sendQuickReply(senderID);
+        break;
       //
       //       case 'audio':
       //         sendAudioMessage(senderID);
@@ -258,6 +258,8 @@ function sendDriveOrRide(recipientId) {
   callSendAPI(messageData);
 }
 
+
+
 // function askFromWhereAndWhe(recipientId) {
 //   var messageData = {
 //     recipient: {
@@ -289,6 +291,34 @@ function sendDriveOrRide(recipientId) {
 //   };
 //   callSendAPI(messageData);
 // }
+
+function sendQuickReply(recipientId) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: "What's your favorite movie genre?",
+      quick_replies: [
+        {
+          "content_type":"text",
+          "title":"Action",
+          "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
+        },
+        {
+          "content_type":"text",
+          "title":"Comedy",
+          "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_COMEDY"
+        },
+        {
+          "content_type":"text",
+          "title":"Drama",
+          "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
+        }
+      ]
+    }
+  };
+
 
 function receivedPostback(event) {
   var senderID = event.sender.id;
