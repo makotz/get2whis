@@ -318,7 +318,8 @@ function sendQuickReply(recipientId) {
       ]
     }
   };
-
+  callSendAPI(messageData);
+}
 
 function receivedPostback(event) {
   var senderID = event.sender.id;
