@@ -107,14 +107,16 @@ function receivedMessage(event) {
     return;
   } else if (quickReply) {
     var quickReplyPayload = quickReply.payload;
-    if (quickReplyPayload == "Looking_for_riders") {
-      askDepartureLocation(senderID, quickReplyPayload);
-    } else if (quickReplyPayload == "Looking_for_drivers") {
+    if (quickReplyPayload == "Looking_for_riders" || "Looking_for_drivers") {
       askDepartureLocation(senderID, quickReplyPayload);
     }
-    console.log("Quick reply for message %s with payload %s",
-      messageId, quickReplyPayload);
-    sendTextMessage(senderID, "Quick reply tapped");
+    if (metadata.drive_or_ride) {
+      askDepartureTime(senderID, quickReplyPayload, metadata.drive_or_ride)
+    }
+    if (metadata.departure_location && metadata.drive_or_ride) {
+      sendTextMessage(senderID, "Sweet looking for "+ metadata.drive_or_ride+" from "+metadata.departure_location+ "@" + quickReplyPayload)
+    }
+    console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
     return;
   }
 
@@ -208,7 +210,7 @@ function askDriveOrRide(recipientId) {
   callSendAPI(messageData);
 }
 
-function askDepartureLocation(recipientId, quickReplyPayload) {
+function askDepartureLocation(recipientId, drivingOrRiding) {
   var messageData = {
     recipient: {
       id: recipientId
@@ -242,12 +244,54 @@ function askDepartureLocation(recipientId, quickReplyPayload) {
       ]
     },
     metadata: {
-      "drive_or_ride": quickReplyPayload
+      "drive_or_ride": drivingOrRiding
     }
   };
   callSendAPI(messageData);
 }
 
+function askDepartureTime(recipientId, drivingOrRiding, departureLocation) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: "What time do you want to go?",
+      quick_replies: [
+        {
+          "content_type":"text",
+          "title":"Early Morning",
+          "payload":"Early_morning"
+        },
+        {
+          "content_type":"text",
+          "title":"Before Noon",
+          "payload":"Before_noon"
+        },
+        {
+          "content_type":"text",
+          "title":"Early Afternoon",
+          "payload":"Early_afternoon"
+        },
+        {
+          "content_type":"text",
+          "title":"Evening",
+          "payload":"Evening"
+        },
+        {
+          "content_type":"text",
+          "title":"Late Night",
+          "payload":"Late_night"
+        }
+      ]
+    },
+    metadata: {
+      "drive_or_ride": drivingOrRiding,
+      "departure_location": departureLocation
+    }
+  };
+  callSendAPI(messageData);
+}
 
 
 function sendTextMessage(recipientId, messageText) {
@@ -331,49 +375,6 @@ function sendDriveOrRide(recipientId) {
 //   };
 //   callSendAPI(messageData);
 // }
-
-function sendQuickReply(recipientId) {
-  var messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      text: "Where ",
-      quick_replies: [
-        {
-          "content_type":"text",
-          "title":"Action",
-          "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_ACTION"
-        },
-        {
-          "content_type":"text",
-          "title":"Comedy",
-          "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_COMEDY"
-        },
-        {
-          "content_type":"text",
-          "title":"Drama",
-          "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_DRAMA"
-        }
-      ]
-    }
-  };
-  callSendAPI(messageData);
-}
-
-function receivedPostback(event) {
-  var senderID = event.sender.id;
-  var recipientID = event.recipient.id;
-  var timeOfPostback = event.timestamp;
-  var payload = event.postback.payload;
-  if (payload == "Ride Offered") {
-    findFBProfile(senderID);
-    sendTextMessage(senderID, "Sweet, lets find you some company!");
-
-  } else if (payload == "Ride Requested") {
-    sendTextMessage(senderID, "Nice, lets find you a ride!");
-  }
-}
 
 // all API requests
 function callSendAPI(messageData) {
