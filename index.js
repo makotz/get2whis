@@ -78,36 +78,6 @@ app.post('/webhook/', function (req, res) {
      });
      res.sendStatus(200)
    }
-
-  // // Old format
-  // let messaging_events = req.body.entry[0].messaging
-  // // console.log(JSON.stringify(messaging_events))
-  // for (let i = 0; i < messaging_events.length; i++) {
-  //   let event = req.body.entry[0].messaging[i]
-  //   let sender = event.sender.id
-  //   // saveNewUser(sender)
-  //   if (event.message && event.message.text) {
-  //     let text = event.message.text.toLowerCase();
-  //     if (text == "aloha") {
-  //       sendTextMessage(sender, "Aloha, are you riding or driving?")
-  //       continue
-  //     } else if (text == "driving") {
-  //       sendTextMessage(sender, "Shoots, let me get you some company")
-  //       continue
-  //     } else if (text == "riding") {
-  //       sendTextMessage(sender, "Chee, lets find you a ride")
-  //       continue
-  //     } else if (text === 'generic') {
-  //       sendGenericMessage(sender)
-  //       continue
-  //     }
-  //     sendTextMessage(sender, "Text received, echo: " + text.substring(0, 200))
-  //   }
-    // if (event.postback) {
-    //   let text = JSON.stringify(event.postback)
-    //   sendTextMessage(sender, "Postback received: "+text.substring(0, 200), token)
-    //   continue
-    // }
 });
 
 function receivedMessage(event) {
@@ -137,25 +107,29 @@ function receivedMessage(event) {
     return;
   } else if (quickReply) {
     var quickReplyPayload = quickReply.payload;
+    if (quickReplyPayload == "Looking_for_riders") {
+      askDepartureLocation(senderID, quickReplyPayload);
+    } else if (quickReplyPayload == "Looking_for_drivers") {
+      askDepartureLocation(senderID, quickReplyPayload);
+    }
     console.log("Quick reply for message %s with payload %s",
       messageId, quickReplyPayload);
-
     sendTextMessage(senderID, "Quick reply tapped");
     return;
   }
 
-if (messageText) {
+  if (messageText) {
 
     // If we receive a text message, check to see if it matches any special
     // keywords and send back the corresponding example. Otherwise, just echo
     // the text we received.
     switch (messageText) {
-      case 'aloha':
+      case 'topsecret':
         sendDriveOrRide(senderID);
         break;
 
-      case 'shoots':
-        sendQuickReply(senderID);
+      case 'aloha':
+        askDriveOrRide(senderID);
         break;
       //
       //       case 'audio':
@@ -210,6 +184,71 @@ if (messageText) {
   }
 }
 
+function askDriveOrRide(recipientId) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: "Aloha, are you driving or riding today?",
+      quick_replies: [
+        {
+          "content_type":"text",
+          "title":"Driving",
+          "payload":"Looking_for_riders"
+        },
+        {
+          "content_type":"text",
+          "title":"Riding",
+          "payload":"Looking_for_drivers"
+        }
+      ]
+    }
+  };
+  callSendAPI(messageData);
+}
+
+function askDepartureLocation(recipientId, quickReplyPayload) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: "Cool, where do you want a ride from?",
+      quick_replies: [
+        {
+          "content_type":"text",
+          "title":"Vancouver",
+          "payload":"Vancouver"
+        },
+        {
+          "content_type":"text",
+          "title":"Richmond",
+          "payload":"Richmond"
+        },
+        {
+          "content_type":"text",
+          "title":"UBC",
+          "payload":"UBC"
+        },
+        {
+          "content_type":"text",
+          "title":"Burnaby",
+          "payload":"Burnaby"
+        },
+        {
+          "content_type":"location",
+        }
+      ]
+    },
+    metadata: {
+      "drive_or_ride": quickReplyPayload
+    }
+  };
+  callSendAPI(messageData);
+}
+
+
 
 function sendTextMessage(recipientId, messageText) {
 
@@ -225,6 +264,7 @@ function sendTextMessage(recipientId, messageText) {
 
   callSendAPI(messageData);
 }
+
 
 function sendDriveOrRide(recipientId) {
   var messageData = {
@@ -298,7 +338,7 @@ function sendQuickReply(recipientId) {
       id: recipientId
     },
     message: {
-      text: "What's your favorite movie genre?",
+      text: "Where ",
       quick_replies: [
         {
           "content_type":"text",
