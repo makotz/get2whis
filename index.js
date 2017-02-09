@@ -96,6 +96,7 @@ function receivedMessage(event) {
     var messageText = message.text;
     var messageAttachments = message.attachments;
     var quickReply = message.quick_reply;
+    var quickReplyMetaData = event.metadata;
 
     if (isEcho) {
         // Just logging message echoes to console
@@ -108,7 +109,7 @@ function receivedMessage(event) {
           askDepartureLocation(senderID, quickReplyPayload)
           return
         }
-        console.log(metadata.drive_or_ride);
+        console.log(quickReplyMetaData.drive_or_ride);
         sendTextMessage(senderID, "Quick reply tapped");
         return;
     }
