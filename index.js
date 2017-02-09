@@ -96,22 +96,23 @@ function receivedMessage(event) {
     var messageText = message.text;
     var messageAttachments = message.attachments;
     var quickReply = message.quick_reply;
-    var quickReplyMetaData = event.metadata;
 
     if (isEcho) {
         // Just logging message echoes to console
         console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
         return;
     } else if (quickReply) {
-        console.log("Event is...")
-        console.log(JSON.stringify(event));
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
-        if (quickReplyPayload == "Looking_for_riders" || quickReplyPayload == "Looking_for_drivers") {
+        if (quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('drive_or_ride')) {
+          sendTextMessage(senderID, "Got both drive_or_ride and departue location"
+          return
+        }
+        if (quickReplyPayload.includes('drive_or_ride')) {
+          sendTextMessage(senderID, "Got just drive_or_ride; asking departue location"
           askDepartureLocation(senderID, quickReplyPayload)
           return
         }
-        console.log(quickReplyMetaData.drive_or_ride);
         sendTextMessage(senderID, "Quick reply tapped");
         return;
     }
@@ -192,11 +193,11 @@ function askDriveOrRide(recipientId) {
                 {
                     "content_type": "text",
                     "title": "Driving",
-                    "payload": "Looking_for_riders"
+                    "payload": "drive_or_ride/looking_for_riders"
                 }, {
                     "content_type": "text",
                     "title": "Riding",
-                    "payload": "Looking_for_drivers"
+                    "payload": "drive_or_ride/looking_for_drivers"
                 }
             ]
         }
@@ -214,18 +215,13 @@ function askDepartureLocation(recipientId, drivingOrRiding) {
                 {
                     "content_type": "text",
                     "title": "UBC",
-                    "payload": "UBC"
+                    "payload": drivingOrRiding+"departure_location/UBC"
                 }, {
                     "content_type": "text",
                     "title": "Whistler",
-                    "payload": "Whistler"
-                }, {
-                    "content_type": "location"
+                    "payload": drivingOrRiding+"departure_location/Whistler"
                 }
             ]
-        },
-        metadata: {
-            "drive_or_ride": drivingOrRiding
         }
     };
     callSendAPI(messageData);
