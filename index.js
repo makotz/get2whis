@@ -102,20 +102,11 @@ function receivedMessage(event) {
         console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
         return;
     } else if (quickReply) {
-        var quickReplyPayload = quickReply.payload;
-        console.log("Quickreplaypayload is "+quickReplyPayload);
-        console.log("metadata is "+metadata);
-        if (quickReplyPayload == "Looking_for_riders" || "Looking_for_drivers") {
-            askDepartureLocation(senderID, quickReplyPayload);
-        }
-        if (metadata.drive_or_ride && !metadata.departure_location) {
-           askDepartureTime(senderID, quickReplyPayload, metadata.drive_or_ride)
-        }
-        if (metadata.departure_location && metadata.drive_or_ride) {
-           sendTextMessage(senderID, "Sweet looking for "+ metadata.drive_or_ride+" from "+metadata.departure_location+ "@" + quickReplyPayload)
-        }
-        console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
-        return;
+      var quickReplyPayload = quickReply.payload;
+       console.log("Quick reply for message %s with payload %s",
+         messageId, quickReplyPayload);
+       sendTextMessage(senderID, "Quick reply tapped");
+       return;
     }
 
     if (messageText) {
