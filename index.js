@@ -109,7 +109,7 @@ function receivedMessage(event) {
           return
         }
         if (quickReplyPayload.includes('drive_or_ride')) {
-          sendTextMessage(senderID, "Got just drive_or_ride; asking departue location"
+          sendTextMessage(senderID, "Got just drive_or_ride; asking departue location")
           askDepartureLocation(senderID, quickReplyPayload)
           return
         }
