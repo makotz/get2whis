@@ -108,6 +108,7 @@ function receivedMessage(event) {
           askDepartureLocation(senderID, quickReplyPayload)
           return
         }
+        console.log(metadata.drive_or_ride);
         sendTextMessage(senderID, "Quick reply tapped");
         return;
     }
