@@ -103,6 +103,8 @@ function receivedMessage(event) {
         return;
     } else if (quickReply) {
         var quickReplyPayload = quickReply.payload;
+        console.log("Quickreplaypayload is "+quickReplyPayload);
+        console.log("metadata is "+metadata);
         if (quickReplyPayload == "Looking_for_riders" || "Looking_for_drivers") {
             askDepartureLocation(senderID, quickReplyPayload);
         }
