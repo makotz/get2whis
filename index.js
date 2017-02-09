@@ -107,6 +107,9 @@ function receivedMessage(event) {
         // Includes all 3 data
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time')) {
           sendTextMessage(senderID, "Got all 3 data points! Cheehee");
+          parseConditions(quickReplyPayload);
+          // PICKUP HERE Add to database if driver
+          // Query database if rider
           return
         }
         if (!quickReplyPayload.includes('drive_or_ride')) {
@@ -212,7 +215,7 @@ function askDriveOrRide(recipientId) {
     };
     callSendAPI(messageData);
 }
-function askDepartureLocation(recipientId, drivingOrRiding) {
+function askDepartureLocation(recipientId, othervariables) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -223,19 +226,18 @@ function askDepartureLocation(recipientId, drivingOrRiding) {
                 {
                     "content_type": "text",
                     "title": "UBC",
-                    "payload": drivingOrRiding+"departure_location:UBC,"
+                    "payload": othervariables+"departure_location:UBC,"
                 }, {
                     "content_type": "text",
                     "title": "Whistler",
-                    "payload": drivingOrRiding+"departure_location:Whistler,"
+                    "payload": othervariables+"departure_location:Whistler,"
                 }
             ]
         }
     };
     callSendAPI(messageData);
 }
-function askDepartureTime(recipientId, drivingOrRiding, departureLocation) {
-    var previousData = drivingOrRiding+departureLocation
+function askDepartureTime(recipientId, othervariables) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -246,30 +248,29 @@ function askDepartureTime(recipientId, drivingOrRiding, departureLocation) {
                 {
                     "content_type": "text",
                     "title": "Early Morning",
-                    "payload": previousData+"departure_time:Early_morning"
+                    "payload": othervariables+"departure_time:Early_morning"
                 }, {
                     "content_type": "text",
                     "title": "Before Noon",
-                    "payload": previousData+"departure_time:Before_noon"
+                    "payload": othervariables+"departure_time:Before_noon"
                 }, {
                     "content_type": "text",
                     "title": "Early Afternoon",
-                    "payload": previousData+"departure_time:Early_afternoon"
+                    "payload": othervariables+"departure_time:Early_afternoon"
                 }, {
                     "content_type": "text",
                     "title": "Evening",
-                    "payload": previousData+"departure_time:Evening"
+                    "payload": othervariables+"departure_time:Evening"
                 }, {
                     "content_type": "text",
                     "title": "Late Night",
-                    "payload": previousData+"departure_time:Late_night"
+                    "payload": othervariables+"departure_time:Late_night"
                 }
             ]
         }
     };
     callSendAPI(messageData);
 }
-
 function receivedPostback(event) {
     var senderID = event.sender.id;
     var recipientID = event.recipient.id;
@@ -301,7 +302,6 @@ function sendTextMessage(recipientId, messageText) {
 
     callSendAPI(messageData);
 }
-
 function sendDriveOrRide(recipientId) {
     var messageData = {
         recipient: {
@@ -337,6 +337,17 @@ function sendDriveOrRide(recipientId) {
     };
     callSendAPI(messageData);
 }
+function parseConditions(gatheredInfoString) {
+    var conditionsArray = gatheredInfoString.split(',');
+    var parsedObject = {};
+    for (var i = 0; i < conditionsArray.length; i++ ) {
+        var conditionPair = conditionsArray[i].split(':')
+        parsedObject[conditionPair[0]] = conditionPair[1];
+    }
+    return parsedObject;
+}
+
+
 
 // function askFromWhereAndWhe(recipientId) {
 //   var messageData = {
