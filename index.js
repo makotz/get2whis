@@ -344,7 +344,7 @@ function parseConditions(gatheredInfoString) {
         var conditionPair = conditionsArray[i].split(':')
         parsedObject[conditionPair[0]] = conditionPair[1];
     }
-    return parsedObject;
+    console.log(JSON.stringify(parsedObject));
 }
 
 
