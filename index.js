@@ -107,15 +107,15 @@ function receivedMessage(event) {
     return;
   } else if (quickReply) {
     var quickReplyPayload = quickReply.payload;
-    if (quickReplyPayload == "Looking_for_riders" || "Looking_for_drivers") {
-      askDepartureLocation(senderID, quickReplyPayload);
-    }
-    if (metadata.drive_or_ride) {
-      askDepartureTime(senderID, quickReplyPayload, metadata.drive_or_ride)
-    }
-    if (metadata.departure_location && metadata.drive_or_ride) {
-      sendTextMessage(senderID, "Sweet looking for "+ metadata.drive_or_ride+" from "+metadata.departure_location+ "@" + quickReplyPayload)
-    }
+    // if (quickReplyPayload == "Looking_for_riders" || "Looking_for_drivers") {
+    //   askDepartureLocation(senderID, quickReplyPayload);
+    // }
+    // if (metadata.drive_or_ride) {
+    //   askDepartureTime(senderID, quickReplyPayload, metadata.drive_or_ride)
+    // }
+    // if (metadata.departure_location && metadata.drive_or_ride) {
+    //   sendTextMessage(senderID, "Sweet looking for "+ metadata.drive_or_ride+" from "+metadata.departure_location+ "@" + quickReplyPayload)
+    // }
     console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
     return;
   }
