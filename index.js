@@ -246,23 +246,23 @@ function askDepartureTime(recipientId, drivingOrRiding, departureLocation) {
                 {
                     "content_type": "text",
                     "title": "Early Morning",
-                    "payload": previousData+"depature_time:Early_morning"
+                    "payload": previousData+"departure_time:Early_morning"
                 }, {
                     "content_type": "text",
                     "title": "Before Noon",
-                    "payload": previousData+"depature_time:Before_noon"
+                    "payload": previousData+"departure_time:Before_noon"
                 }, {
                     "content_type": "text",
                     "title": "Early Afternoon",
-                    "payload": previousData+"depature_time:Early_afternoon"
+                    "payload": previousData+"departure_time:Early_afternoon"
                 }, {
                     "content_type": "text",
                     "title": "Evening",
-                    "payload": previousData+"depature_time:Evening"
+                    "payload": previousData+"departure_time:Evening"
                 }, {
                     "content_type": "text",
                     "title": "Late Night",
-                    "payload": previousData+"depature_time:Late_night"
+                    "payload": previousData+"departure_time:Late_night"
                 }
             ]
         }
