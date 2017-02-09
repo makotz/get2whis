@@ -110,17 +110,14 @@ function receivedMessage(event) {
           return
         }
         if (!quickReplyPayload.includes('drive_or_ride')) {
-          sendTextMessage(senderID, "Ask driving or riding");
           askDepartureLocation(senderID, quickReplyPayload);
           return
         }
         if (!quickReplyPayload.includes('departure_location')) {
-          sendTextMessage(senderID, "Need departure location");
           askDepartureLocation(senderID, quickReplyPayload);
           return
         }
         if (!quickReplyPayload.includes('departure_time')) {
-          sendTextMessage(senderID, "Need departure time");
           askDepartureTime(senderID, quickReplyPayload);
           return
         }
