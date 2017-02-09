@@ -104,13 +104,24 @@ function receivedMessage(event) {
     } else if (quickReply) {
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
-        if (quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('drive_or_ride')) {
-          sendTextMessage(senderID, "Got both drive_or_ride and departue location")
+        // Includes all 3 data
+        if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time')) {
+          sendTextMessage(senderID, "Got all 3 data points! Cheehee");
           return
         }
-        if (quickReplyPayload.includes('drive_or_ride')) {
-          sendTextMessage(senderID, "Got just drive_or_ride; asking departue location")
-          askDepartureLocation(senderID, quickReplyPayload)
+        if (!quickReplyPayload.includes('drive_or_ride')) {
+          sendTextMessage(senderID, "Ask driving or riding");
+          askDepartureLocation(senderID, quickReplyPayload);
+          return
+        }
+        if (!quickReplyPayload.includes('departure_location')) {
+          sendTextMessage(senderID, "Need departure location");
+          askDepartureLocation(senderID, quickReplyPayload);
+          return
+        }
+        if (!quickReplyPayload.includes('departure_time')) {
+          sendTextMessage(senderID, "Need departure time");
+          askDepartureTime(senderID, quickReplyPayload);
           return
         }
         sendTextMessage(senderID, "Quick reply tapped");
@@ -193,11 +204,11 @@ function askDriveOrRide(recipientId) {
                 {
                     "content_type": "text",
                     "title": "Driving",
-                    "payload": "drive_or_ride/looking_for_riders"
+                    "payload": "drive_or_ride:looking_for_riders,"
                 }, {
                     "content_type": "text",
                     "title": "Riding",
-                    "payload": "drive_or_ride/looking_for_drivers"
+                    "payload": "drive_or_ride:looking_for_drivers,"
                 }
             ]
         }
@@ -215,19 +226,19 @@ function askDepartureLocation(recipientId, drivingOrRiding) {
                 {
                     "content_type": "text",
                     "title": "UBC",
-                    "payload": drivingOrRiding+"departure_location/UBC"
+                    "payload": drivingOrRiding+"departure_location:UBC,"
                 }, {
                     "content_type": "text",
                     "title": "Whistler",
-                    "payload": drivingOrRiding+"departure_location/Whistler"
+                    "payload": drivingOrRiding+"departure_location:Whistler,"
                 }
             ]
         }
     };
     callSendAPI(messageData);
 }
-
 function askDepartureTime(recipientId, drivingOrRiding, departureLocation) {
+    var previousData = drivingOrRiding+departureLocation
     var messageData = {
         recipient: {
             id: recipientId
@@ -238,29 +249,25 @@ function askDepartureTime(recipientId, drivingOrRiding, departureLocation) {
                 {
                     "content_type": "text",
                     "title": "Early Morning",
-                    "payload": "Early_morning"
+                    "payload": previousData+"depature_time:Early_morning"
                 }, {
                     "content_type": "text",
                     "title": "Before Noon",
-                    "payload": "Before_noon"
+                    "payload": previousData+"depature_time:Before_noon"
                 }, {
                     "content_type": "text",
                     "title": "Early Afternoon",
-                    "payload": "Early_afternoon"
+                    "payload": previousData+"depature_time:Early_afternoon"
                 }, {
                     "content_type": "text",
                     "title": "Evening",
-                    "payload": "Evening"
+                    "payload": previousData+"depature_time:Evening"
                 }, {
                     "content_type": "text",
                     "title": "Late Night",
-                    "payload": "Late_night"
+                    "payload": previousData+"depature_time:Late_night"
                 }
             ]
-        },
-        metadata: {
-            "drive_or_ride": drivingOrRiding,
-            "departure_location": departureLocation
         }
     };
     callSendAPI(messageData);
