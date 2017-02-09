@@ -106,6 +106,7 @@ function receivedMessage(event) {
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
         if (quickReplyPayload == "Looking_for_riders" || quickReplyPayload == "Looking_for_drivers") {
           askDepartureLocation(senderID, quickReplyPayload)
+          return
         }
         sendTextMessage(senderID, "Quick reply tapped");
         return;
