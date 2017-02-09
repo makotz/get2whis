@@ -103,6 +103,8 @@ function receivedMessage(event) {
         console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
         return;
     } else if (quickReply) {
+        console.log("Event is...")
+        console.log(JSON.stringify(event));
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
         if (quickReplyPayload == "Looking_for_riders" || quickReplyPayload == "Looking_for_drivers") {
