@@ -102,11 +102,13 @@ function receivedMessage(event) {
         console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
         return;
     } else if (quickReply) {
-      var quickReplyPayload = quickReply.payload;
-       console.log("Quick reply for message %s with payload %s",
-         messageId, quickReplyPayload);
-       sendTextMessage(senderID, "Quick reply tapped");
-       return;
+        var quickReplyPayload = quickReply.payload;
+        console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
+        if (quickReplyPayload == ("Looking_for_riders" || "Looking_for_drivers")) {
+          askDepartureLocation(senderID, quickReplyPayLoad)
+        }
+        sendTextMessage(senderID, "Quick reply tapped");
+        return;
     }
 
     if (messageText) {
@@ -196,25 +198,6 @@ function askDriveOrRide(recipientId) {
     };
     callSendAPI(messageData);
 }
-
-function receivedPostback(event) {
-    var senderID = event.sender.id;
-    var recipientID = event.recipient.id;
-    var timeOfPostback = event.timestamp;
-
-    // The 'payload' param is a developer-defined field which is set in a postback
-    // button for Structured Messages.
-    var payload = event.postback.payload;
-
-    console.log("Received postback for user %d and page %d with payload '%s' " +
-        "at %d",
-    senderID, recipientID, payload, timeOfPostback);
-
-    // When a postback is called, we'll send a message back to the sender to
-    // let them know it was successful
-    sendTextMessage(senderID, "Postback called");
-}
-
 function askDepartureLocation(recipientId, drivingOrRiding) {
     var messageData = {
         recipient: {
@@ -282,6 +265,23 @@ function askDepartureTime(recipientId, drivingOrRiding, departureLocation) {
     callSendAPI(messageData);
 }
 
+function receivedPostback(event) {
+    var senderID = event.sender.id;
+    var recipientID = event.recipient.id;
+    var timeOfPostback = event.timestamp;
+
+    // The 'payload' param is a developer-defined field which is set in a postback
+    // button for Structured Messages.
+    var payload = event.postback.payload;
+
+    console.log("Received postback for user %d and page %d with payload '%s' " +
+        "at %d",
+    senderID, recipientID, payload, timeOfPostback);
+
+    // When a postback is called, we'll send a message back to the sender to
+    // let them know it was successful
+    sendTextMessage(senderID, "Postback called");
+}
 function sendTextMessage(recipientId, messageText) {
 
     var messageData = {
