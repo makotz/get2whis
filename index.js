@@ -105,7 +105,7 @@ function receivedMessage(event) {
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
         if (quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('drive_or_ride')) {
-          sendTextMessage(senderID, "Got both drive_or_ride and departue location"
+          sendTextMessage(senderID, "Got both drive_or_ride and departue location")
           return
         }
         if (quickReplyPayload.includes('drive_or_ride')) {
