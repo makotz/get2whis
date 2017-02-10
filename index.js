@@ -116,7 +116,7 @@ function receivedMessage(event) {
           return
         }
         if (!quickReplyPayload.includes('drive_or_ride')) {
-          askDepartureLocation(senderID, quickReplyPayload);
+          askDriveOrRide(senderID, quickReplyPayload);
           return
         }
         if (!quickReplyPayload.includes('departure_location')) {
@@ -128,7 +128,7 @@ function receivedMessage(event) {
           return
         }
         if (!quickReplyPayload.includes('departure_date')) {
-          askDepartureTime(senderID, quickReplyPayload);
+          askDepartureDate(senderID, quickReplyPayload);
           return
         }
         sendTextMessage(senderID, "Quick reply tapped");
