@@ -105,9 +105,12 @@ function receivedMessage(event) {
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
         // Includes all 3 data
-        if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time')) {
-          sendTextMessage(senderID, "Got all 3 data points! Cheehee");
+        if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
+          sendTextMessage(senderID, "Got all 4 data points! Cheehee");
           parseConditions(quickReplyPayload);
+          findFBProfile(senderID);
+          console.log("user is ... "+user);
+          console.log("and parsedObject is ... "+parsedObject);
           // PICKUP HERE Add to database if driver
           // Query database if rider
           return
@@ -121,6 +124,10 @@ function receivedMessage(event) {
           return
         }
         if (!quickReplyPayload.includes('departure_time')) {
+          askDepartureTime(senderID, quickReplyPayload);
+          return
+        }
+        if (!quickReplyPayload.includes('departure_date')) {
           askDepartureTime(senderID, quickReplyPayload);
           return
         }
@@ -237,6 +244,28 @@ function askDepartureLocation(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 }
+function askDepartureDate(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Cool, where do you want a ride from?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "today",
+                    "payload": othervariables+"departure_date:today,"
+                }, {
+                    "content_type": "text",
+                    "title": "tomorrow",
+                    "payload": othervariables+"departure_date:tomorrow,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
 function askDepartureTime(recipientId, othervariables) {
     var messageData = {
         recipient: {
@@ -344,7 +373,7 @@ function parseConditions(gatheredInfoString) {
         var conditionPair = conditionsArray[i].split(':')
         parsedObject[conditionPair[0]] = conditionPair[1];
     }
-    console.log(JSON.stringify(parsedObject));
+    return parsedObject;
 }
 
 
