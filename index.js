@@ -106,13 +106,13 @@ function receivedMessage(event) {
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
         // Includes all 3 data
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
-          sendTextMessage(senderID, "Got all 4 data points! Cheehee");
           parseConditions(quickReplyPayload);
           findFBProfile(senderID);
           console.log("user is ... "+user);
           console.log("and parsedObject is ... "+parsedObject);
           // PICKUP HERE Add to database if driver
           // Query database if rider
+          sendTextMessage(senderID, "Got all 4 data points! Cheehee");
           return
         }
         if (!quickReplyPayload.includes('drive_or_ride')) {
