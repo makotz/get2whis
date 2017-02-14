@@ -483,7 +483,7 @@ function findFBProfile(sender) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
             user = JSON.parse(body);
-            console.log('Found profile of: ' + user);
+            console.log('Found profile of: ' + JSON.stringify(user));
         } else {
             console.log("Could not locate %s's Facebook Profile", senderId);
         }
