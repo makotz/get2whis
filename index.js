@@ -110,7 +110,7 @@ function receivedMessage(event) {
         }
         // Includes all 3 data
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
-          parseConditions(quickReplyPayload);
+          var parsedObject = parseConditions(quickReplyPayload);
           confirmQueryInfo(senderID, parsedObject);
           return
           findFBProfile(senderID);
@@ -381,7 +381,6 @@ function parseConditions(gatheredInfoString) {
         parsedObject[conditionPair[0]] = conditionPair[1];
     }
     return parsedObject;
-    continue
 }
 
 function confirmQueryInfo(recipientID, parsedObject) {
