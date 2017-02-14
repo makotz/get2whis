@@ -393,19 +393,19 @@ function confirmQueryInfo(recipientID, parsedObject) {
           id: recipientId
       },
       message: {
-          text: "Yout want to "+drive_or_ride+" from "+departure_location+" on "+ departure_date+" at around "+ departure_time+"?"
+          text: "Yout want to "+drive_or_ride+" from "+departure_location+" on "+ departure_date+" at around "+ departure_time+"?",
           quick_replies: [
               {
                   "content_type": "text",
                   "title": "Chee",
-                  "payload": "JSON.stringify(parsedObject.confirmation = true)"
+                  "payload": JSON.stringify(parsedObject.confirmation = true)
               }, {
                   "content_type": "text",
                   "title": "Nope",
-                  "payload": "JSON.stringify(parsedObject.confirmation = false)"
+                  "payload": JSON.stringify(parsedObject.confirmation = false)
               }
           ]
-      }
+        }
   };
   callSendAPI(messageData);
 }
