@@ -93,7 +93,7 @@ function receivedMessage(event) {
     var metadata = message.metadata;
 
     // You may get a text or attachment but not both
-    var messageText = message.text;
+    var messageText = message.text.toLowerCase();
     var messageAttachments = message.attachments;
     var quickReply = message.quick_reply;
 
@@ -384,25 +384,28 @@ function parseConditions(gatheredInfoString) {
 }
 
 function confirmQueryInfo(recipientId, parsedObject) {
-  var drive_or_ride = parsedObject["drive_or_ride"];
-  var departure_location = parsedObject["departure_location"];
-  var departure_date = parsedObject["departure_date"];
-  var departure_time = parsedObject["departure_time"];
+  console.log("parsedObject is ... " + parsedObject);
+  var drive_or_ride = parsedObject.drive_or_ride;
+  var departure_location = parsedObject.departure_location;
+  var departure_date = parsedObject.departure_date;
+  var departure_time = parsedObject.departure_time;
+  var confirmedConditions = parsedObject
+    confirmedConditions.confirmation = true
   var messageData = {
       recipient: {
           id: recipientId
       },
       message: {
-          text: "Yout want to "+drive_or_ride+" from "+departure_location+" on "+ departure_date+" at around "+ departure_time+"?",
+          text: "Alright, let's confimr your inquiry. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + " at around "+ departure_time+"?",
           quick_replies: [
               {
                   "content_type": "text",
                   "title": "Chee",
-                  "payload": JSON.stringify(parsedObject.confirmation = true)
+                  "payload": confirmedConditions
               }, {
                   "content_type": "text",
                   "title": "Nope",
-                  "payload": JSON.stringify(parsedObject.confirmation = false)
+                  "payload": parsedObject
               }
           ]
         }
