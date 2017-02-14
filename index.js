@@ -93,7 +93,7 @@ function receivedMessage(event) {
     var metadata = message.metadata;
 
     // You may get a text or attachment but not both
-    var messageText = message.text.toLowerCase();
+    var messageText = message.text;
     var messageAttachments = message.attachments;
     var quickReply = message.quick_reply;
 
@@ -336,6 +336,7 @@ function sendTextMessage(recipientId, messageText) {
 
     callSendAPI(messageData);
 }
+
 function sendDriveOrRide(recipientId) {
     var messageData = {
         recipient: {
@@ -371,6 +372,7 @@ function sendDriveOrRide(recipientId) {
     };
     callSendAPI(messageData);
 }
+
 function parseConditions(gatheredInfoString) {
     var conditionsArray = gatheredInfoString.split(',');
     var parsedObject = {};
@@ -380,6 +382,7 @@ function parseConditions(gatheredInfoString) {
     }
     return parsedObject;
 }
+
 function confirmQueryInfo(recipientID, parsedObject) {
   var drive_or_ride = parsedObject["drive_or_ride"];
   var departure_location = parsedObject["departure_location"];
@@ -390,7 +393,7 @@ function confirmQueryInfo(recipientID, parsedObject) {
           id: recipientId
       },
       message: {
-          text: "Yout want to "+drive_or_ride+" from "+ departure_location+" on "+ departure_date+" at around "+ departure_time+"?"
+          text: "Yout want to "+drive_or_ride+" from "+departure_location+" on "+ departure_date+" at around "+ departure_time+"?"
           quick_replies: [
               {
                   "content_type": "text",
