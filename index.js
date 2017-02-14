@@ -398,11 +398,11 @@ function confirmQueryInfo(recipientID, parsedObject) {
               {
                   "content_type": "text",
                   "title": "Chee",
-                  "payload": JSON.stringify(parsedObject.confirmation = true);
+                  "payload": "JSON.stringify(parsedObject.confirmation = true)";
               }, {
                   "content_type": "text",
                   "title": "Nope",
-                  "payload": JSON.stringify(parsedObject.confirmation = false);
+                  "payload": "JSON.stringify(parsedObject.confirmation = false)";
               }
           ]
       }
