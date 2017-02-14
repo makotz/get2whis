@@ -106,14 +106,17 @@ function receivedMessage(event) {
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
 
         if (quickReplyPayload.includes('confirmation')) {
-          sendTextMessage(senderId, "All confirmed!");
+          sendTextMessage(senderId, "Alrighty!");
+          var user = new User(findFBProfile(senderId));
+          console.log(JSON.parse(quickReplyPayload));
+          console.log("User is... "+user)
+          return
         }
         // Includes all 3 data
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
           var parsedObject = parseConditions(quickReplyPayload);
           confirmQueryInfo(senderId, parsedObject);
           return
-          findFBProfile(senderId);
           console.log("user is ... "+user);
           console.log("and parsedObject is ... "+parsedObject);
           // PICKUP HERE Add to database if driver
