@@ -79,12 +79,12 @@ app.post('/webhook/', function(req, res) {
 });
 
 function receivedMessage(event) {
-    var senderID = event.sender.id;
-    var recipientID = event.recipient.id;
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
     var timeOfMessage = event.timestamp;
     var message = event.message;
 
-    console.log("Received message for user %d and page %d at %d with message:", senderID, recipientID, timeOfMessage);
+    console.log("Received message for user %d and page %d at %d with message:", senderId, recipientId, timeOfMessage);
     console.log(JSON.stringify(message));
 
     var isEcho = message.is_echo;
@@ -106,37 +106,37 @@ function receivedMessage(event) {
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
 
         if (quickReplyPayload.includes('confirmation')) {
-          sendTextMessage(senderID, "All confirmed!");
+          sendTextMessage(senderId, "All confirmed!");
         }
         // Includes all 3 data
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
           var parsedObject = parseConditions(quickReplyPayload);
-          confirmQueryInfo(senderID, parsedObject);
+          confirmQueryInfo(senderId, parsedObject);
           return
-          findFBProfile(senderID);
+          findFBProfile(senderId);
           console.log("user is ... "+user);
           console.log("and parsedObject is ... "+parsedObject);
           // PICKUP HERE Add to database if driver
           // Query database if rider
-          sendTextMessage(senderID, "Got all 4 data points! Cheehee");
+          sendTextMessage(senderId, "Got all 4 data points! Cheehee");
         }
         if (!quickReplyPayload.includes('drive_or_ride')) {
-          askDriveOrRide(senderID, quickReplyPayload);
+          askDriveOrRide(senderId, quickReplyPayload);
           return
         }
         if (!quickReplyPayload.includes('departure_location')) {
-          askDepartureLocation(senderID, quickReplyPayload);
+          askDepartureLocation(senderId, quickReplyPayload);
           return
         }
         if (!quickReplyPayload.includes('departure_date')) {
-          askDepartureDate(senderID, quickReplyPayload);
+          askDepartureDate(senderId, quickReplyPayload);
           return
         }
         if (!quickReplyPayload.includes('departure_time')) {
-          askDepartureTime(senderID, quickReplyPayload);
+          askDepartureTime(senderId, quickReplyPayload);
           return
         }
-        sendTextMessage(senderID, "Quick reply tapped");
+        sendTextMessage(senderId, "Quick reply tapped");
         return;
     }
 
@@ -146,62 +146,62 @@ function receivedMessage(event) {
         // the text we received.
         switch (messageText) {
             // case 'topsecret':
-            //     sendDriveOrRide(senderID);
+            //     sendDriveOrRide(senderId);
             //     break;
 
             case 'aloha':
-                askDriveOrRide(senderID);
+                askDriveOrRide(senderId);
                 break;
                 //
                 //       case 'audio':
-                //         sendAudioMessage(senderID);
+                //         sendAudioMessage(senderId);
                 //         break;
                 //
                 //       case 'video':
-                //         sendVideoMessage(senderID);
+                //         sendVideoMessage(senderId);
                 //         break;
                 //
                 //       case 'file':
-                //         sendFileMessage(senderID);
+                //         sendFileMessage(senderId);
                 //         break;
                 //
                 //       case 'button':
-                //         sendButtonMessage(senderID);
+                //         sendButtonMessage(senderId);
                 //         break;
                 //
                 //       case 'generic':
-                //         sendGenericMessage(senderID);
+                //         sendGenericMessage(senderId);
                 //         break;
                 //
                 //       case 'receipt':
-                //         sendReceiptMessage(senderID);
+                //         sendReceiptMessage(senderId);
                 //         break;
                 //
                 //       case 'quick reply':
-                //         sendQuickReply(senderID);
+                //         sendQuickReply(senderId);
                 //         break;
                 //
                 //       case 'read receipt':
-                //         sendReadReceipt(senderID);
+                //         sendReadReceipt(senderId);
                 //         break;
                 //
                 //       case 'typing on':
-                //         sendTypingOn(senderID);
+                //         sendTypingOn(senderId);
                 //         break;
                 //
                 //       case 'typing off':
-                //         sendTypingOff(senderID);
+                //         sendTypingOff(senderId);
                 //         break;
                 //
                 //       case 'account linking':
-                //         sendAccountLinking(senderID);
+                //         sendAccountLinking(senderId);
                 //         break;
 
             default:
-                sendTextMessage(senderID, messageText);
+                sendTextMessage(senderId, messageText);
         }
     } else if (messageAttachments) {
-        sendTextMessage(senderID, "Message with attachment received");
+        sendTextMessage(senderId, "Message with attachment received");
     }
 }
 
@@ -306,21 +306,21 @@ function askDepartureTime(recipientId, othervariables) {
     callSendAPI(messageData);
 }
 function receivedPostback(event) {
-    var senderID = event.sender.id;
-    var recipientID = event.recipient.id;
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
     var timeOfPostback = event.timestamp;
-
+``
     // The 'payload' param is a developer-defined field which is set in a postback
     // button for Structured Messages.
     var payload = event.postback.payload;
 
     console.log("Received postback for user %d and page %d with payload '%s' " +
         "at %d",
-    senderID, recipientID, payload, timeOfPostback);
+    senderId, recipientId, payload, timeOfPostback);
 
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
-    sendTextMessage(senderID, "Postback called");
+    sendTextMessage(senderId, "Postback called");
 }
 function sendTextMessage(recipientId, messageText) {
 
@@ -383,7 +383,7 @@ function parseConditions(gatheredInfoString) {
     return parsedObject;
 }
 
-function confirmQueryInfo(recipientID, parsedObject) {
+function confirmQueryInfo(recipientId, parsedObject) {
   var drive_or_ride = parsedObject["drive_or_ride"];
   var departure_location = parsedObject["departure_location"];
   var departure_date = parsedObject["departure_date"];
@@ -476,15 +476,15 @@ function findFBProfile(sender) {
             user = JSON.parse(body);
             console.log('Found profile of: ' + user["first_name"]);
         } else {
-            console.log("Could not locate %s's Facebook Profile", senderID);
+            console.log("Could not locate %s's Facebook Profile", senderId);
         }
     });
     return user;
 };
 
 function receivedDeliveryConfirmation(event) {
-    var senderID = event.sender.id;
-    var recipientID = event.recipient.id;
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
     var delivery = event.delivery;
     var messageIDs = delivery.mids;
     var watermark = delivery.watermark;
@@ -499,8 +499,8 @@ function receivedDeliveryConfirmation(event) {
     console.log("All message before %d were delivered.", watermark);
 }
 function receivedMessageRead(event) {
-    var senderID = event.sender.id;
-    var recipientID = event.recipient.id;
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
 
     // All messages before watermark (a timestamp) or sequence have been seen.
     var watermark = event.read.watermark;
@@ -511,19 +511,19 @@ function receivedMessageRead(event) {
     watermark, sequenceNumber);
 }
 function receivedAccountLink(event) {
-    var senderID = event.sender.id;
-    var recipientID = event.recipient.id;
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
 
     var status = event.account_linking.status;
     var authCode = event.account_linking.authorization_code;
 
     console.log("Received account link event with for user %d with status %s " +
         "and auth code %s ",
-    senderID, status, authCode);
+    senderId, status, authCode);
 }
 function receivedAuthentication(event) {
-    var senderID = event.sender.id;
-    var recipientID = event.recipient.id;
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
     var timeOfAuth = event.timestamp;
 
     // The 'ref' field is set in the 'Send to Messenger' plugin, in the 'data-ref'
@@ -535,11 +535,11 @@ function receivedAuthentication(event) {
 
     console.log("Received authentication for user %d and page %d with pass " +
         "through param '%s' at %d",
-    senderID, recipientID, passThroughParam, timeOfAuth);
+    senderId, recipientId, passThroughParam, timeOfAuth);
 
     // When an authentication is received, we'll send a message back to the sender
     // to let them know it was successful.
-    sendTextMessage(senderID, "Authentication successful");
+    sendTextMessage(senderId, "Authentication successful");
 }
 // var user = new User({
 //   sender: sender,
