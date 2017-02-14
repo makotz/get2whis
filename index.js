@@ -401,11 +401,11 @@ function confirmQueryInfo(recipientId, parsedObject) {
               {
                   "content_type": "text",
                   "title": "Chee",
-                  "payload": confirmedConditions
+                  "payload": JSON.stringify(confirmedConditions);
               }, {
                   "content_type": "text",
                   "title": "Nope",
-                  "payload": parsedObject
+                  "payload": JSON.stringify(parsedObject);
               }
           ]
         }
