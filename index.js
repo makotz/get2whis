@@ -107,9 +107,7 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           console.log(JSON.parse(quickReplyPayload));
-          findFBProfile(senderId, function() {
-            console.log(user);
-          })
+          findFBProfile(senderId);
           sendTextMessage(senderId, "Alrighty!");
           return
         }
@@ -480,20 +478,17 @@ function callSendAPI(messageData) {
     });
 }
 
-function findFBProfile(sender, callback) {
+function findFBProfile(sender) {
     var user;
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
             user = JSON.parse(body);
-            console.log('Found profile of: ' + user["first_name"]);
+            console.log('Found profile of: ' + user);
         } else {
             console.log("Could not locate %s's Facebook Profile", senderId);
         }
     });
     return user;
-    if (callback) {
-      callback();
-    }
 };
 
 function receivedDeliveryConfirmation(event) {
