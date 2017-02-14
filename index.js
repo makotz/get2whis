@@ -107,8 +107,8 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           console.log(JSON.parse(quickReplyPayload));
-          findFBProfile(senderId, function(user) {
-            console.log("suppp ");
+          findFBProfile(senderId, function() {
+            console.log(user);
           })
           sendTextMessage(senderId, "Alrighty!");
           return
@@ -450,6 +450,10 @@ function confirmQueryInfo(recipientId, parsedObject) {
 //   callSendAPI(messageData);
 // }
 
+function print(input) {
+  console.log(input);
+}
+
 // all API requests
 function callSendAPI(messageData) {
     request({
@@ -476,7 +480,7 @@ function callSendAPI(messageData) {
     });
 }
 
-function findFBProfile(sender) {
+function findFBProfile(sender, callback) {
     var user;
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
@@ -487,6 +491,9 @@ function findFBProfile(sender) {
         }
     });
     return user;
+    if (callback) {
+      callback();
+    }
 };
 
 function receivedDeliveryConfirmation(event) {
