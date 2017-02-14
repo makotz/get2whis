@@ -93,7 +93,7 @@ function receivedMessage(event) {
     var metadata = message.metadata;
 
     // You may get a text or attachment but not both
-    var messageText = message.text;
+    var messageText = message.text.toLowerCase();
     var messageAttachments = message.attachments;
     var quickReply = message.quick_reply;
 
@@ -104,9 +104,14 @@ function receivedMessage(event) {
     } else if (quickReply) {
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
+
+        if (quickReplyPayload.includes('confirmation')) {
+          sendTextMessage(senderID, "All confirmed!");
+        }
         // Includes all 3 data
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
           parseConditions(quickReplyPayload);
+          confirmQueryInfo(senderID, parsedObject);
           return
           findFBProfile(senderID);
           console.log("user is ... "+user);
@@ -123,12 +128,12 @@ function receivedMessage(event) {
           askDepartureLocation(senderID, quickReplyPayload);
           return
         }
-        if (!quickReplyPayload.includes('departure_time')) {
-          askDepartureTime(senderID, quickReplyPayload);
-          return
-        }
         if (!quickReplyPayload.includes('departure_date')) {
           askDepartureDate(senderID, quickReplyPayload);
+          return
+        }
+        if (!quickReplyPayload.includes('departure_time')) {
+          askDepartureTime(senderID, quickReplyPayload);
           return
         }
         sendTextMessage(senderID, "Quick reply tapped");
@@ -250,7 +255,7 @@ function askDepartureDate(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "Cool, where do you want a ride from?",
+            text: "Cool, when do you wanna leave?",
             quick_replies: [
                 {
                     "content_type": "text",
@@ -277,23 +282,23 @@ function askDepartureTime(recipientId, othervariables) {
                 {
                     "content_type": "text",
                     "title": "Early Morning",
-                    "payload": othervariables+"departure_time:Early_morning"
+                    "payload": othervariables+"departure_time:Early_morning,"
                 }, {
                     "content_type": "text",
                     "title": "Before Noon",
-                    "payload": othervariables+"departure_time:Before_noon"
+                    "payload": othervariables+"departure_time:Before_noon,"
                 }, {
                     "content_type": "text",
                     "title": "Early Afternoon",
-                    "payload": othervariables+"departure_time:Early_afternoon"
+                    "payload": othervariables+"departure_time:Early_afternoon,"
                 }, {
                     "content_type": "text",
                     "title": "Evening",
-                    "payload": othervariables+"departure_time:Evening"
+                    "payload": othervariables+"departure_time:Evening,"
                 }, {
                     "content_type": "text",
                     "title": "Late Night",
-                    "payload": othervariables+"departure_time:Late_night"
+                    "payload": othervariables+"departure_time:Late_night,"
                 }
             ]
         }
@@ -375,7 +380,32 @@ function parseConditions(gatheredInfoString) {
     }
     return parsedObject;
 }
-
+function confirmQueryInfo(recipientID, parsedObject) {
+  var drive_or_ride = parsedObject["drive_or_ride"];
+  var departure_location = parsedObject["departure_location"];
+  var departure_date = parsedObject["departure_date"];
+  var departure_time = parsedObject["departure_time"];
+  var messageData = {
+      recipient: {
+          id: recipientId
+      },
+      message: {
+          text: "Yout want to "+drive_or_ride+" from "+ departure_location+" on "+ departure_date+" at around "+ departure_time+"?"
+          quick_replies: [
+              {
+                  "content_type": "text",
+                  "title": "Chee",
+                  "payload": parsedObject.confirmation = true
+              }, {
+                  "content_type": "text",
+                  "title": "Nope",
+                  "payload": parsedObject.confirmation = false
+              }
+          ]
+      }
+  };
+  callSendAPI(messageData);
+}
 
 
 // function askFromWhereAndWhe(recipientId) {
