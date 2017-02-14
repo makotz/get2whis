@@ -381,6 +381,7 @@ function parseConditions(gatheredInfoString) {
         parsedObject[conditionPair[0]] = conditionPair[1];
     }
     return parsedObject;
+    continue
 }
 
 function confirmQueryInfo(recipientID, parsedObject) {
