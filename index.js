@@ -107,7 +107,7 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           console.log(JSON.parse(quickReplyPayload));
-          var user = new User(findFBProfile(senderId));
+          var user = findFBProfile(senderId);
           console.log("User is... "+user)
           sendTextMessage(senderId, "Alrighty!");
           return
