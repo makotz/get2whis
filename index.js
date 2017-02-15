@@ -488,7 +488,7 @@ function findFBProfile(sender, saveUser) {
         }
     });
     var quickReplyPayload = "Hello";
-    saveUser(sender, quickReplyPayload, user);
+    setTimeout(saveUser(sender, quickReplyPayload, user), 5000);
 };
 
 function saveUser(senderId, quickReplyPayload, userProfile) {
