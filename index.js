@@ -14,7 +14,7 @@ mongoose.connect(config.database, function(err) {
     if (err) {
         console.log(err);
     } else {
-        console.log("Yeeee");
+        console.log("Mongoose is running");
     }
 })
 
@@ -107,7 +107,8 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           sendTextMessage(senderId, "Alrighty!");
-          saveUser(senderId, quickReplyPayload, findFBProfile);
+          var user = findFBProfile(senderId);
+          saveUser(senderId, quickReplyPayload, user);
           return
         }
         // Includes all 3 data
@@ -488,16 +489,15 @@ function findFBProfile(sender) {
     return user;
 };
 
-function saveUser(senderId, quickReplyPayload, findFBprofile) {
-  var user = findFBprofile(senderId);
-  console.log("User is ..." + user);
+function saveUser(senderId, quickReplyPayload, userProfile) {
+  console.log("User is ..." + userProfile);
 
   var newUser = new User({
     sender: senderId,
-    first_name: user["first_name"],
-    last_name: user["last_name"],
-    profile_pic: user["profile_pic"],
-    gender: user["gender"],
+    first_name: userProfile["first_name"],
+    last_name: userProfile["last_name"],
+    profile_pic: userProfile["profile_pic"],
+    gender: userProfile["gender"],
     ride_info: quickReplyPayload
   });
   newUser.save(function(err) {
