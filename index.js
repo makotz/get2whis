@@ -486,6 +486,7 @@ function findFBProfile(sender) {
             console.log("Could not locate %s's Facebook Profile", senderId);
         }
     });
+    console.log("Usererere is..."+user)
     return user;
 };
 
