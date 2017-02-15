@@ -482,12 +482,11 @@ function findFBProfile(sender) {
         if (!error && response.statusCode == 200) {
             user = JSON.parse(body);
             console.log('Found profile of: ' + JSON.stringify(user));
+            return user;
         } else {
             console.log("Could not locate %s's Facebook Profile", senderId);
         }
     });
-    console.log("Usererere is..."+user)
-    return user;
 };
 
 function saveUser(senderId, quickReplyPayload, userProfile) {
