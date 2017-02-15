@@ -412,7 +412,13 @@ function confirmQueryInfo(recipientId, parsedObject) {
 
 
 function queryExample(recipientId) {
-  console.log(User.findOne({first_name: "Makoto"}));
+  User.findOne({first_name: "Makoto"}, function(err, user) {
+    if(err) {
+      console.log("error occured");
+    } else {
+      console.log(user)
+    }
+  });
   var messageData = {
     recipient: {
       id: recipientId
