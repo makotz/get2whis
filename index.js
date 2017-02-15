@@ -464,7 +464,7 @@ function confirmQueryInfo(recipientId, parsedObject) {
 
 
 function queryExample(recipientId) {
-  User.findOne({first_name: "Makoto"}, function(err, user) {
+  User.findOne({last_name: "Ejima"}, function(err, user) {
     if(err) {
       console.log("error occured:"+ err);
     } else {
