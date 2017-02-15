@@ -477,17 +477,18 @@ function callSendAPI(messageData) {
 }
 
 function findFBProfile(sender, saveUser) {
+    var user;
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            var user = JSON.parse(body);
+            user = JSON.parse(body);
             console.log('Found profile of: ' + JSON.stringify(user));
             console.log("User si "+ user);
-            return user;
         } else {
             console.log("Could not locate %s's Facebook Profile", senderId);
         }
     });
     var quickReplyPayload = "Hello";
+    console.log("Should come after");
     setTimeout(saveUser(sender, quickReplyPayload, user), 5000);
 };
 
