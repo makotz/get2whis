@@ -477,11 +477,11 @@ function callSendAPI(messageData) {
 }
 
 function findFBProfile(sender) {
-    var user;
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            user = JSON.parse(body);
+            var user = JSON.parse(body);
             console.log('Found profile of: ' + JSON.stringify(user));
+            console.log("User si "+ user);
             return user;
         } else {
             console.log("Could not locate %s's Facebook Profile", senderId);
