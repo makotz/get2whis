@@ -413,7 +413,7 @@ function confirmQueryInfo(recipientId, parsedObject) {
 
 
 function queryExample(recipientId) {
-  var all_users = User.find({first_name: "Makoto"});
+  var all_users = ride2whis.find({first_name: "Makoto"});
   console.log(all_users);
   var messageData = {
     recipient: {
