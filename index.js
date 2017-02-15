@@ -413,7 +413,7 @@ function confirmQueryInfo(recipientId, parsedObject) {
 
 
 function queryExample(recipientId) {
-  var all_users = User.find();
+  var all_users = User.find({first_name: "Makoto"});
   console.log(all_users);
   var messageData = {
     recipient: {
@@ -426,7 +426,7 @@ function queryExample(recipientId) {
           template_type: "generic",
           elements: [{
             title: "sdkfjl",
-            subtitle: all_users,
+            subtitle: "hsdpf",
             item_url: "https://www.nfl.com",
             image_url: "http://i.imgur.com/K1WNRhX.jpg",
             buttons: [{
