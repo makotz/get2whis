@@ -413,7 +413,8 @@ function confirmQueryInfo(recipientId, parsedObject) {
 
 
 function queryExample(recipientId) {
-  var all_users = JSON.stringify(User.find());
+  var all_users = User.find();
+  console.log(all_users);
   var messageData = {
     recipient: {
       id: recipientId
