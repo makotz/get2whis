@@ -106,9 +106,8 @@ function receivedMessage(event) {
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
 
         if (quickReplyPayload.includes('confirmation')) {
-          console.log(JSON.parse(quickReplyPayload));
-          findFBProfile(senderId);
           sendTextMessage(senderId, "Alrighty!");
+          saveUser(senderId, findFBProfile(), quickReplyPayload);
           return
         }
         // Includes all 3 data
@@ -118,8 +117,6 @@ function receivedMessage(event) {
           return
           console.log("user is ... "+user);
           console.log("and parsedObject is ... "+parsedObject);
-          // PICKUP HERE Add to database if driver
-          // Query database if rider
           sendTextMessage(senderId, "Got all 4 data points! Cheehee");
         }
         if (!quickReplyPayload.includes('drive_or_ride')) {
@@ -311,7 +308,7 @@ function receivedPostback(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
     var timeOfPostback = event.timestamp;
-``
+
     // The 'payload' param is a developer-defined field which is set in a postback
     // button for Structured Messages.
     var payload = event.postback.payload;
@@ -398,7 +395,7 @@ function confirmQueryInfo(recipientId, parsedObject) {
           id: recipientId
       },
       message: {
-          text: "Alright, let's confimr your inquiry. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + " at around "+ departure_time+"?",
+          text: "Alright, let's confirm your inquiry. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + " at around "+ departure_time+"?",
           quick_replies: [
               {
                   "content_type": "text",
@@ -478,8 +475,7 @@ function callSendAPI(messageData) {
     });
 }
 
-function findFBProfile(sender) {
-    var user;
+function findFBProfile(sender, user) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
             user = JSON.parse(body);
@@ -490,6 +486,29 @@ function findFBProfile(sender) {
     });
     return user;
 };
+
+function saveUser(senderId, findFBprofile, quickReplyPayload) {
+  var user;
+  findFBprofile(senderId, user);
+
+  var newUser = new User({
+    sender: senderId,
+    first_name: user["first_name"],
+    last_name: user["last_name"],
+    profile_pic: user["profile_pic"],
+    gender: user["gender"],
+    ride_info: quickReplyPayload
+  });
+  newUser.save(function(err) {
+    if(err) {
+      console.log(err);
+    } else {
+      console.log("User created!");
+    }
+  })
+}
+
+
 
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
@@ -550,17 +569,3 @@ function receivedAuthentication(event) {
     // to let them know it was successful.
     sendTextMessage(senderId, "Authentication successful");
 }
-// var user = new User({
-//   sender: sender,
-//   first_name: ddd["first_name"],
-//   last_name: ddd["last_name"],
-//   profile_pic: ddd["profile_pic"],
-//   gender: ddd["gender"]
-// });
-// user.save(function(err) {
-//   if(err) {
-//     console.log(err);
-//   } else {
-//     console.log("User created!");
-//   }
-// })
