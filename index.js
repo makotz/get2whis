@@ -412,8 +412,7 @@ function confirmQueryInfo(recipientId, parsedObject) {
 
 
 function queryExample(recipientId) {
-  var all_users = User.model('user');
-  console.log(all_users);
+  console.log(User.findOne({first_name: "Makoto"}));
   var messageData = {
     recipient: {
       id: recipientId
