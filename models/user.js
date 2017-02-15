@@ -14,6 +14,7 @@ var UserSchema = new Schema({
   profile_pic: String,
   drive_or_ride: Boolean,
   gender: String,
+  ride_info: Object,
   created_at: Date,
   updated_at: Date
 });
