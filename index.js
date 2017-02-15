@@ -475,8 +475,7 @@ function callSendAPI(messageData) {
     });
 }
 
-function findFBProfile(sender) {
-    var user;
+function findFBProfile(sender, user) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
             user = JSON.parse(body);
@@ -489,7 +488,8 @@ function findFBProfile(sender) {
 };
 
 function saveUser(senderId, quickReplyPayload, findFBprofile) {
-  findFBprofile(senderId);
+  var user;
+  findFBprofile(senderId, user);
   console.log("User is ..." + JSON.parse(user));
 
   var newUser = new User({
