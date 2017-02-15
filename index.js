@@ -18,6 +18,8 @@ mongoose.connect(config.database, function(err) {
     }
 })
 
+var cc = mongoose.model('user', Schema)
+
 app.set('port', (process.env.PORT || 5000))
 
 // Process application/x-www-form-urlencoded
@@ -413,7 +415,7 @@ function confirmQueryInfo(recipientId, parsedObject) {
 
 
 function queryExample(recipientId) {
-  var all_users = db.users.find({first_name: "Makoto"});
+  var all_users = cc.find({first_name: "Makoto"});
   console.log(all_users);
   var messageData = {
     recipient: {
