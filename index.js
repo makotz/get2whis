@@ -6,8 +6,8 @@ const request = require('request');
 const config = require('./config');
 const mongoose = require('mongoose');
 const User = require('./models/user');
-const app = express()
-const token = process.env.FB_PAGE_ACCESS_TOKEN
+const app = express();
+const token = process.env.FB_PAGE_ACCESS_TOKEN;
 
 // Check if mongoose is running
 mongoose.connect(config.database, function(err) {
@@ -107,7 +107,7 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           sendTextMessage(senderId, "Alrighty!");
-          findFBProfile(senderId, quickReplyPayload, saveUser);
+          findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
           return
         }
         // Includes all 3 data
@@ -151,10 +151,9 @@ function receivedMessage(event) {
             case 'aloha':
                 askDriveOrRide(senderId);
                 break;
-                //
-                //       case 'audio':
-                //         sendAudioMessage(senderId);
-                //         break;
+            case 'query':
+                queryExample(senderId);
+                break;
                 //
                 //       case 'video':
                 //         sendVideoMessage(senderId);
@@ -413,66 +412,37 @@ function confirmQueryInfo(recipientId, parsedObject) {
 }
 
 
-// function askFromWhereAndWhe(recipientId) {
-//   var messageData = {
-//     recipient: {
-//       id: recipientId
-//     },
-//     message: {
-//       attachment: {
-//         type: "template",
-//         payload: {
-//           template_type: "generic",
-//           elements: [{
-//             title: "PowHunt",
-//             subtitle: "Welcome! Do you wanna Drive or Ride?",
-//             item_url: "https://www.nfl.com",
-//             image_url: "http://i.imgur.com/K1WNRhX.jpg",
-//             buttons: [{
-//               type: "postback",
-//               title: "Drive",
-//               payload: "Ride Offered"
-//             }, {
-//               type: "postback",
-//               title: "Ride",
-//               payload: "Ride Requested"
-//             }]
-//           }]
-//         }
-//       }
-//     }
-//   };
-//   callSendAPI(messageData);
-// }
-
-function print(input) {
-  console.log(input);
-}
-
-// all API requests
-function callSendAPI(messageData) {
-    request({
-        uri: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: {
-            access_token: token
-        },
-        method: 'POST',
-        json: messageData
-
-    }, function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-            var recipientId = body.recipient_id;
-            var messageId = body.message_id;
-
-            if (messageId) {
-                console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
-            } else {
-                console.log("Successfully called Send API for recipient %s", recipientId);
-            }
-        } else {
-            console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
+function queryExample(recipientId) {
+  var all_users = JSON.stringify(User.find());
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: [{
+            title: "sdkfjl",
+            subtitle: all_users,
+            item_url: "https://www.nfl.com",
+            image_url: "http://i.imgur.com/K1WNRhX.jpg",
+            buttons: [{
+              type: "postback",
+              title: "Drive",
+              payload: "Ride Offered"
+            }, {
+              type: "postback",
+              title: "Ride",
+              payload: "Ride Requested"
+            }]
+          }]
         }
-    });
+      }
+    }
+  };
+  callSendAPI(messageData);
 }
 
 function findFBProfile(sender, conditions, saveOrQuery) {
@@ -566,4 +536,28 @@ function receivedAuthentication(event) {
     // When an authentication is received, we'll send a message back to the sender
     // to let them know it was successful.
     sendTextMessage(senderId, "Authentication successful");
+}
+function callSendAPI(messageData) {
+    request({
+        uri: 'https://graph.facebook.com/v2.6/me/messages',
+        qs: {
+            access_token: token
+        },
+        method: 'POST',
+        json: messageData
+
+    }, function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            var recipientId = body.recipient_id;
+            var messageId = body.message_id;
+
+            if (messageId) {
+                console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
+            } else {
+                console.log("Successfully called Send API for recipient %s", recipientId);
+            }
+        } else {
+            console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
+        }
+    });
 }
