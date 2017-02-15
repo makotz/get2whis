@@ -153,14 +153,12 @@ function receivedMessage(event) {
             case 'query':
                 queryExample(senderId);
                 break;
-                //
-                //       case 'video':
-                //         sendVideoMessage(senderId);
-                //         break;
-                //
-                //       case 'file':
-                //         sendFileMessage(senderId);
-                //         break;
+            case 'will you be my valentine?':
+                sendtextMessage(senderId, "Negative");
+            break;
+            case 'please':
+                sendtextMessage(senderId, "Brah no");
+            break;
                 //
                 //       case 'button':
                 //         sendButtonMessage(senderId);
