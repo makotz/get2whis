@@ -107,7 +107,7 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           sendTextMessage(senderId, "Alrighty!");
-          saveUser(senderId, findFBProfile(), quickReplyPayload);
+          saveUser(senderId, quickReplyPayload, findFBProfile);
           return
         }
         // Includes all 3 data
@@ -487,7 +487,7 @@ function findFBProfile(sender, user) {
     return user;
 };
 
-function saveUser(senderId, findFBprofile, quickReplyPayload) {
+function saveUser(senderId, quickReplyPayload, findFBprofile) {
   var user;
   findFBprofile(senderId, user);
 
