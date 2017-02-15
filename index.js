@@ -414,40 +414,36 @@ function confirmQueryInfo(recipientId, parsedObject) {
 function queryExample(recipientId) {
   User.findOne({first_name: "Makoto"}, function(err, user) {
     if(err) {
-      console.log("error occured");
+      console.log("error occured:"+ err);
     } else {
-      console.log(user)
+      var messageData = {
+        recipient: {
+          id: recipientId
+        },
+        message: {
+          attachment: {
+            type: "template",
+            payload: {
+              template_type: "generic",
+              elements: [{
+                title: user.first_name+" "+user.last_name,
+                subtitle: user.ride_info.departure_date,
+                item_url: "https://www.nfl.com",
+                image_url: user.profile_pic,
+                buttons: [{
+                  type: "postback",
+                  title: "Contact",
+                  payload: "sup you faka"
+                }]
+              }]
+            }
+          }
+        }
+      };
+      callSendAPI(messageData);
+      return
     }
   });
-  var messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      attachment: {
-        type: "template",
-        payload: {
-          template_type: "generic",
-          elements: [{
-            title: "sdkfjl",
-            subtitle: "hsdpf",
-            item_url: "https://www.nfl.com",
-            image_url: "http://i.imgur.com/K1WNRhX.jpg",
-            buttons: [{
-              type: "postback",
-              title: "Drive",
-              payload: "Ride Offered"
-            }, {
-              type: "postback",
-              title: "Ride",
-              payload: "Ride Requested"
-            }]
-          }]
-        }
-      }
-    }
-  };
-  callSendAPI(messageData);
 }
 
 function findFBProfile(sender, conditions, saveOrQuery) {
