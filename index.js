@@ -412,7 +412,7 @@ function confirmQueryInfo(recipientId, parsedObject) {
 
 
 function queryExample(recipientId) {
-  var all_users = User.find({first_name: "asdfs"});
+  var all_users = User.model('user');
   console.log(all_users);
   var messageData = {
     recipient: {
