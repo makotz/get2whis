@@ -483,13 +483,12 @@ function findFBProfile(sender, saveUser) {
             user = JSON.parse(body);
             console.log('Found profile of: ' + JSON.stringify(user));
             console.log("User si "+ user);
+            var quickReplyPayload = "Hello";
+            saveUser(sender, quickReplyPayload, user);
         } else {
             console.log("Could not locate %s's Facebook Profile", senderId);
         }
     });
-    var quickReplyPayload = "Hello";
-    console.log("Should come after");
-    setTimeout(saveUser(sender, quickReplyPayload, user), 5000);
 };
 
 function saveUser(senderId, quickReplyPayload, userProfile) {
