@@ -126,24 +126,12 @@ function receivedMessage(event) {
           confirmQueryInfo(senderId, parsedObject);
           return
         }
-        // if (!quickReplyPayload.includes('drive_or_ride')) {
-        //   askDriveOrRide(senderId, quickReplyPayload);
-        //   return
-        // }
+
         ifElse(senderId, quickReplyPayload, 'drive_or_ride', askDriveOrRide);
-        
-        if (!quickReplyPayload.includes('departure_location')) {
-          askDepartureLocation(senderId, quickReplyPayload);
-          return
-        }
-        if (!quickReplyPayload.includes('departure_date')) {
-          askDepartureDate(senderId, quickReplyPayload);
-          return
-        }
-        if (!quickReplyPayload.includes('departure_time')) {
-          askDepartureTime(senderId, quickReplyPayload);
-          return
-        }
+        ifElse(senderId, quickReplyPayload, 'departure_location', askDepartureLocation);
+        ifElse(senderId, quickReplyPayload, 'departure_date', askDepartureDate);
+        ifElse(senderId, quickReplyPayload, 'departure_time', askDepartureTime);
+
         sendTextMessage(senderId, "Quick reply tapped");
         return;
     }
