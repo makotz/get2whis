@@ -128,9 +128,13 @@ function receivedMessage(event) {
         }
 
         ifElse(senderId, quickReplyPayload, 'drive_or_ride', askDriveOrRide);
+        return
         ifElse(senderId, quickReplyPayload, 'departure_location', askDepartureLocation);
+        return
         ifElse(senderId, quickReplyPayload, 'departure_date', askDepartureDate);
+        return
         ifElse(senderId, quickReplyPayload, 'departure_time', askDepartureTime);
+        return
 
         sendTextMessage(senderId, "Quick reply tapped");
         return;
