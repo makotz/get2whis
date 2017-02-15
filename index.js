@@ -8,7 +8,6 @@ const mongoose = require('mongoose');
 const User = require('./models/user');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
-
 // Check if mongoose is running
 mongoose.connect(config.database, function(err) {
     if (err) {
@@ -17,8 +16,6 @@ mongoose.connect(config.database, function(err) {
         console.log("Mongoose is running");
     }
 })
-
-var cc = mongoose.model('user', Schema)
 
 app.set('port', (process.env.PORT || 5000))
 
@@ -415,7 +412,7 @@ function confirmQueryInfo(recipientId, parsedObject) {
 
 
 function queryExample(recipientId) {
-  var all_users = cc.find({first_name: "Makoto"});
+  var all_users = User.find({first_name: "Makoto"});
   console.log(all_users);
   var messageData = {
     recipient: {
