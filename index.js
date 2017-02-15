@@ -109,14 +109,22 @@ function receivedMessage(event) {
           findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
           return
         }
-        // Includes all 3 data
+
+        if (quickReplyPayload.includes('looking_for_riders')) {
+          if (!quickReplyPayload.includes('asking_price')) {
+            askAskingPrice(senderId, quickReplyPayload)
+            return
+          }
+          if (!quickReplyPayload.includes('seating_space')) {
+            askAvailableSeats(senderId, quickReplyPayload)
+            return
+          }
+        }
+
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
           var parsedObject = parseConditions(quickReplyPayload);
           confirmQueryInfo(senderId, parsedObject);
           return
-          console.log("user is ... "+user);
-          console.log("and parsedObject is ... "+parsedObject);
-          sendTextMessage(senderId, "Got all 4 data points! Cheehee");
         }
         if (!quickReplyPayload.includes('drive_or_ride')) {
           askDriveOrRide(senderId, quickReplyPayload);
@@ -193,7 +201,7 @@ function receivedMessage(event) {
                 //         break;
 
             default:
-                sendTextMessage(senderId, messageText);
+                sendTextMessage(senderId, 'Hi there, type "aloha" to begin';
         }
     } else if (messageAttachments) {
         sendTextMessage(senderId, "Message with attachment received");
@@ -280,20 +288,64 @@ function askDepartureTime(recipientId, othervariables) {
                     "payload": othervariables+"departure_time:Early_morning,"
                 }, {
                     "content_type": "text",
-                    "title": "Before Noon",
-                    "payload": othervariables+"departure_time:Before_noon,"
-                }, {
-                    "content_type": "text",
-                    "title": "Early Afternoon",
-                    "payload": othervariables+"departure_time:Early_afternoon,"
-                }, {
-                    "content_type": "text",
                     "title": "Evening",
                     "payload": othervariables+"departure_time:Evening,"
                 }, {
                     "content_type": "text",
                     "title": "Late Night",
                     "payload": othervariables+"departure_time:Late_night,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function askAskingPrice(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "How much are you charging per head?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "5",
+                    "payload": othervariables+"asking_price:5,"
+                }, {
+                    "content_type": "text",
+                    "title": "10",
+                    "payload": othervariables+"asking_price:10,"
+                }, {
+                    "content_type": "text",
+                    "title": "15",
+                    "payload": othervariables+"asking_price:15,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function askAvailableSeats(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "How many butts can you fit?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "1",
+                    "payload": othervariables+"seating_space:1,"
+                }, {
+                    "content_type": "text",
+                    "title": "2",
+                    "payload": othervariables+"seating_space:2,"
+                }, {
+                    "content_type": "text",
+                    "title": "3",
+                    "payload": othervariables+"seating_space:3,"
                 }
             ]
         }
@@ -330,6 +382,8 @@ function sendTextMessage(recipientId, messageText) {
     };
 
     callSendAPI(messageData);
+
+
 }
 
 function sendDriveOrRide(recipientId) {
@@ -450,7 +504,7 @@ function findFBProfile(sender, conditions, saveOrQuery) {
             var userProfile = JSON.parse(body);
             saveOrQuery(sender, conditions, userProfile);
         } else {
-            console.log("Could not locate %s's Facebook Profile", senderId);
+            console.log("Could not locate SenderId: %s's Facebook Profile", senderId);
         }
     });
 };
