@@ -126,10 +126,12 @@ function receivedMessage(event) {
           confirmQueryInfo(senderId, parsedObject);
           return
         }
-        if (!quickReplyPayload.includes('drive_or_ride')) {
-          askDriveOrRide(senderId, quickReplyPayload);
-          return
-        }
+        // if (!quickReplyPayload.includes('drive_or_ride')) {
+        //   askDriveOrRide(senderId, quickReplyPayload);
+        //   return
+        // }
+        ifElse(senderId, quickReplyPayload, 'drive_or_ride', askDriveOrRide);
+        
         if (!quickReplyPayload.includes('departure_location')) {
           askDepartureLocation(senderId, quickReplyPayload);
           return
@@ -385,7 +387,6 @@ function sendTextMessage(recipientId, messageText) {
 
 
 }
-
 function sendDriveOrRide(recipientId) {
     var messageData = {
         recipient: {
@@ -421,7 +422,6 @@ function sendDriveOrRide(recipientId) {
     };
     callSendAPI(messageData);
 }
-
 function parseConditions(gatheredInfoString) {
     var conditionsArray = gatheredInfoString.split(',');
     var parsedObject = {};
@@ -431,7 +431,6 @@ function parseConditions(gatheredInfoString) {
     }
     return parsedObject;
 }
-
 function confirmQueryInfo(recipientId, parsedObject) {
   console.log("parsedObject is ... " + parsedObject);
   var drive_or_ride = parsedObject.drive_or_ride;
@@ -462,6 +461,12 @@ function confirmQueryInfo(recipientId, parsedObject) {
   callSendAPI(messageData);
 }
 
+function ifElse(senderId, quickReplyPayload, keyword, conditionFunction) {
+  if (!quickReplyPayload.includes(keyword)) {
+    conditionFunction(senderId, quickReplyPayload);
+    return
+  }
+}
 
 function queryExample(recipientId) {
   User.findOne({last_name: "Ejima"}, function(err, user) {
