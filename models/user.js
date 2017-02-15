@@ -1,8 +1,7 @@
 var mongoose = require('mongoose');
 
-var Schema = mongoose.Schema;
 
-var UserSchema = new Schema({
+var UserSchema = new mongoose.Schema({
 
   sender: {
     type: Number,
@@ -19,4 +18,5 @@ var UserSchema = new Schema({
   updated_at: Date
 });
 
-module.exports = mongoose.model('user', UserSchema)
+var User = mongoose.model('user', UserSchema);
+module.exports = User;
