@@ -107,8 +107,8 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           sendTextMessage(senderId, "Alrighty!");
-          return
           saveUser(senderId, quickReplyPayload, findFBProfile);
+          return
         }
         // Includes all 3 data
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
