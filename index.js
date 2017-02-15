@@ -201,7 +201,7 @@ function receivedMessage(event) {
                 //         break;
 
             default:
-                sendTextMessage(senderId, 'Hi there, type "aloha" to begin';
+                sendTextMessage(senderId, 'Hi there, type "aloha" to begin');
         }
     } else if (messageAttachments) {
         sendTextMessage(senderId, "Message with attachment received");
