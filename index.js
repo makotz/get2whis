@@ -490,7 +490,7 @@ function findFBProfile(sender, user) {
 function saveUser(senderId, quickReplyPayload, findFBprofile) {
   var user;
   findFBprofile(senderId, user);
-  console.log("User is ..." + JSON.parse(user));
+  console.log("User is ..." + user);
 
   var newUser = new User({
     sender: senderId,
