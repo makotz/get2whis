@@ -154,10 +154,10 @@ function receivedMessage(event) {
                 queryExample(senderId);
                 break;
             case 'will you be my valentine?':
-                sendtextMessage(senderId, "Negative");
+                sendTextMessage(senderId, "Negative");
             break;
             case 'please':
-                sendtextMessage(senderId, "Brah no");
+                sendTextMessage(senderId, "Brah no");
             break;
                 //
                 //       case 'button':
