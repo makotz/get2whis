@@ -127,10 +127,18 @@ function receivedMessage(event) {
           return
         }
 
-        ifElse(senderId, quickReplyPayload, 'drive_or_ride', askDriveOrRide);
-        ifElse(senderId, quickReplyPayload, 'departure_location', askDepartureLocation);
-        ifElse(senderId, quickReplyPayload, 'departure_date', askDepartureDate);
-        ifElse(senderId, quickReplyPayload, 'departure_time', askDepartureTime);
+        ifElse(senderId, quickReplyPayload, 'drive_or_ride', askDriveOrRide, function() {
+          return;
+        });
+        ifElse(senderId, quickReplyPayload, 'departure_location', askDepartureLocation function() {
+          return;
+        });
+        ifElse(senderId, quickReplyPayload, 'departure_date', askDepartureDate function() {
+          return;
+        });
+        ifElse(senderId, quickReplyPayload, 'departure_time', askDepartureTime function() {
+          return;
+        });
 
         sendTextMessage(senderId, "Quick reply tapped");
         return;
@@ -453,7 +461,6 @@ function ifElse(senderId, quickReplyPayload, keyword, conditionFunction) {
   if (!quickReplyPayload.includes(keyword)) {
     conditionFunction(senderId, quickReplyPayload);
   }
-  return
 }
 
 function queryExample(recipientId) {
