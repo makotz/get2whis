@@ -119,7 +119,6 @@ function receivedMessage(event) {
             askAvailableSeats(senderId, quickReplyPayload)
             return
           }
-          return
         }
 
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
