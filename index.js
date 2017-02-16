@@ -126,20 +126,22 @@ function receivedMessage(event) {
           confirmQueryInfo(senderId, parsedObject);
           return
         }
-
-        ifElse(senderId, quickReplyPayload, 'drive_or_ride', askDriveOrRide, function() {
-          return;
-        });
-        ifElse(senderId, quickReplyPayload, 'departure_location', askDepartureLocation function() {
-          return;
-        });
-        ifElse(senderId, quickReplyPayload, 'departure_date', askDepartureDate function() {
-          return;
-        });
-        ifElse(senderId, quickReplyPayload, 'departure_time', askDepartureTime function() {
-          return;
-        });
-
+        if (!quickReplyPayload.includes('drive_or_ride')) {
+          askDriveOrRide(senderId, quickReplyPayload);
+          return
+        }
+        if (!quickReplyPayload.includes('departure_location')) {
+          askDepartureLocation(senderId, quickReplyPayload);
+          return
+        }
+        if (!quickReplyPayload.includes('departure_date')) {
+          askDepartureDate(senderId, quickReplyPayload);
+          return
+        }
+        if (!quickReplyPayload.includes('departure_time')) {
+          askDepartureTime(senderId, quickReplyPayload);
+          return
+        }
         sendTextMessage(senderId, "Quick reply tapped");
         return;
     }
@@ -455,12 +457,6 @@ function confirmQueryInfo(recipientId, parsedObject) {
         }
   };
   callSendAPI(messageData);
-}
-
-function ifElse(senderId, quickReplyPayload, keyword, conditionFunction) {
-  if (!quickReplyPayload.includes(keyword)) {
-    conditionFunction(senderId, quickReplyPayload);
-  }
 }
 
 function queryExample(recipientId) {
