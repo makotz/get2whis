@@ -111,12 +111,12 @@ function receivedMessage(event) {
         }
 
         if (quickReplyPayload.includes('looking_for_riders')) {
-          if (!quickReplyPayload.includes('asking_price')) {
-            askAskingPrice(senderId, quickReplyPayload)
-            return
-          }
           if (!quickReplyPayload.includes('seating_space')) {
             askAvailableSeats(senderId, quickReplyPayload)
+            return
+          }
+          if (!quickReplyPayload.includes('asking_price')) {
+            askAskingPrice(senderId, quickReplyPayload)
             return
           }
         }
@@ -435,8 +435,6 @@ function confirmQueryInfo(recipientId, parsedObject) {
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
   var departure_time = parsedObject.departure_time;
-  var confirmedConditions = parsedObject
-    confirmedConditions.confirmation = true
   var messageData = {
       recipient: {
           id: recipientId
@@ -446,19 +444,18 @@ function confirmQueryInfo(recipientId, parsedObject) {
           quick_replies: [
               {
                   "content_type": "text",
-                  "title": "Chee",
-                  "payload": JSON.stringify(confirmedConditions)
+                  "title": "Yessir!",
+                  "payload": parsedObject+"confirmation:true"
               }, {
                   "content_type": "text",
-                  "title": "Nope",
-                  "payload": JSON.stringify(parsedObject)
+                  "title": "Uhh no...",
+                  "payload": parsedObject+"confirmation:false"
               }
           ]
         }
   };
   callSendAPI(messageData);
 }
-
 function queryExample(recipientId) {
   User.findOne({last_name: "Ejima"}, function(err, user) {
     if(err) {
