@@ -128,13 +128,9 @@ function receivedMessage(event) {
         }
 
         ifElse(senderId, quickReplyPayload, 'drive_or_ride', askDriveOrRide);
-        return
         ifElse(senderId, quickReplyPayload, 'departure_location', askDepartureLocation);
-        return
         ifElse(senderId, quickReplyPayload, 'departure_date', askDepartureDate);
-        return
         ifElse(senderId, quickReplyPayload, 'departure_time', askDepartureTime);
-        return
 
         sendTextMessage(senderId, "Quick reply tapped");
         return;
@@ -456,8 +452,8 @@ function confirmQueryInfo(recipientId, parsedObject) {
 function ifElse(senderId, quickReplyPayload, keyword, conditionFunction) {
   if (!quickReplyPayload.includes(keyword)) {
     conditionFunction(senderId, quickReplyPayload);
-    return
   }
+  return
 }
 
 function queryExample(recipientId) {
