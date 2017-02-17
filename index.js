@@ -6,6 +6,7 @@ const request = require('request');
 const config = require('./config');
 const mongoose = require('mongoose');
 const User = require('./models/user');
+const pg = require('pg');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 // Check if mongoose is running
@@ -16,6 +17,18 @@ mongoose.connect(config.database, function(err) {
         console.log("Mongoose is running");
     }
 })
+
+pg.defaults.ssl = true;
+pg.connect(process.env.DATABASE_URL, function(err, client) {
+  if (err) throw err;
+  console.log('Connected to postgres! Getting schemas...');
+
+  client
+    .query('SELECT table_schema,table_name FROM information_schema.tables;')
+    .on('row', function(row) {
+      console.log(JSON.stringify(row));
+    });
+});
 
 app.set('port', (process.env.PORT || 5000))
 
@@ -105,9 +118,14 @@ function receivedMessage(event) {
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
 
         if (quickReplyPayload.includes('confirmation')) {
-          sendTextMessage(senderId, "Alrighty!");
-          findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
-          return
+          if (quickReplyPayload.includes('true')){
+            sendTextMessage(senderId, "Alrighty!");
+            findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
+            return
+          } else if (quickReplyPayload.includes('false'){
+            sendTextMessage(senderId, "Humm... lets fix it then");
+
+          })
         }
 
         if (quickReplyPayload.includes('looking_for_riders')) {
@@ -206,6 +224,33 @@ function receivedMessage(event) {
     } else if (messageAttachments) {
         sendTextMessage(senderId, "Message with attachment received");
     }
+}
+
+function askWhichVariableToChange(recipientId, othervariables) {
+  var messageData = {
+      recipient: {
+          id: recipientId
+      },
+      message: {
+          text: "What do you wanna fix",
+          quick_replies: [
+              {
+                  "content_type": "text",
+                  "title": "Date",
+                  "payload": "departure_date"
+              }, {
+                  "content_type": "text",
+                  "title": "Time",
+                  "payload": "departure_time"
+              }, {
+                  "content_type": "text",
+                  "title": "Location",
+                  "payload": "departure_location"
+              }
+          ]
+      }
+  };
+  callSendAPI(messageData);
 }
 
 function askDriveOrRide(recipientId) {
