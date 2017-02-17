@@ -122,7 +122,7 @@ function receivedMessage(event) {
         if (quickReplyPayload.includes('confirmation')) {
           if (quickReplyPayload.includes('true')){
             sendTextMessage(senderId, "Alrighty!");
-            findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
+            // findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
             return
           } else if (quickReplyPayload.includes('false')) {
             sendTextMessage(senderId, "Humm... lets fix it then");
