@@ -9,15 +9,17 @@ const User = require('./models/user');
 const pg = require('pg');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
-// Check if mongoose is running
-mongoose.connect(config.database, function(err) {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log("Mongooose is running");
-    }
-})
 
+// Check if mongoose is running
+// mongoose.connect(config.database, function(err) {
+//     if (err) {
+//         console.log(err);
+//     } else {
+//         console.log("Mongooose is running");
+//     }
+// })
+
+// Check if postgreSQL is running...
 pg.defaults.ssl = true;
 pg.connect(process.env.DATABASE_URL, function(err, client) {
   if (err) throw err;
@@ -490,11 +492,11 @@ function confirmQueryInfo(recipientId, parsedObject) {
               {
                   "content_type": "text",
                   "title": "Yessir!",
-                  "payload": parsedObject+"confirmation:true"
+                  "payload": JSON.stringify(parsedObject)+"confirmation:true"
               }, {
                   "content_type": "text",
                   "title": "Uhh no...",
-                  "payload": parsedObject+"confirmation:false"
+                  "payload": JSON.stringify(parsedObject)+"confirmation:false"
               }
           ]
         }
