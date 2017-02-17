@@ -14,7 +14,7 @@ mongoose.connect(config.database, function(err) {
     if (err) {
         console.log(err);
     } else {
-        console.log("Mongoose is running");
+        console.log("Mongooose is running");
     }
 })
 
