@@ -122,10 +122,10 @@ function receivedMessage(event) {
             sendTextMessage(senderId, "Alrighty!");
             findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
             return
-          } else if (quickReplyPayload.includes('false'){
+          } else if (quickReplyPayload.includes('false')) {
             sendTextMessage(senderId, "Humm... lets fix it then");
-
-          })
+            return
+          }
         }
 
         if (quickReplyPayload.includes('looking_for_riders')) {
