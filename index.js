@@ -4,8 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
 const config = require('./config');
-const mongoose = require('mongoose');
-const User = require('./models/user');
 const pg = require('pg');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
@@ -44,6 +42,18 @@ app.use(bodyParser.json())
 app.get('/', function(req, res) {
     res.send('Hello world, I am a chat bot')
 })
+
+app.get('/db', function (request, response) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query('SELECT * FROM test_table', function(err, result) {
+      done();
+      if (err)
+       { console.error(err); response.send("Error " + err); }
+      else
+       { response.render('pages/db', {results: result.rows} ); }
+    });
+  });
+});
 
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
@@ -121,7 +131,7 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           if (quickReplyPayload.includes('true')){
-            sendTextMessage(senderId, "Alrighty!");
+            sendTextMessage(senderId, "Alrighty! cool let me find you");
             // findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
             return
           } else if (quickReplyPayload.includes('false')) {
@@ -142,8 +152,7 @@ function receivedMessage(event) {
         }
 
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
-          var parsedObject = parseConditions(quickReplyPayload);
-          confirmQueryInfo(senderId, parsedObject);
+          confirmQueryInfo(senderId, quickReplyPayload);
           return
         }
         if (!quickReplyPayload.includes('drive_or_ride')) {
@@ -432,41 +441,6 @@ function sendTextMessage(recipientId, messageText) {
 
 
 }
-function sendDriveOrRide(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    template_type: "generic",
-                    elements: [
-                        {
-                            title: "PowHunt",
-                            subtitle: "Welcome! Do you wanna Drive or Ride?",
-                            item_url: "https://www.nfl.com",
-                            image_url: "http://i.imgur.com/K1WNRhX.jpg",
-                            buttons: [
-                                {
-                                    type: "postback",
-                                    title: "Drive",
-                                    payload: "Ride Offered"
-                                }, {
-                                    type: "postback",
-                                    title: "Ride",
-                                    payload: "Ride Requested"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        }
-    };
-    callSendAPI(messageData);
-}
 function parseConditions(gatheredInfoString) {
     var conditionsArray = gatheredInfoString.split(',');
     var parsedObject = {};
@@ -476,8 +450,9 @@ function parseConditions(gatheredInfoString) {
     }
     return parsedObject;
 }
-function confirmQueryInfo(recipientId, parsedObject) {
-  console.log("parsedObject is ... " + parsedObject);
+function confirmQueryInfo(recipientId, othervariables) {
+  var parsedObject = parseConditions(othervariables);
+  console.log("parsed othervariables are ... " + parsedObject);
   var drive_or_ride = parsedObject.drive_or_ride;
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
@@ -492,11 +467,11 @@ function confirmQueryInfo(recipientId, parsedObject) {
               {
                   "content_type": "text",
                   "title": "Yessir!",
-                  "payload": JSON.stringify(parsedObject)+"confirmation:true"
+                  "payload": othervariables+"confirmation:true"
               }, {
                   "content_type": "text",
                   "title": "Uhh no...",
-                  "payload": JSON.stringify(parsedObject)+"confirmation:false"
+                  "payload": othervariables+"confirmation:false"
               }
           ]
         }
