@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const request = require('request');
 const config = require('./config');
 const pg = require('pg');
+var pug = require('pug');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 
@@ -31,6 +32,7 @@ pg.connect(process.env.DATABASE_URL, function(err, client) {
 });
 
 app.set('port', (process.env.PORT || 5000))
+app.set('view engine', 'pug')
 
 // Process application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({extended: false}))
@@ -50,7 +52,9 @@ app.get('/db', function (request, response) {
       if (err)
        { console.error(err); response.send("Error " + err); }
       else
-       { response.render('/db', {results: result.rows} ); }
+       {
+         console.log("loaded db results");
+         response.render('/db', {results: result.rows} ); }
     });
   });
 });
