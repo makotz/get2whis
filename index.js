@@ -19,17 +19,6 @@ const token = process.env.FB_PAGE_ACCESS_TOKEN;
 // })
 
 // Check if postgreSQL is running...
-pg.defaults.ssl = true;
-pg.connect(process.env.DATABASE_URL, function(err, client) {
-  if (err) throw err;
-  console.log('Connected to postgres! Getting schemas...');
-
-  client
-    .query('SELECT table_schema,table_name FROM information_schema.tables;')
-    .on('row', function(row) {
-      console.log(JSON.stringify(row));
-    });
-});
 
 app.set('port', (process.env.PORT || 5000))
 app.set('view engine', 'pug')
@@ -45,6 +34,7 @@ app.get('/', function(req, res) {
     res.send('Hello world, I am a chat bot')
 })
 
+pg.defaults.ssl = true;
 app.get('/db', function (request, response) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     client.query('SELECT * FROM test_table', function(err, result) {
