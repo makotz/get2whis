@@ -54,7 +54,7 @@ app.get('/db', function (request, response) {
       else
        {
          console.log("loaded db results");
-         response.render('/db', {results: result.rows} ); }
+         response.json({results: result.rows}); }
     });
   });
 });
