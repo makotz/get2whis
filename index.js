@@ -181,9 +181,9 @@ function receivedMessage(event) {
             case 'aloha':
                 askDriveOrRide(senderId);
                 break;
-            case 'query':
-                queryExample(senderId);
-                break;
+            // case 'query':
+            //     queryExample(senderId);
+            //     break;
             case 'will you be my valentine?':
                 sendTextMessage(senderId, "Negative");
             break;
