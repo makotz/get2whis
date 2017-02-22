@@ -256,7 +256,7 @@ function askDriveOrRide(recipientId) {
             id: recipientId
         },
         message: {
-            text: "Aloha, are you driving or riding today?",
+            text: "Aloha, are you driving or riding today? 🎿",
             quick_replies: [
                 {
                     "content_type": "text",
@@ -322,19 +322,19 @@ function askDepartureTime(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "What time do you want to go?",
+            text: "What 🕗 do you want to go?",
             quick_replies: [
                 {
                     "content_type": "text",
-                    "title": "Early Morning",
+                    "title": "🌅 Early Morning",
                     "payload": othervariables+"departure_time:Early_morning,"
                 }, {
                     "content_type": "text",
-                    "title": "Evening",
+                    "title": "🌇 Evening",
                     "payload": othervariables+"departure_time:Evening,"
                 }, {
                     "content_type": "text",
-                    "title": "Late Night",
+                    "title": "🌃 Late Night",
                     "payload": othervariables+"departure_time:Late_night,"
                 }
             ]
@@ -348,8 +348,13 @@ function askAskingPrice(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "How much are you charging per head?",
+            text: "How much 💰 are you charging per head?",
             quick_replies: [
+              {
+                "content_type": "text",
+                "title": "😍 Free!",
+                "payload": othervariables+"asking_price:5,"
+            },
                 {
                     "content_type": "text",
                     "title": "5",
@@ -374,7 +379,7 @@ function askAvailableSeats(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "How many butts can you fit?",
+            text: "How many 🍑s can you fit?",
             quick_replies: [
                 {
                     "content_type": "text",
