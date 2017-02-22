@@ -547,11 +547,11 @@ function receivedDeliveryConfirmation(event) {
 
     if (messageIDs) {
         messageIDs.forEach(function(messageID) {
-            console.log("Received delivery confirmation for message ID: %s", messageID);
+            // console.log("Received delivery confirmation for message ID: %s", messageID);
         });
     }
 
-    console.log("All message before %d were delivered.", watermark);
+    // console.log("All message before %d were delivered.", watermark);
 }
 function receivedMessageRead(event) {
     var senderId = event.sender.id;
@@ -607,14 +607,14 @@ function callSendAPI(messageData) {
 
     }, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            var recipientId = body.recipient_id;
-            var messageId = body.message_id;
-
-            if (messageId) {
-                console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
-            } else {
-                console.log("Successfully called Send API for recipient %s", recipientId);
-            }
+            // var recipientId = body.recipient_id;
+            // var messageId = body.message_id;
+            //
+            // if (messageId) {
+            //     console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
+            // } else {
+            //     console.log("Successfully called Send API for recipient %s", recipientId);
+            // }
         } else {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
