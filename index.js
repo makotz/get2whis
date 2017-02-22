@@ -5,18 +5,10 @@ const bodyParser = require('body-parser');
 const request = require('request');
 const config = require('./config');
 const pg = require('pg');
-var pug = require('pug');
+const pug = require('pug');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
-
-// Check if mongoose is running
-// mongoose.connect(config.database, function(err) {
-//     if (err) {
-//         console.log(err);
-//     } else {
-//         console.log("Mongooose is running");
-//     }
-// })
+const db = process.env.DATABASE_URL;
 
 // Check if postgreSQL is running...
 
@@ -36,7 +28,7 @@ app.get('/', function(req, res) {
 
 pg.defaults.ssl = true;
 app.get('/db', function (request, response) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+  pg.connect(db, function(err, client, done) {
     client.query('SELECT * FROM test_table', function(err, result) {
       done();
       if (err)
