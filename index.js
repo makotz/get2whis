@@ -518,12 +518,13 @@ function findFBProfile(sender, conditions) {
 
 function saveAndQuery(sender, conditions, userProfile) {
     console.log("Starting saveAndQuery");
-    console.log(JSON.parse(conditions));
+    console.log(conditions);
     console.log(userProfile);
 };
 
-// function saveUser(senderId, conditions, userProfile) {
-//   console.log("Beginning to saveUser. User is ..." + userProfile);
+function saveUser(senderId, conditions, userProfile) {
+  console.log("Beginning to saveUser. User is ..." + userProfile);
+}
 //   pg.connect(db, function(err, client, done) {
 //     client.query('SELECT * FROM test_table', function(err, result) {
 //       done();
