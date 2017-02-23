@@ -27,19 +27,19 @@ app.get('/', function(req, res) {
 })
 
 pg.defaults.ssl = true;
-app.get('/db', function (request, response) {
-  pg.connect(db, function(err, client, done) {
-    client.query('SELECT * FROM driver', function(err, result) {
-      done();
-      if (err)
-       { console.error(err); response.send("Error " + err); }
-      else
-       {
-         console.log("loaded db results");
-         response.json({results: result.rows}); }
-    });
-  });
-});
+// app.get('/db', function (request, response) {
+//   pg.connect(db, function(err, client, done) {
+//     client.query('SELECT * FROM driver', function(err, result) {
+//       done();
+//       if (err)
+//        { console.error(err); response.send("Error " + err); }
+//       else
+//        {
+//          console.log("loaded db results");
+//          response.json({results: result.rows}); }
+//     });
+//   });
+// });
 
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
