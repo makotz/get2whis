@@ -521,7 +521,7 @@ function saveAndQuery(sender, conditions, userProfile) {
     console.log(conditions);
     console.log(userProfile);
     var wholeProfile = Object.assign(conditions, userProfile);
-    if wholeProfile[drive_or_ride] == "looking_for_riders" {
+    if (wholeProfile[drive_or_ride] == "looking_for_riders") {
       //   pg.connect(db, function(err, client, done) {
       //     client.query('INSERT INTO post1 (title, body, created_at) VALUES($1, $2, $3) RETURNING id',
       //               ['title', 'long... body...', new Date()],
