@@ -29,7 +29,7 @@ app.get('/', function(req, res) {
 pg.defaults.ssl = true;
 app.get('/db', function (request, response) {
   pg.connect(db, function(err, client, done) {
-    client.query('SELECT * FROM test_table', function(err, result) {
+    client.query('SELECT * FROM driver', function(err, result) {
       done();
       if (err)
        { console.error(err); response.send("Error " + err); }
@@ -118,7 +118,7 @@ function receivedMessage(event) {
         if (quickReplyPayload.includes('confirmation')) {
           if (quickReplyPayload.includes('true')){
             sendTextMessage(senderId, "Alrighty! cool let me find you");
-            // findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
+            findFBProfile(senderId, quickReplyPayload);
             return
           } else if (quickReplyPayload.includes('false')) {
             sendTextMessage(senderId, "Humm... lets fix it then");
@@ -504,35 +504,56 @@ function queryExample(recipientId) {
   });
 }
 
-function findFBProfile(sender, conditions, saveOrQuery) {
+function findFBProfile(sender, conditions) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
+            conditions = parseConditions(conditions);
             var userProfile = JSON.parse(body);
-            saveOrQuery(sender, conditions, userProfile);
+            saveAndQuery(sender, conditions, userProfile);
         } else {
             console.log("Could not locate SenderId: %s's Facebook Profile", senderId);
         }
     });
 };
 
-function saveUser(senderId, conditions, userProfile) {
-  console.log("User is ..." + userProfile);
+function saveAndQuery(sender, conditions, userProfile) {
+    console.log("Starting saveAndQuery");
+    console.log(JSON.parse(conditions));
+    console.log(userProfile);
+};
 
-  var newUser = new User({
-    sender: senderId,
-    first_name: userProfile["first_name"],
-    last_name: userProfile["last_name"],
-    profile_pic: userProfile["profile_pic"],
-    gender: userProfile["gender"],
-    ride_info: conditions
+function saveUser(senderId, conditions, userProfile) {
+  console.log("Beginning to saveUser. User is ..." + userProfile);
+  pg.connect(db, function(err, client, done) {
+    client.query('SELECT * FROM test_table', function(err, result) {
+      done();
+      if (err)
+       { console.error(err); response.send("Error " + err); }
+      else
+       {
+         console.log("loaded db results");
+         response.json({results: result.rows}); }
+    });
   });
-  newUser.save(function(err) {
-    if(err) {
-      console.log(err);
-    } else {
-      console.log("User created!");
-    }
-  })
+  pg.connect(db, function(err, client, done) {
+    client.query('INSERT INTO post1 (title, body, created_at) VALUES($1, $2, $3) RETURNING id',
+              ['title', 'long... body...', new Date()],
+              function(err, result) {
+                  if (err) {
+                      console.log(err);
+                  } else {
+                      console.log('row inserted with id: ' + result.rows[0].id);
+                  }
+
+                  count++;
+                  console.log('count = ' + count);
+                  if (count == 1000) {
+                      console.log('Client will end now!!!');
+                      client.end();
+                  }
+              });
+      }
+  });
 }
 
 
