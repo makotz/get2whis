@@ -27,19 +27,19 @@ app.get('/', function(req, res) {
 })
 
 pg.defaults.ssl = true;
-app.get('/db', function (request, response) {
-  pg.connect(db, function(err, client, done) {
-    client.query('SELECT * FROM driver', function(err, result) {
-      done();
-      if (err)
-       { console.error(err); response.send("Error " + err); }
-      else
-       {
-         console.log("loaded db results");
-         response.json({results: result.rows}); }
-    });
-  });
-});
+// app.get('/db', function (request, response) {
+//   pg.connect(db, function(err, client, done) {
+//     client.query('SELECT * FROM driver', function(err, result) {
+//       done();
+//       if (err)
+//        { console.error(err); response.send("Error " + err); }
+//       else
+//        {
+//          console.log("loaded db results");
+//          response.json({results: result.rows}); }
+//     });
+//   });
+// });
 
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
@@ -522,40 +522,40 @@ function saveAndQuery(sender, conditions, userProfile) {
     console.log(userProfile);
 };
 
-function saveUser(senderId, conditions, userProfile) {
-  console.log("Beginning to saveUser. User is ..." + userProfile);
-  pg.connect(db, function(err, client, done) {
-    client.query('SELECT * FROM test_table', function(err, result) {
-      done();
-      if (err)
-       { console.error(err); response.send("Error " + err); }
-      else
-       {
-         console.log("loaded db results");
-         response.json({results: result.rows}); }
-    });
-  });
-  pg.connect(db, function(err, client, done) {
-    client.query('INSERT INTO post1 (title, body, created_at) VALUES($1, $2, $3) RETURNING id',
-              ['title', 'long... body...', new Date()],
-              function(err, result) {
-                  if (err) {
-                      console.log(err);
-                  } else {
-                      console.log('row inserted with id: ' + result.rows[0].id);
-                  }
-
-                  count++;
-                  console.log('count = ' + count);
-                  if (count == 1000) {
-                      console.log('Client will end now!!!');
-                      client.end();
-                  }
-              });
-      }
-  });
-}
-
+// function saveUser(senderId, conditions, userProfile) {
+//   console.log("Beginning to saveUser. User is ..." + userProfile);
+//   pg.connect(db, function(err, client, done) {
+//     client.query('SELECT * FROM test_table', function(err, result) {
+//       done();
+//       if (err)
+//        { console.error(err); response.send("Error " + err); }
+//       else
+//        {
+//          console.log("loaded db results");
+//          response.json({results: result.rows}); }
+//     });
+//   });
+//   pg.connect(db, function(err, client, done) {
+//     client.query('INSERT INTO post1 (title, body, created_at) VALUES($1, $2, $3) RETURNING id',
+//               ['title', 'long... body...', new Date()],
+//               function(err, result) {
+//                   if (err) {
+//                       console.log(err);
+//                   } else {
+//                       console.log('row inserted with id: ' + result.rows[0].id);
+//                   }
+//
+//                   count++;
+//                   console.log('count = ' + count);
+//                   if (count == 1000) {
+//                       console.log('Client will end now!!!');
+//                       client.end();
+//                   }
+//               });
+//       }
+//   });
+// }
+//
 
 
 function receivedDeliveryConfirmation(event) {
