@@ -94,10 +94,6 @@ function receivedMessage(event) {
     var recipientId = event.recipient.id;
     var timeOfMessage = event.timestamp;
     var message = event.message;
-
-    console.log("Received message for user %d and page %d at %d with message:", senderId, recipientId, timeOfMessage);
-    console.log(JSON.stringify(message));
-
     var isEcho = message.is_echo;
     var messageId = message.mid;
     var appId = message.app_id;
@@ -517,15 +513,15 @@ function findFBProfile(sender, conditions) {
 
 function saveAndQuery(sender, conditions, userProfile) {
     console.log("Starting saveAndQuery");
-    console.log(conditions);
-    console.log(userProfile);
     var wholeProfile = Object.assign(conditions, userProfile);
-    console.log(wholeProfile);
-    // if (wholeProfile[drive_or_ride] == "looking_for_riders") {
-      //   pg.connect(db, function(err, client, done) {
-      //     client.query('INSERT INTO post1 (title, body, created_at) VALUES($1, $2, $3) RETURNING id',
-      //               ['title', 'long... body...', new Date()],
-      //               function(err, result) {
+    if (wholeProfile['drive_or_ride'] == "looking_for_riders") {
+        console.log('saving driver info into db');
+        pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+          client.query('INSERT INTO items (first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9)', [wholeProfile.first_name, wholeProfile.last_name, wholeProfile.profile_pic, wholeProfile.gender, wholeProfile.seating_space, wholeProfile.asking_price, wholeProfile.departure_location, wholeProfile.departure_date, wholeProfile.departure_time]);
+        }
+        console.log('save complete');
+      }
+                    // function(err, result) {
       //                   if (err) {
       //                       console.log(err);
       //                   } else {
