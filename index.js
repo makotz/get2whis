@@ -27,7 +27,7 @@ app.get('/', function(req, res) {
 })
 
 pg.defaults.ssl = true;
-app.get('/db', function (request, response) {
+app.get('/db/driver', function (request, response) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     client.query('SELECT * FROM driver', function(err, result) {
       done();
@@ -183,10 +183,9 @@ function receivedMessage(event) {
             case 'please':
                 sendTextMessage(senderId, "Brah no");
             break;
-                //
-                //       case 'button':
-                //         sendButtonMessage(senderId);
-                //         break;
+            case 'sq':
+                saveAndQuery(senderId, sampleConditions, sampleProfile);
+            break;
                 //
                 //       case 'generic':
                 //         sendGenericMessage(senderId);
@@ -521,7 +520,8 @@ function saveAndQuery(sender, conditions, userProfile) {
     console.log(conditions);
     console.log(userProfile);
     var wholeProfile = Object.assign(conditions, userProfile);
-    if (wholeProfile[drive_or_ride] == "looking_for_riders") {
+    console.log(wholeProfile);
+    // if (wholeProfile[drive_or_ride] == "looking_for_riders") {
       //   pg.connect(db, function(err, client, done) {
       //     client.query('INSERT INTO post1 (title, body, created_at) VALUES($1, $2, $3) RETURNING id',
       //               ['title', 'long... body...', new Date()],
@@ -544,7 +544,7 @@ function saveAndQuery(sender, conditions, userProfile) {
       //   client.query('INSERT INTO driver VALUES')
       // })
 
-    }
+    // }
 };
 
 function saveUser(senderId, conditions, userProfile) {
@@ -649,3 +649,6 @@ function callSendAPI(messageData) {
         }
     });
 }
+
+var sampleConditions = { drive_or_ride: 'looking_for_riders', seating_space: '1', asking_price: '5', departure_location: 'UBC', departure_date: 'tomorrow', departure_time: 'Early_morning', confirmation: 'true' }
+var sampleProfile = { first_name: 'Makoto', last_name: 'Ejima', profile_pic: 'https://scontent.xx.fbcdn.net/v/t1.0-1/14316950_1442519532431748_7639180685678161495_n.jpg?oh=688d0a6e7d6b998c331cac287bef5175&oe=594065FA', locale: 'en_US', timezone: -8, gender: 'male' }
