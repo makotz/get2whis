@@ -42,6 +42,22 @@ app.get('/db/driver', function (request, response) {
   });
 });
 
+app.get('/db/rider', function (request, response) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query('SELECT * FROM rider', function(err, result) {
+      done();
+      if (err)
+       { console.error(err); response.send("Error " + err);
+         respon}
+      else
+       {
+         console.log("loaded db results");
+         response.json({results: result.rows}); }
+    });
+  });
+});
+
+
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
@@ -515,51 +531,19 @@ function saveAndQuery(sender, conditions, userProfile) {
     console.log("Starting saveAndQuery");
     var wholeProfile = Object.assign(conditions, userProfile);
     if (wholeProfile['drive_or_ride'] == "looking_for_riders") {
-        console.log('saving driver info into db');
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, wholeProfile.first_name, wholeProfile.last_name, wholeProfile.profile_pic, wholeProfile.gender, wholeProfile.seating_space, wholeProfile.asking_price, wholeProfile.departure_location, wholeProfile.departure_date, wholeProfile.departure_time]);
+          var potentialRiders = client.query('SELECT (first_name, last_name, profile_pic, departure_date, departure_time) FROM rider WHERE departure_location ='+wholeProfile[departure_location]+'AND departure_date = '+wholeProfile[departure_date]+'AND departure_time = '+wholeProfile[departure_date])
+          console.log("potentialRiders are "+potentialRiders);
         });
-        console.log('save complete');
-      }
-                    // function(err, result) {
-      //                   if (err) {
-      //                       console.log(err);
-      //                   } else {
-      //                       console.log('row inserted with id: ' + result.rows[0].id);
-      //                   }
-      //
-      //                   count++;
-      //                   console.log('count = ' + count);
-      //                   if (count == 1000) {
-      //                       console.log('Client will end now!!!');
-      //                       client.end();
-      //                   }
-      //               });
-      //       }
-      // pg.connect(db, function(err, client, done) {
-      //   client.query('INSERT INTO driver VALUES')
-      // })
-
-    // }
+    } else if (wholeProfile['drive_or_ride'] == 'looking_for_drivers') {
+      pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+        client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, wholeProfile.first_name, wholeProfile.last_name, wholeProfile.profile_pic, wholeProfile.gender, wholeProfile.departure_location, wholeProfile.departure_date, wholeProfile.departure_time]);
+        var potentialDriver = client.query('SELECT (first_name, last_name, profile_pic, departure_date, departure_time) FROM driver WHERE departure_location ='+wholeProfile[departure_location]+'AND departure_date = '+wholeProfile[departure_date]+'AND departure_time = '+wholeProfile[departure_date])
+        console.log("potentialRiders are "+potentialDriver);
+      });
+    }
 };
-
-function saveUser(senderId, conditions, userProfile) {
-  console.log("Beginning to saveUser. User is ..." + userProfile);
-}
-//   pg.connect(db, function(err, client, done) {
-//     client.query('SELECT * FROM test_table', function(err, result) {
-//       done();
-//       if (err)
-//        { console.error(err); response.send("Error " + err); }
-//       else
-//        {
-//          console.log("loaded db results");
-//          response.json({results: result.rows}); }
-//     });
-//   });
-//   });
-// }
-//
 
 
 function receivedDeliveryConfirmation(event) {
