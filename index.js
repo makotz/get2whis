@@ -11,7 +11,6 @@ const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
 
 // Check if postgreSQL is running...
-
 app.set('port', (process.env.PORT || 5000))
 app.set('view engine', 'pug')
 
@@ -27,6 +26,7 @@ app.get('/', function(req, res) {
 })
 
 pg.defaults.ssl = true;
+// See tables driver and rider with /db/whichever
 app.get('/db/driver', function (request, response) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     client.query('SELECT * FROM driver', function(err, result) {
@@ -41,7 +41,6 @@ app.get('/db/driver', function (request, response) {
     });
   });
 });
-
 app.get('/db/rider', function (request, response) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     client.query('SELECT * FROM rider', function(err, result) {
@@ -56,7 +55,6 @@ app.get('/db/rider', function (request, response) {
     });
   });
 });
-
 
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
@@ -234,7 +232,6 @@ function receivedMessage(event) {
         sendTextMessage(senderId, "Message with attachment received");
     }
 }
-
 function askWhichVariableToChange(recipientId, othervariables) {
   var messageData = {
       recipient: {
