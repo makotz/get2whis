@@ -5,18 +5,10 @@ const bodyParser = require('body-parser');
 const request = require('request');
 const config = require('./config');
 const pg = require('pg');
-var pug = require('pug');
+const pug = require('pug');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
-
-// Check if mongoose is running
-// mongoose.connect(config.database, function(err) {
-//     if (err) {
-//         console.log(err);
-//     } else {
-//         console.log("Mongooose is running");
-//     }
-// })
+const db = process.env.DATABASE_URL;
 
 // Check if postgreSQL is running...
 
@@ -35,12 +27,13 @@ app.get('/', function(req, res) {
 })
 
 pg.defaults.ssl = true;
-app.get('/db', function (request, response) {
+app.get('/db/driver', function (request, response) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query('SELECT * FROM test_table', function(err, result) {
+    client.query('SELECT * FROM driver', function(err, result) {
       done();
       if (err)
-       { console.error(err); response.send("Error " + err); }
+       { console.error(err); response.send("Error " + err);
+         respon}
       else
        {
          console.log("loaded db results");
@@ -48,6 +41,22 @@ app.get('/db', function (request, response) {
     });
   });
 });
+
+app.get('/db/rider', function (request, response) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query('SELECT * FROM rider', function(err, result) {
+      done();
+      if (err)
+       { console.error(err); response.send("Error " + err);
+         respon}
+      else
+       {
+         console.log("loaded db results");
+         response.json({results: result.rows}); }
+    });
+  });
+});
+
 
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
@@ -101,10 +110,6 @@ function receivedMessage(event) {
     var recipientId = event.recipient.id;
     var timeOfMessage = event.timestamp;
     var message = event.message;
-
-    console.log("Received message for user %d and page %d at %d with message:", senderId, recipientId, timeOfMessage);
-    console.log(JSON.stringify(message));
-
     var isEcho = message.is_echo;
     var messageId = message.mid;
     var appId = message.app_id;
@@ -125,8 +130,8 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           if (quickReplyPayload.includes('true')){
-            sendTextMessage(senderId, "Alrighty! cool let me find you");
-            // findFBProfile(senderId, JSON.parse(quickReplyPayload), saveUser);
+            sendTextMessage(senderId, "Chee, lets get you to the slopes!");
+            findFBProfile(senderId, quickReplyPayload);
             return
           } else if (quickReplyPayload.includes('false')) {
             sendTextMessage(senderId, "Humm... lets fix it then");
@@ -190,10 +195,9 @@ function receivedMessage(event) {
             case 'please':
                 sendTextMessage(senderId, "Brah no");
             break;
-                //
-                //       case 'button':
-                //         sendButtonMessage(senderId);
-                //         break;
+            case 'sq':
+                saveAndQuery(senderId, sampleConditions, sampleProfile);
+            break;
                 //
                 //       case 'generic':
                 //         sendGenericMessage(senderId);
@@ -257,14 +261,13 @@ function askWhichVariableToChange(recipientId, othervariables) {
   };
   callSendAPI(messageData);
 }
-
 function askDriveOrRide(recipientId) {
     var messageData = {
         recipient: {
             id: recipientId
         },
         message: {
-            text: "Aloha, are you driving or riding today?",
+            text: "Aloha, are you driving or riding today? 🎿",
             quick_replies: [
                 {
                     "content_type": "text",
@@ -330,19 +333,19 @@ function askDepartureTime(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "What time do you want to go?",
+            text: "What 🕗 do you want to go?",
             quick_replies: [
                 {
                     "content_type": "text",
-                    "title": "Early Morning",
+                    "title": "🌅 Early Morning",
                     "payload": othervariables+"departure_time:Early_morning,"
                 }, {
                     "content_type": "text",
-                    "title": "Evening",
+                    "title": "🌇 Evening",
                     "payload": othervariables+"departure_time:Evening,"
                 }, {
                     "content_type": "text",
-                    "title": "Late Night",
+                    "title": "🌃 Late Night",
                     "payload": othervariables+"departure_time:Late_night,"
                 }
             ]
@@ -356,8 +359,13 @@ function askAskingPrice(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "How much are you charging per head?",
+            text: "How much 💰 are you charging per head?",
             quick_replies: [
+              {
+                "content_type": "text",
+                "title": "😍 Free!",
+                "payload": othervariables+"asking_price:5,"
+            },
                 {
                     "content_type": "text",
                     "title": "5",
@@ -382,7 +390,7 @@ function askAvailableSeats(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "How many butts can you fit?",
+            text: "How many 🍑s can you fit?",
             quick_replies: [
                 {
                     "content_type": "text",
@@ -507,36 +515,37 @@ function queryExample(recipientId) {
   });
 }
 
-function findFBProfile(sender, conditions, saveOrQuery) {
+function findFBProfile(sender, conditions) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
+            conditions = parseConditions(conditions);
             var userProfile = JSON.parse(body);
-            saveOrQuery(sender, conditions, userProfile);
+            saveAndQuery(sender, conditions, userProfile);
         } else {
             console.log("Could not locate SenderId: %s's Facebook Profile", senderId);
         }
     });
 };
 
-function saveUser(senderId, conditions, userProfile) {
-  console.log("User is ..." + userProfile);
-
-  var newUser = new User({
-    sender: senderId,
-    first_name: userProfile["first_name"],
-    last_name: userProfile["last_name"],
-    profile_pic: userProfile["profile_pic"],
-    gender: userProfile["gender"],
-    ride_info: conditions
-  });
-  newUser.save(function(err) {
-    if(err) {
-      console.log(err);
-    } else {
-      console.log("User created!");
+function saveAndQuery(sender, conditions, userProfile) {
+    console.log("Starting saveAndQuery");
+    var wholeProfile = Object.assign(conditions, userProfile);
+    if (wholeProfile['drive_or_ride'] == "looking_for_riders") {
+        pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+          client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, wholeProfile.first_name, wholeProfile.last_name, wholeProfile.profile_pic, wholeProfile.gender, wholeProfile.seating_space, wholeProfile.asking_price, wholeProfile.departure_location, wholeProfile.departure_date, wholeProfile.departure_time]);
+          var potentialRiders = client.query('SELECT (first_name, last_name, profile_pic, departure_date, departure_time) FROM rider WHERE departure_location = "ubc"');
+          // +wholeProfile.departure_location+' AND departure_date = '+wholeProfile.departure_date+' AND departure_time = '+wholeProfile.departure_time)
+          console.log("potentialRiders are "+JSON.stringify(potentialRiders));
+        });
+    } else if (wholeProfile['drive_or_ride'] == 'looking_for_drivers') {
+      pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+        client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, wholeProfile.first_name, wholeProfile.last_name, wholeProfile.profile_pic, wholeProfile.gender, wholeProfile.departure_location, wholeProfile.departure_date, wholeProfile.departure_time]);
+        var potentialDriver = client.query('SELECT (first_name, last_name, profile_pic, departure_date, departure_time) FROM driver WHERE departure_location = '+wholeProfile.departure_location+' AND departure_date = '+wholeProfile.departure_date+' AND departure_time = '+wholeProfile.departure_time)
+        console.log("potentialRiders are "+JSON.stringify(potentialDriver));
+      });
     }
-  })
-}
+};
+
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
@@ -547,11 +556,11 @@ function receivedDeliveryConfirmation(event) {
 
     if (messageIDs) {
         messageIDs.forEach(function(messageID) {
-            console.log("Received delivery confirmation for message ID: %s", messageID);
+            // console.log("Received delivery confirmation for message ID: %s", messageID);
         });
     }
 
-    console.log("All message before %d were delivered.", watermark);
+    // console.log("All message before %d were delivered.", watermark);
 }
 function receivedMessageRead(event) {
     var senderId = event.sender.id;
@@ -607,16 +616,19 @@ function callSendAPI(messageData) {
 
     }, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            var recipientId = body.recipient_id;
-            var messageId = body.message_id;
-
-            if (messageId) {
-                console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
-            } else {
-                console.log("Successfully called Send API for recipient %s", recipientId);
-            }
+            // var recipientId = body.recipient_id;
+            // var messageId = body.message_id;
+            //
+            // if (messageId) {
+            //     console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
+            // } else {
+            //     console.log("Successfully called Send API for recipient %s", recipientId);
+            // }
         } else {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
     });
 }
+
+var sampleConditions = { drive_or_ride: 'looking_for_riders', seating_space: '1', asking_price: '5', departure_location: 'UBC', departure_date: 'tomorrow', departure_time: 'Early_morning', confirmation: 'true' }
+var sampleProfile = { first_name: 'Makoto', last_name: 'Ejima', profile_pic: 'https://scontent.xx.fbcdn.net/v/t1.0-1/14316950_1442519532431748_7639180685678161495_n.jpg?oh=688d0a6e7d6b998c331cac287bef5175&oe=594065FA', locale: 'en_US', timezone: -8, gender: 'male' }
