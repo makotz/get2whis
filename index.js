@@ -533,7 +533,7 @@ function saveAndQuery(sender, conditions, userProfile) {
     if (wholeProfile['drive_or_ride'] == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, wholeProfile.first_name, wholeProfile.last_name, wholeProfile.profile_pic, wholeProfile.gender, wholeProfile.seating_space, wholeProfile.asking_price, wholeProfile.departure_location, wholeProfile.departure_date, wholeProfile.departure_time]);
-          var potentialRiders = client.query('SELECT (first_name, last_name, profile_pic, departure_date, departure_time) FROM rider WHERE departure_location = "ubc"')};
+          var potentialRiders = client.query('SELECT (first_name, last_name, profile_pic, departure_date, departure_time) FROM rider WHERE departure_location = "ubc"');
           // +wholeProfile.departure_location+' AND departure_date = '+wholeProfile.departure_date+' AND departure_time = '+wholeProfile.departure_time)
           console.log("potentialRiders are "+JSON.stringify(potentialRiders));
         });
