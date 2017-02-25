@@ -537,9 +537,6 @@ function saveUser(senderId, conditions, userProfile) {
     }
   })
 }
-
-
-
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
