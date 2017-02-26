@@ -29,7 +29,7 @@ pg.defaults.ssl = true;
 // See tables driver and rider with /db/whichever
 app.get('/db/driver', function (request, response) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query('SELECT * FROM driver WHERE departure_location = UBC', function(err, result) {
+    client.query('SELECT * FROM driver', function(err, result) {
       done();
       if (err)
        { console.error(err); response.send("Error " + err);
@@ -37,7 +37,7 @@ app.get('/db/driver', function (request, response) {
       else
        {
          console.log("loaded db results");
-         response.json({results: result.rows}); }
+         response.json(result.rows); }
     });
   });
 });
