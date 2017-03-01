@@ -530,11 +530,14 @@ function saveAndQuery(sender, conditions, userProfile) {
     if (user.drive_or_ride == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time]);
-          var potentialRiders = client.query("SELECT * FROM rider WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"'");
+          var potentialRiders = client.query("SELECT * FROM rider WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"AND departure_location = '"+ user.departure_location+ "'");
           console.log(JSON.stringify(potentialRiders));
-          // +user.departure_location+' AND departure_date = '+user.departure_date+' AND departure_time = '+user.departure_time)
+          if (potentialRiders != {}) {
+            pushQueryResults(sender, potentialRiders);
+            return
+          };
         });
-    } else if (user['drive_or_ride'] == 'looking_for_drivers') {
+    } else if (user.drive_or_ride == 'looking_for_drivers') {
       pg.connect(process.env.DATABASE_URL, function(err, client, done) {
         client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time]);
         var potentialDriver = client.query('SELECT (first_name, last_name, profile_pic, departure_date, departure_time) FROM driver WHERE departure_location = '+user.departure_location+' AND departure_date = '+user.departure_date+' AND departure_time = '+user.departure_time)
@@ -543,6 +546,42 @@ function saveAndQuery(sender, conditions, userProfile) {
     }
 };
 
+function pushQueryResults(senderId, queryresults) {
+
+  var elements = [];
+  for (var i = 0; i < queryresults.length; i++) {
+    var genericObject = {
+      title: queryresults[i].first_name+" "+queryresults[i].last_name,
+      subtitle: queryresults[i].asking_price,
+      item_url: "https://www.nfl.com",
+      image_url: queryresults[i].profile_pic,
+      buttons: [{
+        type: "postback",
+        title: "Contact "+queryresults[i].first_name,
+        payload: "sup you faka"
+      }]
+    };
+    elements.push(genericObject);
+  }
+
+  var messageData = {
+    recipient: {
+      id: senderId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: elements
+        }
+      }
+    }
+  };
+
+  callSendAPI(messageData);
+  return
+}
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
