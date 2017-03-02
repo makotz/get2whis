@@ -531,7 +531,7 @@ function saveAndQuery(sender, conditions, userProfile) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time]);
           var potentialRiders = client.query("SELECT * FROM rider WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "'");
           console.log(JSON.stringify(potentialRiders));
-          if (potentialRiders != {}) {
+          if (potentialRiders != []) {
             pushQueryResults(sender, potentialRiders);
             return
           };
@@ -541,7 +541,7 @@ function saveAndQuery(sender, conditions, userProfile) {
         client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time]);
         var potentialDriver =client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "'");
         console.log(JSON.stringify(potentialDriver));
-        if (potentialDriver != {}) {
+        if (potentialDriver != []) {
           pushQueryResults(sender, potentialDriver);
           return
         };      });
