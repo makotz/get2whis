@@ -526,32 +526,65 @@ function findFBProfile(sender, conditions) {
 
 function saveAndQuery(sender, conditions, userProfile) {
     console.log("Starting saveAndQuery");
-    var wholeProfile = Object.assign(conditions, userProfile);
-    var results = [];
-    if (wholeProfile['drive_or_ride'] == "looking_for_riders") {
+    var user = Object.assign(conditions, userProfile);
+    if (user.drive_or_ride == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-          client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, wholeProfile.first_name, wholeProfile.last_name, wholeProfile.profile_pic, wholeProfile.gender, wholeProfile.seating_space, wholeProfile.asking_price, wholeProfile.departure_location, wholeProfile.departure_date, wholeProfile.departure_time]);
-          var potentialRiders = client.query("SELECT * FROM rider WHERE departure_time = 'Early_morning'");
-          // Stream results back one row at a time
-          potentialRiders.on('row', (row) => {
-            results.push(row);
-          });
-          // After all data is returned, close connection and return results
-          potentialRiders.on('end', () => {
-            done();
-            console.log("potentialRiders are "+JSON.stringify(results));
-          });
-          // +wholeProfile.departure_location+' AND departure_date = '+wholeProfile.departure_date+' AND departure_time = '+wholeProfile.departure_time)
+          client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time]);
+          var potentialRiders = client.query("SELECT * FROM rider WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "'");
+          console.log(JSON.stringify(potentialRiders));
+          if (potentialRiders != {}) {
+            pushQueryResults(sender, potentialRiders);
+            return
+          };
         });
-    } else if (wholeProfile['drive_or_ride'] == 'looking_for_drivers') {
+    } else if (user.drive_or_ride == 'looking_for_drivers') {
       pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, wholeProfile.first_name, wholeProfile.last_name, wholeProfile.profile_pic, wholeProfile.gender, wholeProfile.departure_location, wholeProfile.departure_date, wholeProfile.departure_time]);
-        var potentialDriver = client.query('SELECT (first_name, last_name, profile_pic, departure_date, departure_time) FROM driver WHERE departure_location = '+wholeProfile.departure_location+' AND departure_date = '+wholeProfile.departure_date+' AND departure_time = '+wholeProfile.departure_time)
-        console.log("potentialRiders are "+JSON.stringify(potentialDriver));
-      });
+        client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time]);
+        var potentialDriver =client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "'");
+        console.log(JSON.stringify(potentialDriver));
+        if (potentialDriver != {}) {
+          pushQueryResults(sender, potentialDriver);
+          return
+        };      });
     }
 };
 
+function pushQueryResults(senderId, queryresults) {
+
+  var elements = [];
+  for (var i = 0; i < queryresults.length; i++) {
+    var genericObject = {
+      title: queryresults[i].first_name+" "+queryresults[i].last_name,
+      subtitle: queryresults[i].asking_price,
+      item_url: "https://www.nfl.com",
+      image_url: queryresults[i].profile_pic,
+      buttons: [{
+        type: "postback",
+        title: "Contact "+queryresults[i].first_name,
+        payload: "sup you faka"
+      }]
+    };
+    elements.push(genericObject);
+  }
+
+  var messageData = {
+    recipient: {
+      id: senderId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: elements
+        }
+      }
+    }
+  };
+
+  callSendAPI(messageData);
+  return
+}
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
