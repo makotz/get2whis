@@ -522,7 +522,7 @@ function findFBProfile(sender, conditions) {
 
 function saveAndQuery(sender, conditions, userProfile) {
     console.log("Starting saveAndQuery");
-    results = [];
+    var results = [];
     var user = Object.assign(conditions, userProfile);
     if (user.drive_or_ride == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
@@ -537,8 +537,8 @@ function saveAndQuery(sender, conditions, userProfile) {
             done();
             console.log(results.length);
           });
-          if (potentialRiders != []) {
-            pushQueryResults(sender, potentialRiders);
+          if (results != []) {
+            pushQueryResults(sender, results);
             return
           } else {
             sendTextMessage(sender, "Couldn't find riders 😭");
