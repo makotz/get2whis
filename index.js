@@ -536,13 +536,13 @@ function saveAndQuery(sender, conditions, userProfile) {
           potentialRiders.on('end', () => {
             done();
             console.log(results.length);
+            if (results.length > 0) {
+              pushQueryResults(sender, results);
+              return
+            } else {
+              sendTextMessage(sender, "Couldn't find riders 😭");
+            };
           });
-          if (results != []) {
-            pushQueryResults(sender, results);
-            return
-          } else {
-            sendTextMessage(sender, "Couldn't find riders 😭");
-          };
         });
     } else if (user.drive_or_ride == 'looking_for_drivers') {
       pg.connect(process.env.DATABASE_URL, function(err, client, done) {
