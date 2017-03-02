@@ -527,7 +527,7 @@ function saveAndQuery(sender, conditions, userProfile) {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time]);
           var potentialRiders = client.query("SELECT * FROM rider WHERE first_name = '"+user.first_name+"'");
-          console.log(JSON.stringify(potentialRiders));
+          console.log(JSON.stringify(potentialRiders._result));
           if (potentialRiders != []) {
             pushQueryResults(sender, potentialRiders);
             return
