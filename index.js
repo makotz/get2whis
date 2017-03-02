@@ -193,9 +193,6 @@ function receivedMessage(event) {
             case 'please':
                 sendTextMessage(senderId, "Brah no");
             break;
-            case 'sq':
-                saveAndQuery(senderId, sampleConditions, sampleProfile);
-            break;
                 //
                 //       case 'generic':
                 //         sendGenericMessage(senderId);
