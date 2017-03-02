@@ -305,7 +305,7 @@ function askDepartureDate(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "Cool, when do you wanna leave?",
+            text: "When do you wanna leave?",
             quick_replies: [
                 {
                     "content_type": "text",
@@ -519,7 +519,6 @@ function findFBProfile(sender, conditions) {
         }
     });
 };
-
 function saveAndQuery(sender, conditions, userProfile) {
     console.log("Starting saveAndQuery");
     var results = [];
@@ -535,6 +534,7 @@ function saveAndQuery(sender, conditions, userProfile) {
             done();
             console.log(results.length);
             if (results.length > 0) {
+              sendTextMessage(sender, "Let's get these peeps up!");
               pushQueryResults(sender, results);
               return
             } else {
@@ -555,6 +555,7 @@ function saveAndQuery(sender, conditions, userProfile) {
           done();
           console.log(results.length);
           if (results.length > 0) {
+            sendTextMessage(sender, "Here are potential drivers");
             pushQueryResults(sender, results);
             return
           } else {
@@ -565,14 +566,13 @@ function saveAndQuery(sender, conditions, userProfile) {
        });
     }
 };
-
 function pushQueryResults(senderId, queryresults) {
 
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
-      subtitle: queryresults[i].asking_price,
+      subtitle: "Asking $"+queryresults[i].asking_price,
       item_url: "https://www.nfl.com",
       image_url: queryresults[i].profile_pic,
       buttons: [{
