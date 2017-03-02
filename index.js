@@ -534,6 +534,8 @@ function saveAndQuery(sender, conditions, userProfile) {
           if (potentialRiders != []) {
             pushQueryResults(sender, potentialRiders);
             return
+          } else {
+            sendTextMessage(sender, "Couldn't find riders 😭");
           };
         });
     } else if (user.drive_or_ride == 'looking_for_drivers') {
@@ -544,7 +546,10 @@ function saveAndQuery(sender, conditions, userProfile) {
         if (potentialDriver != []) {
           pushQueryResults(sender, potentialDriver);
           return
-        };      });
+        } else {
+          sendTextMessage(sender, "Couldn't find a driver 😭");
+        };;
+       });
     }
 };
 
