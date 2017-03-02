@@ -511,7 +511,6 @@ function queryExample(recipientId) {
     }
   });
 }
-
 function findFBProfile(sender, conditions) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
@@ -566,6 +565,7 @@ function pushQueryResults(senderId, queryresults) {
     };
     elements.push(genericObject);
   }
+  console.log(elements);
 
   var messageData = {
     recipient: {
@@ -581,7 +581,7 @@ function pushQueryResults(senderId, queryresults) {
       }
     }
   };
-
+  console.log(messageData)
   callSendAPI(messageData);
   return
 }
@@ -668,6 +668,3 @@ function callSendAPI(messageData) {
         }
     });
 }
-
-var sampleConditions = { drive_or_ride: 'looking_for_riders', seating_space: '1', asking_price: '5', departure_location: 'UBC', departure_date: 'tomorrow', departure_time: 'Early_morning', confirmation: 'true' }
-var sampleProfile = { first_name: 'Makoto', last_name: 'Ejima', profile_pic: 'https://scontent.xx.fbcdn.net/v/t1.0-1/14316950_1442519532431748_7639180685678161495_n.jpg?oh=688d0a6e7d6b998c331cac287bef5175&oe=594065FA', locale: 'en_US', timezone: -8, gender: 'male' }
