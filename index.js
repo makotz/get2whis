@@ -358,7 +358,7 @@ function askAskingPrice(recipientId, othervariables) {
               {
                 "content_type": "text",
                 "title": "😍 Free!",
-                "payload": othervariables+"asking_price:5,"
+                "payload": othervariables+"asking_price:0,"
             },
                 {
                     "content_type": "text",
@@ -527,12 +527,10 @@ function saveAndQuery(sender, conditions, userProfile) {
     if (user.drive_or_ride == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time]);
-          var potentialRiders = client.query('SELECT * FROM rider');
-          // Stream results back one row at a time
+          var potentialRiders = client.query("SELECT * FROM rider WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
           potentialRiders.on('row', (row) => {
             results.push(row);
           });
-          // After all data is returned, close connection and return results
           potentialRiders.on('end', () => {
             done();
             console.log(results.length);
@@ -541,20 +539,29 @@ function saveAndQuery(sender, conditions, userProfile) {
               return
             } else {
               sendTextMessage(sender, "Couldn't find riders 😭");
+              return
             };
           });
         });
     } else if (user.drive_or_ride == 'looking_for_drivers') {
       pg.connect(process.env.DATABASE_URL, function(err, client, done) {
         client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time]);
-        var potentialDriver =client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "'");
+        var potentialDriver = client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         console.log(JSON.stringify(potentialDriver));
-        if (potentialDriver != []) {
-          pushQueryResults(sender, potentialDriver);
-          return
-        } else {
-          sendTextMessage(sender, "Couldn't find a driver 😭");
-        };;
+        potentialDriver.on('row', (row) => {
+          results.push(row);
+        });
+        potentialDriver.on('end', () => {
+          done();
+          console.log(results.length);
+          if (results.length > 0) {
+            pushQueryResults(sender, results);
+            return
+          } else {
+            sendTextMessage(sender, "Couldn't find riders 😭");
+            return
+          };
+        });
        });
     }
 };
@@ -570,7 +577,7 @@ function pushQueryResults(senderId, queryresults) {
       image_url: queryresults[i].profile_pic,
       buttons: [{
         type: "postback",
-        title: "Contact "+queryresults[i].first_name,
+        title: "Start chatting "+queryresults[i].first_name,
         payload: "sup you faka"
       }]
     };
