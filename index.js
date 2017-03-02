@@ -522,12 +522,21 @@ function findFBProfile(sender, conditions) {
 
 function saveAndQuery(sender, conditions, userProfile) {
     console.log("Starting saveAndQuery");
+    results = [];
     var user = Object.assign(conditions, userProfile);
     if (user.drive_or_ride == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time]);
           var potentialRiders = client.query('SELECT * FROM rider');
-          console.log(JSON.stringify(potentialRiders._result.rows.length));
+          // Stream results back one row at a time
+          potentialRiders.on('row', (row) => {
+            results.push(row);
+          });
+          // After all data is returned, close connection and return results
+          potentialRiders.on('end', () => {
+            done();
+            console.log(results.length);
+          });
           if (potentialRiders != []) {
             pushQueryResults(sender, potentialRiders);
             return
