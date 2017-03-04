@@ -155,7 +155,7 @@ function receivedMessage(event) {
           return
         };
 
-        if (!quickReplyPayload.includes('ubc')) {
+        if (quickReplyPayload.includes('UBC') && !quickReplyPayload.includes('day_trip')) {
           askDayTrip(senderId, quickReplyPayload);
           return
         };
