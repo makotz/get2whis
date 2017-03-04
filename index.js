@@ -6,6 +6,7 @@ const request = require('request');
 const config = require('./config');
 const pg = require('pg');
 const dateFormat = require('dateformat');
+const moment = require('moment-timezone');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -339,8 +340,12 @@ function askDayTrip(recipientId, othervariables) {
 
 function askDepartureDate(recipientId, othervariables) {
     var today = new Date();
-    var tomorrow = (today + 24 * 60 * 60 * 1000);
-    var dayAfterTomorrow = (today + 2 * 24 * 60 * 60 * 1000);
+    var tomorrow = today.tomorrow();
+    var dayAfterTomorrow = tomorrow.tomorrow();
+
+    today = today.tz('America/Vancouver');
+    tomorrow = tomorrow.tz('America/Vancouver');
+    dayAfterTomorrow = dayAfterTomorrow.tz('America/Vancouver');
 
     today = dateFormat(today, "ddd, mmm. dS");
     tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
