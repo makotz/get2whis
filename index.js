@@ -7,7 +7,6 @@ const config = require('./config');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
-const moment = require('moment');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
