@@ -125,7 +125,7 @@ function receivedMessage(event) {
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
 
-        if (!quickReplyPayload.includes('check_rides')) {
+        if (quickReplyPayload.includes('check_rides')) {
           sendTextMessage(senderId, "Checking Rides");
           return
         }
