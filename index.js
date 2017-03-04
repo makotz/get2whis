@@ -343,13 +343,13 @@ function askDepartureDate(recipientId, othervariables) {
     var tomorrow = moment().add(1, 'days').calendar();
     var dayAfterTomorrow = moment().add(2, 'days').calendar();
 
-    today = moment.tz('America/Vancouver').format();
-    tomorrow = moment.tz('America/Vancouver').format();
-    dayAfterTomorrow = moment.tz('America/Vancouver').format();
-
-    today = dateFormat(today, "ddd, mmm. dS");
-    tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
-    dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
+    // today = moment.tz('America/Vancouver').format();
+    // tomorrow = moment.tz('America/Vancouver').format();
+    // dayAfterTomorrow = moment.tz('America/Vancouver').format();
+    //
+    // today = dateFormat(today, "ddd, mmm. dS");
+    // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
+    // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
 
     var messageData = {
         recipient: {
