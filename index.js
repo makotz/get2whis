@@ -142,10 +142,6 @@ function receivedMessage(event) {
         }
 
 
-        if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_time') && quickReplyPayload.includes('departure_date')) {
-          confirmQueryInfo(senderId, quickReplyPayload);
-          return
-        }
         if (!quickReplyPayload.includes('drive_or_ride')) {
           askDriveOrRide(senderId, quickReplyPayload);
           return
@@ -182,6 +178,11 @@ function receivedMessage(event) {
             return
           }
         };
+
+        if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_date')) {
+          confirmQueryInfo(senderId, quickReplyPayload);
+          return
+        }
 
         sendTextMessage(senderId, "Quick reply tapped");
         return;
@@ -341,9 +342,9 @@ function askDepartureDate(recipientId, othervariables) {
     var tomorrow = today.setDate(today.getDate() + 1);
     var dayAfterTomorrow = today.setDate(today.getDate() + 2);
 
-    today = (today, "ddd, mmm, dS");
-    tomorrow = (tomorrow, "ddd, mmm, dS");
-    dayAfterTomorrow = (dayAfterTomorrow, "ddd, mmm, dS");
+    today = dateFormat(today, "ddd, mmm, dS");
+    tomorrow = dateFormat(tomorrow, "ddd, mmm, dS");
+    dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm, dS");
 
     var messageData = {
         recipient: {
@@ -519,40 +520,6 @@ function confirmQueryInfo(recipientId, othervariables) {
         }
   };
   callSendAPI(messageData);
-}
-function queryExample(recipientId) {
-  User.findOne({last_name: "Ejima"}, function(err, user) {
-    if(err) {
-      console.log("error occured:"+ err);
-    } else {
-      var messageData = {
-        recipient: {
-          id: recipientId
-        },
-        message: {
-          attachment: {
-            type: "template",
-            payload: {
-              template_type: "generic",
-              elements: [{
-                title: user.first_name+" "+user.last_name,
-                subtitle: user.ride_info.departure_date,
-                item_url: "https://www.nfl.com",
-                image_url: user.profile_pic,
-                buttons: [{
-                  type: "postback",
-                  title: "Contact",
-                  payload: "sup you faka"
-                }]
-              }]
-            }
-          }
-        }
-      };
-      callSendAPI(messageData);
-      return
-    }
-  });
 }
 function findFBProfile(sender, conditions) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
