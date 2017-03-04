@@ -165,10 +165,10 @@ function receivedMessage(event) {
           return
         };
 
-        if (!quickReplyPayload.includes('departure_time') && (quickReplyPayload.includes('day_trip:false') || quickReplyPayload.includes('Whistler')) {
-          askDepartureTime(senderId, quickReplyPayload);
-          return
-        };
+        // if (!quickReplyPayload.includes('departure_time') && (quickReplyPayload.includes('day_trip:false') || quickReplyPayload.includes('Whistler')) {
+        //   askDepartureTime(senderId, quickReplyPayload);
+        //   return
+        // };
 
         if (quickReplyPayload.includes('looking_for_riders')) {
           if (!quickReplyPayload.includes('seating_space')) {
