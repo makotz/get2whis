@@ -339,8 +339,8 @@ function askDayTrip(recipientId, othervariables) {
 
 function askDepartureDate(recipientId, othervariables) {
     var today = new Date();
-    var tomorrow = (today + 1);
-    var dayAfterTomorrow = (today + 2);
+    var tomorrow = (today + 24 * 60 * 60 * 1000);
+    var dayAfterTomorrow = (today + 2 * 24 * 60 * 60 * 1000);
 
     today = dateFormat(today, "ddd, mmm. dS");
     tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
@@ -537,10 +537,15 @@ function saveAndQuery(sender, conditions, userProfile) {
     console.log("Starting saveAndQuery");
     var results = [];
     var user = Object.assign(conditions, userProfile);
+
     if (user.drive_or_ride == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-          client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time]);
-          var potentialRiders = client.query("SELECT * FROM rider WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
+          client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
+          if (user.day_trip == "true") {
+            var potentialRiders = client.query("SELECT * FROM rider WHERE day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
+          } else {
+            var potentialRiders = client.query("SELECT * FROM rider WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
+          }
           potentialRiders.on('row', (row) => {
             results.push(row);
           });
@@ -559,9 +564,13 @@ function saveAndQuery(sender, conditions, userProfile) {
         });
     } else if (user.drive_or_ride == 'looking_for_drivers') {
       pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time]);
+        client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
         var potentialDriver = client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
-        console.log(JSON.stringify(potentialDriver));
+        if (user.day_trip == "true") {
+          var potentialDriver = client.query("SELECT * FROM driver WHERE day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "'  ORDER BY asking_price LIMIT 10");
+        } else {
+          var potentialDriver = client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
+        }
         potentialDriver.on('row', (row) => {
           results.push(row);
         });
