@@ -165,7 +165,7 @@ function receivedMessage(event) {
           return
         };
 
-        if (!quickReplyPayload.includes('departure_time') {
+        if (!quickReplyPayload.includes('departure_time')) {
           if (quickReplyPayload.includes('day_trip:false') || quickReplyPayload.includes('Whistler')) {
             askDepartureTime(senderId, quickReplyPayload);
             return
