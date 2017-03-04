@@ -7,6 +7,7 @@ const config = require('./config');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
+const moment = require('moment');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -339,13 +340,13 @@ function askDayTrip(recipientId, othervariables) {
 }
 
 function askDepartureDate(recipientId, othervariables) {
-    var today = new Date();
-    var tomorrow = today.tomorrow();
-    var dayAfterTomorrow = tomorrow.tomorrow();
+    var today = moment().calendar();
+    var tomorrow = moment().add(1, 'days').calendar();
+    var dayAfterTomorrow = moment().add(2, 'days').calendar();
 
-    today = today.tz('America/Vancouver');
-    tomorrow = tomorrow.tz('America/Vancouver');
-    dayAfterTomorrow = dayAfterTomorrow.tz('America/Vancouver');
+    today = today.tz('America/Vancouver').format();
+    tomorrow = tomorrow.tz('America/Vancouver').format();
+    dayAfterTomorrow = dayAfterTomorrow.tz('America/Vancouver').format();
 
     today = dateFormat(today, "ddd, mmm. dS");
     tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
