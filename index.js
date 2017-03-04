@@ -339,8 +339,8 @@ function askDayTrip(recipientId, othervariables) {
 
 function askDepartureDate(recipientId, othervariables) {
     var today = new Date();
-    var tomorrow = (today.getDate() + 1);
-    var dayAfterTomorrow = (today.getDate() + 2);
+    var tomorrow = (today + 1);
+    var dayAfterTomorrow = (today + 2);
 
     today = dateFormat(today, "ddd, mmm. dS");
     tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
