@@ -339,12 +339,12 @@ function askDayTrip(recipientId, othervariables) {
 
 function askDepartureDate(recipientId, othervariables) {
     var today = new Date();
-    var tomorrow = today.setDate(today.getDate() + 1);
-    var dayAfterTomorrow = today.setDate(today.getDate() + 2);
+    var tomorrow = (today.getDate() + 1);
+    var dayAfterTomorrow = (today.getDate() + 2);
 
-    today = dateFormat(today, "ddd, mmm, dS");
-    tomorrow = dateFormat(tomorrow, "ddd, mmm, dS");
-    dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm, dS");
+    today = dateFormat(today, "ddd, mmm. dS");
+    tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
+    dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
 
     var messageData = {
         recipient: {
