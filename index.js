@@ -127,10 +127,10 @@ function receivedMessage(event) {
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
 
         if (quickReplyPayload.includes('check_rides')) {
-          if (quickReplyPayload.includes('checkUserDriveOrRide:drive') {
+          if (quickReplyPayload.includes('checkUserDriveOrRide:drive')) {
             checkRides(senderId, 'drive');
             return
-          } else if (quickReplyPayload.includes('checkUserDriveOrRide:ride') {
+          } else if (quickReplyPayload.includes('checkUserDriveOrRide:ride')) {
             checkRides(senderId, 'ride');
             return
           } else {
