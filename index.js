@@ -323,7 +323,6 @@ function askDepartureLocation(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 }
-
 function askDayTrip(recipientId, othervariables) {
     var messageData = {
         recipient: {
@@ -346,16 +345,15 @@ function askDayTrip(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 }
-
 function askDepartureDate(recipientId, othervariables) {
     var today = moment().calendar();
     var tomorrow = moment().add(1, 'days').calendar();
     var dayAfterTomorrow = moment().add(2, 'days').calendar();
 
-    // today = moment.tz('America/Vancouver').format();
-    // tomorrow = moment.tz('America/Vancouver').format();
-    // dayAfterTomorrow = moment.tz('America/Vancouver').format();
-    //
+    today = moment.tz('America/Vancouver').format();
+    tomorrow = moment.tz('America/Vancouver').format();
+    dayAfterTomorrow = moment.tz('America/Vancouver').format();
+
     // today = dateFormat(today, "ddd, mmm. dS");
     // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
     // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
@@ -385,7 +383,6 @@ function askDepartureDate(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 };
-
 function askDepartureTime(recipientId, othervariables) {
     var messageData = {
         recipient: {
@@ -408,7 +405,6 @@ function askDepartureTime(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 }
-
 function checkUserDriveOrRide(recipientId, othervariables) {
     var messageData = {
         recipient: {
@@ -568,9 +564,7 @@ function findFBProfile(sender, conditions) {
         }
     });
 };
-
 function saveAndQuery(sender, conditions, userProfile) {
-    console.log("Starting saveAndQuery");
     var results = [];
     var user = Object.assign(conditions, userProfile);
 
@@ -625,25 +619,29 @@ function saveAndQuery(sender, conditions, userProfile) {
        });
     }
 };
-
 function pushQueryResults(senderId, queryresults) {
 
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
+
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
       subtitle: "Asking $"+queryresults[i].asking_price,
-      item_url: "https://www.nfl.com",
+      item_url: "http://facebook.com/profile.php?id="+queryresults[i].sender_id,
       image_url: queryresults[i].profile_pic,
       buttons: [{
-        type: "postback",
-        title: "Start chatting "+queryresults[i].first_name,
-        payload: "sup you faka"
+        type: "web_url",
+        title: "Chat with"+queryresults[i].first_name,
+        url: "http://facebook.com/profile.php?id="+queryresults[i].sender_id
       }]
     };
+
+    if (queryresults[i].asking_price == 'undefined') {
+      genericObject.pop(subtitle);
+    };
+    
     elements.push(genericObject);
   }
-  console.log(elements);
 
   var messageData = {
     recipient: {
