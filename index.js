@@ -56,6 +56,27 @@ app.get('/db/rider', function (request, response) {
   });
 });
 
+app.get('/test', function (request, response) {
+  request('https://graph.facebook.com/v2.6/me?fields=id,name&access_token=' + token, function(error, response, body) {
+      if (!error && response.statusCode == 200) {
+        console.log("body is...", body);
+      } else {
+        console.log("something failed.. :(");
+      }
+  // });
+  //   client.query('SELECT * FROM rider', function(err, result) {
+  //     done();
+  //     if (err)
+  //      { console.error(err); response.send("Error " + err);
+  //        respon}
+  //     else
+  //      {
+  //        console.log("loaded db results");
+  //        response.json(result.rows); }
+  //   });
+});
+
+
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
@@ -499,7 +520,7 @@ function receivedPostback(event) {
 
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
-    sendTextMessage(senderId, "Postback called");
+    sendTextMessage(payload, "Postback called");
 }
 function sendTextMessage(recipientId, messageText) {
 
@@ -630,16 +651,16 @@ function pushQueryResults(senderId, queryresults) {
       item_url: "http://facebook.com/profile.php?id="+queryresults[i].sender_id,
       image_url: queryresults[i].profile_pic,
       buttons: [{
-        type: "web_url",
+        type: "postback",
         title: "Chat with"+queryresults[i].first_name,
-        url: "http://facebook.com/profile.php?id="+queryresults[i].sender_id
+        payload: queryresults[i].sender_id
       }]
     };
 
     if (queryresults[i].asking_price == 'undefined') {
       genericObject.pop(subtitle);
     };
-    
+
     elements.push(genericObject);
   }
 
