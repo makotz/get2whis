@@ -73,7 +73,7 @@ app.get('/test', function (request, response) {
   //      {
   //        console.log("loaded db results");
   //        response.json(result.rows); }
-  //   });
+   });
 });
 
 
