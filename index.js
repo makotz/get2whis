@@ -56,7 +56,7 @@ app.get('/db/rider', function (request, response) {
   });
 });
 
-app.get('/test', function (request, response) {
+app.get('/test', function (f, response) {
   request('https://graph.facebook.com/v2.6/me?fields=id,name&access_token=' + token, function(error, response, body) {
       if (!error && response.statusCode == 200) {
         console.log("body is...", body);
