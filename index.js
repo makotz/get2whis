@@ -7,6 +7,7 @@ const config = require('./config');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
+var FB = require('fb');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -55,6 +56,44 @@ app.get('/db/rider', function (request, response) {
     });
   });
 });
+
+app.get('/test', function (f, response) {
+  FB.getLoginStatus(function(response) {
+  if (response.status === 'connected') {
+    // the user is logged in and has authenticated your
+    // app, and response.authResponse supplies
+    // the user's ID, a valid access token, a signed
+    // request, and the time the access token
+    // and signed request each expire
+    var uid = response.authResponse.userID;
+    var accessToken = response.authResponse.accessToken;
+    console.log("Fish");
+  } else if (response.status === 'not_authorized') {
+    console.log('the user is logged in to Facebook,
+    but has not authenticated your app')
+  } else {
+    console.log("Hero");
+  }
+  });
+  // request('https://graph.facebook.com/v2.6/' + sender + '?fields=id,name&access_token=' + token, function(error, response, body) {
+  //     if (!error && response.statusCode == 200) {
+  //       console.log("body is...", body);
+  //     } else {
+  //       console.log("something failed.. :(");
+  //     }
+  // // });
+  // //   client.query('SELECT * FROM rider', function(err, result) {
+  // //     done();
+  // //     if (err)
+  // //      { console.error(err); response.send("Error " + err);
+  // //        respon}
+  // //     else
+  // //      {
+  // //        console.log("loaded db results");
+  // //        response.json(result.rows); }
+  //  });
+});
+
 
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
@@ -127,9 +166,17 @@ function receivedMessage(event) {
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
 
         if (quickReplyPayload.includes('check_rides')) {
-          sendTextMessage(senderId, "Checking Rides");
-          return
-        }
+          if (quickReplyPayload.includes('checkUserDriveOrRide:drive')) {
+            checkRides(senderId, 'drive');
+            return
+          } else if (quickReplyPayload.includes('checkUserDriveOrRide:ride')) {
+            checkRides(senderId, 'ride');
+            return
+          } else {
+            checkUserDriveOrRide(senderId, quickReplyPayload);
+            return
+          };
+        };
 
         if (quickReplyPayload.includes('confirmation')) {
           if (quickReplyPayload.includes('true')){
@@ -137,7 +184,8 @@ function receivedMessage(event) {
             findFBProfile(senderId, quickReplyPayload);
             return
           } else if (quickReplyPayload.includes('false')) {
-            sendTextMessage(senderId, "Humm... lets fix it then");
+            sendTextMessage(senderId, "Okay let's try again!");
+            askDriveOrRide(senderId);
             return
           }
         }
@@ -298,7 +346,7 @@ function askDepartureLocation(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "Where do you want a ride from?",
+            text: "Where are you leaving from?",
             quick_replies: [
                 {
                     "content_type": "text",
@@ -314,7 +362,6 @@ function askDepartureLocation(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 }
-
 function askDayTrip(recipientId, othervariables) {
     var messageData = {
         recipient: {
@@ -337,16 +384,22 @@ function askDayTrip(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 }
-
 function askDepartureDate(recipientId, othervariables) {
     var today = moment().calendar();
     var tomorrow = moment().add(1, 'days').calendar();
     var dayAfterTomorrow = moment().add(2, 'days').calendar();
 
+<<<<<<< HEAD
     // today = moment.tz('America/Vancouver').format();
     // tomorrow = moment.tz('America/Vancouver').format();
     // dayAfterTomorrow = moment.tz('America/Vancouver').format();
     //
+=======
+    today = moment.tz('America/Vancouver').format();
+    tomorrow = moment.tz('America/Vancouver').format();
+    dayAfterTomorrow = moment.tz('America/Vancouver').format();
+
+>>>>>>> fc7a1ed93c34a009d14f43289e85d810e97fd58f
     // today = dateFormat(today, "ddd, mmm. dS");
     // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
     // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
@@ -356,7 +409,7 @@ function askDepartureDate(recipientId, othervariables) {
             id: recipientId
         },
         message: {
-            text: "When do you wanna leave?",
+            text: "What day are you riding?",
             quick_replies: [
                 {
                     "content_type": "text",
@@ -376,7 +429,6 @@ function askDepartureDate(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 };
-
 function askDepartureTime(recipientId, othervariables) {
     var messageData = {
         recipient: {
@@ -393,6 +445,28 @@ function askDepartureTime(recipientId, othervariables) {
                     "content_type": "text",
                     "title": "🌇 Evening",
                     "payload": othervariables+"departure_time:Evening,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function checkUserDriveOrRide(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Do you wanna check your drive offered or rides asked?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "Drive offered",
+                    "payload": othervariables+"checkUserDriveOrRide:drive,"
+                }, {
+                    "content_type": "text",
+                    "title": "Rides asked",
+                    "payload": othervariables+"checkUserDriveOrRide:ride,"
                 }
             ]
         }
@@ -471,7 +545,7 @@ function receivedPostback(event) {
 
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
-    sendTextMessage(senderId, "Postback called");
+    sendTextMessage(payload, "Postback called");
 }
 function sendTextMessage(recipientId, messageText) {
 
@@ -500,7 +574,6 @@ function parseConditions(gatheredInfoString) {
 }
 function confirmQueryInfo(recipientId, othervariables) {
   var parsedObject = parseConditions(othervariables);
-  console.log("parsed othervariables are ... " + parsedObject);
   var drive_or_ride = parsedObject.drive_or_ride;
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
@@ -537,15 +610,13 @@ function findFBProfile(sender, conditions) {
         }
     });
 };
-
 function saveAndQuery(sender, conditions, userProfile) {
-    console.log("Starting saveAndQuery");
     var results = [];
     var user = Object.assign(conditions, userProfile);
 
     if (user.drive_or_ride == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-          client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
+          client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
           if (user.day_trip == "true") {
             var potentialRiders = client.query("SELECT * FROM rider WHERE day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
           } else {
@@ -569,10 +640,10 @@ function saveAndQuery(sender, conditions, userProfile) {
         });
     } else if (user.drive_or_ride == 'looking_for_drivers') {
       pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
+        client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
         var potentialDriver = client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         if (user.day_trip == "true") {
-          var potentialDriver = client.query("SELECT * FROM driver WHERE day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "'  ORDER BY asking_price LIMIT 10");
+          var potentialDriver = client.query("SELECT * FROM driver WHERE day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         } else {
           var potentialDriver = client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         }
@@ -583,36 +654,40 @@ function saveAndQuery(sender, conditions, userProfile) {
           done();
           console.log(results.length);
           if (results.length > 0) {
-            sendTextMessage(sender, "Here are potential drivers");
+            sendTextMessage(sender, "Here are potential drivers:");
             pushQueryResults(sender, results);
             return
           } else {
-            sendTextMessage(sender, "Couldn't find riders 😭");
+            sendTextMessage(sender, "Couldn't find a driver 😭");
             return
           };
         });
        });
     }
 };
-
 function pushQueryResults(senderId, queryresults) {
 
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
+
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
       subtitle: "Asking $"+queryresults[i].asking_price,
-      item_url: "https://www.nfl.com",
+      item_url: "http://facebook.com/profile.php?id="+queryresults[i].sender_id,
       image_url: queryresults[i].profile_pic,
       buttons: [{
         type: "postback",
-        title: "Start chatting "+queryresults[i].first_name,
-        payload: "sup you faka"
+        title: "Chat with"+queryresults[i].first_name,
+        payload: queryresults[i].sender_id
       }]
     };
+
+    if (queryresults[i].asking_price == 'undefined') {
+      genericObject.pop(subtitle);
+    };
+
     elements.push(genericObject);
   }
-  console.log(elements);
 
   var messageData = {
     recipient: {
@@ -632,7 +707,6 @@ function pushQueryResults(senderId, queryresults) {
   callSendAPI(messageData);
   return
 };
-
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
@@ -715,4 +789,27 @@ function callSendAPI(messageData) {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
     });
+}
+function checkRides(sender, driveOrRide) {
+  var results = [];
+
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
+
+    userQuery.on('row', (row) => {
+      results.push(row);
+    });
+    userQuery.on('end', () => {
+      done();
+      if (results.length > 0) {
+        sendTextMessage(sender, "Here are your offers/asks:");
+        pushQueryResults(sender, results);
+        return
+      } else {
+        sendTextMessage(sender, "Looks like you haven't made one yet!");
+        return
+      };
+    });
+
+  });
 }
