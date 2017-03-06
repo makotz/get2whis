@@ -7,6 +7,7 @@ const config = require('./config');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
+var FB = require('fb');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -57,23 +58,40 @@ app.get('/db/rider', function (request, response) {
 });
 
 app.get('/test', function (f, response) {
-  request('https://graph.facebook.com/v2.6/' + sender + '?fields=id,name&access_token=' + token, function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        console.log("body is...", body);
-      } else {
-        console.log("something failed.. :(");
-      }
-  // });
-  //   client.query('SELECT * FROM rider', function(err, result) {
-  //     done();
-  //     if (err)
-  //      { console.error(err); response.send("Error " + err);
-  //        respon}
-  //     else
-  //      {
-  //        console.log("loaded db results");
-  //        response.json(result.rows); }
-   });
+  FB.getLoginStatus(function(response) {
+  if (response.status === 'connected') {
+    // the user is logged in and has authenticated your
+    // app, and response.authResponse supplies
+    // the user's ID, a valid access token, a signed
+    // request, and the time the access token
+    // and signed request each expire
+    var uid = response.authResponse.userID;
+    var accessToken = response.authResponse.accessToken;
+    console.log("Fish");
+  } else if (response.status === 'not_authorized') {
+    console.log('the user is logged in to Facebook,
+    but has not authenticated your app')
+  } else {
+    console.log("Hero");
+  }
+  });
+  // request('https://graph.facebook.com/v2.6/' + sender + '?fields=id,name&access_token=' + token, function(error, response, body) {
+  //     if (!error && response.statusCode == 200) {
+  //       console.log("body is...", body);
+  //     } else {
+  //       console.log("something failed.. :(");
+  //     }
+  // // });
+  // //   client.query('SELECT * FROM rider', function(err, result) {
+  // //     done();
+  // //     if (err)
+  // //      { console.error(err); response.send("Error " + err);
+  // //        respon}
+  // //     else
+  // //      {
+  // //        console.log("loaded db results");
+  // //        response.json(result.rows); }
+  //  });
 });
 
 
