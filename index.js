@@ -69,8 +69,7 @@ app.get('/test', function (f, response) {
     var accessToken = response.authResponse.accessToken;
     console.log("Fish");
   } else if (response.status === 'not_authorized') {
-    console.log('the user is logged in to Facebook,
-    but has not authenticated your app')
+    console.log('the user is logged in to Facebook, but has not authenticated your app')
   } else {
     console.log("Hero");
   }
@@ -389,17 +388,11 @@ function askDepartureDate(recipientId, othervariables) {
     var tomorrow = moment().add(1, 'days').calendar();
     var dayAfterTomorrow = moment().add(2, 'days').calendar();
 
-<<<<<<< HEAD
     // today = moment.tz('America/Vancouver').format();
     // tomorrow = moment.tz('America/Vancouver').format();
     // dayAfterTomorrow = moment.tz('America/Vancouver').format();
     //
-=======
-    today = moment.tz('America/Vancouver').format();
-    tomorrow = moment.tz('America/Vancouver').format();
-    dayAfterTomorrow = moment.tz('America/Vancouver').format();
 
->>>>>>> fc7a1ed93c34a009d14f43289e85d810e97fd58f
     // today = dateFormat(today, "ddd, mmm. dS");
     // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
     // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
