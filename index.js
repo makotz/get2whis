@@ -514,7 +514,7 @@ function receivedPostback(event) {
 
     console.log("Received postback for user %d and page %d with payload '%s' " +
         "at %d",
-    senderId, recipientId, payload, timeOfPostback);
+    senderId, recipientId, JSON.stringify(payload), timeOfPostback);
 
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
@@ -695,6 +695,7 @@ function pushQueryResults(senderId, queryresults, user) {
 };
 
 function notificationGenericTemplate(senderId, user) {
+
     var genericObject = {
       title: user.first_name+" "+user.last_name,
       subtitle: "Offering a ride to you on "+user.departure_date+" from "+user.departure_location,
