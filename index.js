@@ -714,7 +714,6 @@ function notificationGenericTemplate(senderId, user) {
 
     if (user1.asking_price) { genericObject.subtitle = "Asking for your ride on "+user1.departure_date+" from "+user1.departure_location}
 
-    var jsongeneric = JSON.stringify(genericObject);
   var messageData = {
     recipient: {
       id: senderId
@@ -724,12 +723,14 @@ function notificationGenericTemplate(senderId, user) {
         type: "template",
         payload: {
           template_type: "generic",
-          elements: jsongeneric
+          elements: genericObject
         }
       }
     }
   };
-  callSendAPI(messageData);
+
+  var messageData2 = JSON.parse(messageData)
+  callSendAPI(messageData2);
   return
 };
 function receivedDeliveryConfirmation(event) {
