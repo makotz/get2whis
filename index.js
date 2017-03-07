@@ -3,13 +3,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
+const config = require('./config');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
-const gf = require('./givenFunctions');
 const pq = require('./parameterQueries');
 const app = express();
-// const token = process.env.FB_PAGE_ACCESS_TOKEN;
+const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
 
 // Check if postgreSQL is running...
@@ -121,17 +121,17 @@ app.post('/webhook/', function(req, res) {
             // Iterate over each messaging event
             pageEntry.messaging.forEach(function(messagingEvent) {
                 if (messagingEvent.optin) {
-                    gf.receivedAuthentication(messagingEvent);
+                    receivedAuthentication(messagingEvent);
                 } else if (messagingEvent.message) {
-                    gf.receivedMessage(messagingEvent);
+                    receivedMessage(messagingEvent);
                 } else if (messagingEvent.delivery) {
-                    gf.receivedDeliveryConfirmation(messagingEvent);
+                    receivedDeliveryConfirmation(messagingEvent);
                 } else if (messagingEvent.postback) {
-                    gf.receivedPostback(messagingEvent);
+                    receivedPostback(messagingEvent);
                 } else if (messagingEvent.read) {
-                    gf.receivedMessageRead(messagingEvent);
+                    receivedMessageRead(messagingEvent);
                 } else if (messagingEvent.account_linking) {
-                    gf.receivedAccountLink(messagingEvent);
+                    receivedAccountLink(messagingEvent);
                 } else {
                     console.log("Webhook received unknown messagingEvent: ", messagingEvent);
                 }
@@ -166,13 +166,13 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('check_rides')) {
           if (quickReplyPayload.includes('checkUserDriveOrRide:drive')) {
-            pq.checkUserRideInfo(senderId, 'drive');
+            checkUserRideInfo(senderId, 'drive');
             return
           } else if (quickReplyPayload.includes('checkUserDriveOrRide:ride')) {
-            pq.checkUserRideInfo(senderId, 'ride');
+            checkUserRideInfo(senderId, 'ride');
             return
           } else {
-            pq.checkUserDriveOrRide(senderId, quickReplyPayload);
+            checkUserDriveOrRide(senderId, quickReplyPayload);
             return
           };
         };
@@ -191,38 +191,38 @@ function receivedMessage(event) {
 
 
         if (!quickReplyPayload.includes('drive_or_ride')) {
-          pq.askDriveOrRide(senderId, quickReplyPayload);
+          askDriveOrRide(senderId, quickReplyPayload);
           return
         }
         if (!quickReplyPayload.includes('departure_location')) {
-          pq.askDepartureLocation(senderId, quickReplyPayload);
+          askDepartureLocation(senderId, quickReplyPayload);
           return
         };
 
         if (quickReplyPayload.includes('UBC') && !quickReplyPayload.includes('day_trip')) {
-          pq.askDayTrip(senderId, quickReplyPayload);
+          askDayTrip(senderId, quickReplyPayload);
           return
         };
 
         if (!quickReplyPayload.includes('departure_date')) {
-          pq.askDepartureDate(senderId, quickReplyPayload);
+          askDepartureDate(senderId, quickReplyPayload);
           return
         };
 
         if (!quickReplyPayload.includes('departure_time')) {
           if (quickReplyPayload.includes('day_trip:false') || quickReplyPayload.includes('Whistler')) {
-            pq.askDepartureTime(senderId, quickReplyPayload);
+            askDepartureTime(senderId, quickReplyPayload);
             return
           };
         };
 
         if (quickReplyPayload.includes('looking_for_riders')) {
           if (!quickReplyPayload.includes('seating_space')) {
-            pq.askAvailableSeats(senderId, quickReplyPayload)
+            askAvailableSeats(senderId, quickReplyPayload)
             return
           }
           if (!quickReplyPayload.includes('asking_price')) {
-            pq.askAskingPrice(senderId, quickReplyPayload)
+            askAskingPrice(senderId, quickReplyPayload)
             return
           }
         };
@@ -246,7 +246,7 @@ function receivedMessage(event) {
             //     break;
 
             case 'aloha':
-                pq.askDriveOrRide(senderId);
+                askDriveOrRide(senderId);
                 break;
             // case 'query':
             //     queryExample(senderId);
@@ -287,301 +287,298 @@ function receivedMessage(event) {
         sendTextMessage(senderId, "Message with attachment received");
     }
 }
-// function askWhichVariableToChange(recipientId, othervariables) {
-//   var messageData = {
-//       recipient: {
-//           id: recipientId
-//       },
-//       message: {
-//           text: "What do you wanna fix",
-//           quick_replies: [
-//               {
-//                   "content_type": "text",
-//                   "title": "Date",
-//                   "payload": "departure_date"
-//               }, {
-//                   "content_type": "text",
-//                   "title": "Time",
-//                   "payload": "departure_time"
-//               }, {
-//                   "content_type": "text",
-//                   "title": "Location",
-//                   "payload": "departure_location"
-//               }
-//           ]
-//       }
-//   };
-//   callSendAPI(messageData);
-// }
-// function askDriveOrRide(recipientId) {
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "Aloha, are you driving or looking for a ride? 🎿",
-//             quick_replies: [
-//                 {
-//                     "content_type": "text",
-//                     "title": "Driving",
-//                     "payload": "drive_or_ride:looking_for_riders,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "Riding",
-//                     "payload": "drive_or_ride:looking_for_drivers,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "Check my rides",
-//                     "payload": "check_rides"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// }
-// function askDepartureLocation(recipientId, othervariables) {
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "Where are you leaving from?",
-//             quick_replies: [
-//                 {
-//                     "content_type": "text",
-//                     "title": "UBC",
-//                     "payload": othervariables+"departure_location:UBC,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "Whistler",
-//                     "payload": othervariables+"departure_location:Whistler,"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// }
-// function askDayTrip(recipientId, othervariables) {
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "Day trip or one way?",
-//             quick_replies: [
-//                 {
-//                     "content_type": "text",
-//                     "title": "Daytrip",
-//                     "payload": othervariables+"day_trip:true,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "One way",
-//                     "payload": othervariables+"day_trip:false,"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// }
-// function askDepartureDate(recipientId, othervariables) {
-//     var today = moment().calendar();
-//     var tomorrow = moment().add(1, 'days').calendar();
-//     var dayAfterTomorrow = moment().add(2, 'days').calendar();
-//
-//     // today = moment.tz('America/Vancouver').format();
-//     // tomorrow = moment.tz('America/Vancouver').format();
-//     // dayAfterTomorrow = moment.tz('America/Vancouver').format();
-//     //
-//
-//     // today = dateFormat(today, "ddd, mmm. dS");
-//     // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
-//     // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
-//
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "What day are you riding?",
-//             quick_replies: [
-//                 {
-//                     "content_type": "text",
-//                     "title": today,
-//                     "payload": othervariables+"departure_date:today,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": tomorrow,
-//                     "payload": othervariables+"departure_date:tomorrow,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": dayAfterTomorrow,
-//                     "payload": othervariables+"departure_date:dayAfterTomorrow,"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// };
-// function askDepartureTime(recipientId, othervariables) {
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "What 🕗 do you want to go?",
-//             quick_replies: [
-//                 {
-//                     "content_type": "text",
-//                     "title": "🌅 Morning",
-//                     "payload": othervariables+"departure_time:Morning,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "🌇 Evening",
-//                     "payload": othervariables+"departure_time:Evening,"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// }
-// function checkUserDriveOrRide(recipientId, othervariables) {
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "Do you wanna check your drive offered or rides asked?",
-//             quick_replies: [
-//                 {
-//                     "content_type": "text",
-//                     "title": "Drive offered",
-//                     "payload": othervariables+"checkUserDriveOrRide:drive,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "Rides asked",
-//                     "payload": othervariables+"checkUserDriveOrRide:ride,"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// }
-// function askAskingPrice(recipientId, othervariables) {
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "How much 💰 are you charging per head?",
-//             quick_replies: [
-//               {
-//                 "content_type": "text",
-//                 "title": "😍 Free!",
-//                 "payload": othervariables+"asking_price:0,"
-//             },
-//                 {
-//                     "content_type": "text",
-//                     "title": "5",
-//                     "payload": othervariables+"asking_price:5,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "10",
-//                     "payload": othervariables+"asking_price:10,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "15",
-//                     "payload": othervariables+"asking_price:15,"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// }
-// function askAvailableSeats(recipientId, othervariables) {
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "How many 🍑s can you fit?",
-//             quick_replies: [
-//                 {
-//                     "content_type": "text",
-//                     "title": "1",
-//                     "payload": othervariables+"seating_space:1,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "2",
-//                     "payload": othervariables+"seating_space:2,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "3",
-//                     "payload": othervariables+"seating_space:3,"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// }
-// function checkUserRideInfo(sender, driveOrRide) {
-//   var results = [];
-//
-//   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-//     var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
-//
-//     userQuery.on('row', (row) => {
-//       results.push(row);
-//     });
-//     userQuery.on('end', () => {
-//       done();
-//       if (results.length > 0) {
-//         sendTextMessage(sender, "Here are your offers/asks:");
-//         pushQueryResults(sender, results);
-//         return
-//       } else {
-//         sendTextMessage(sender, "Looks like you haven't made one yet!");
-//         return
-//       };
-//     });
-//
-//   });
-// }
+function askWhichVariableToChange(recipientId, othervariables) {
+  var messageData = {
+      recipient: {
+          id: recipientId
+      },
+      message: {
+          text: "What do you wanna fix",
+          quick_replies: [
+              {
+                  "content_type": "text",
+                  "title": "Date",
+                  "payload": "departure_date"
+              }, {
+                  "content_type": "text",
+                  "title": "Time",
+                  "payload": "departure_time"
+              }, {
+                  "content_type": "text",
+                  "title": "Location",
+                  "payload": "departure_location"
+              }
+          ]
+      }
+  };
+  callSendAPI(messageData);
+}
+function askDriveOrRide(recipientId) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Aloha, are you driving or looking for a ride? 🎿",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "Driving",
+                    "payload": "drive_or_ride:looking_for_riders,"
+                }, {
+                    "content_type": "text",
+                    "title": "Riding",
+                    "payload": "drive_or_ride:looking_for_drivers,"
+                }, {
+                    "content_type": "text",
+                    "title": "Check my rides",
+                    "payload": "check_rides"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function askDepartureLocation(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Where are you leaving from?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "UBC",
+                    "payload": othervariables+"departure_location:UBC,"
+                }, {
+                    "content_type": "text",
+                    "title": "Whistler",
+                    "payload": othervariables+"departure_location:Whistler,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function askDayTrip(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Day trip or one way?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "Daytrip",
+                    "payload": othervariables+"day_trip:true,"
+                }, {
+                    "content_type": "text",
+                    "title": "One way",
+                    "payload": othervariables+"day_trip:false,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function askDepartureDate(recipientId, othervariables) {
+    var today = moment().calendar();
+    var tomorrow = moment().add(1, 'days').calendar();
+    var dayAfterTomorrow = moment().add(2, 'days').calendar();
 
-//
-// function receivedPostback(event) {
-//     var senderId = event.sender.id;
-//     var recipientId = event.recipient.id;
-//     var timeOfPostback = event.timestamp;
-//
-//     // The 'payload' param is a developer-defined field which is set in a postback
-//     // button for Structured Messages.
-//     var payload = event.postback.payload;
-//
-//     console.log("Received postback for user %d and page %d with payload '%s' " +
-//         "at %d",
-//     senderId, recipientId, payload, timeOfPostback);
-//
-//     // When a postback is called, we'll send a message back to the sender to
-//     // let them know it was successful
-//     sendTextMessage(payload, "Postback called");
-// }
-// function sendTextMessage(recipientId, messageText) {
-//
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: messageText,
-//             metadata: "DEVELOPER_DEFINED_METADATA"
-//         }
-//     };
-//
-//     callSendAPI(messageData);
-//
-//
-// }
+    // today = moment.tz('America/Vancouver').format();
+    // tomorrow = moment.tz('America/Vancouver').format();
+    // dayAfterTomorrow = moment.tz('America/Vancouver').format();
+    //
 
+    // today = dateFormat(today, "ddd, mmm. dS");
+    // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
+    // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
+
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "What day are you riding?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": today,
+                    "payload": othervariables+"departure_date:today,"
+                }, {
+                    "content_type": "text",
+                    "title": tomorrow,
+                    "payload": othervariables+"departure_date:tomorrow,"
+                }, {
+                    "content_type": "text",
+                    "title": dayAfterTomorrow,
+                    "payload": othervariables+"departure_date:dayAfterTomorrow,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+};
+function askDepartureTime(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "What 🕗 do you want to go?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "🌅 Morning",
+                    "payload": othervariables+"departure_time:Morning,"
+                }, {
+                    "content_type": "text",
+                    "title": "🌇 Evening",
+                    "payload": othervariables+"departure_time:Evening,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function checkUserDriveOrRide(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Do you wanna check your drive offered or rides asked?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "Drive offered",
+                    "payload": othervariables+"checkUserDriveOrRide:drive,"
+                }, {
+                    "content_type": "text",
+                    "title": "Rides asked",
+                    "payload": othervariables+"checkUserDriveOrRide:ride,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function askAskingPrice(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "How much 💰 are you charging per head?",
+            quick_replies: [
+              {
+                "content_type": "text",
+                "title": "😍 Free!",
+                "payload": othervariables+"asking_price:0,"
+            },
+                {
+                    "content_type": "text",
+                    "title": "5",
+                    "payload": othervariables+"asking_price:5,"
+                }, {
+                    "content_type": "text",
+                    "title": "10",
+                    "payload": othervariables+"asking_price:10,"
+                }, {
+                    "content_type": "text",
+                    "title": "15",
+                    "payload": othervariables+"asking_price:15,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function askAvailableSeats(recipientId, othervariables) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "How many 🍑s can you fit?",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "1",
+                    "payload": othervariables+"seating_space:1,"
+                }, {
+                    "content_type": "text",
+                    "title": "2",
+                    "payload": othervariables+"seating_space:2,"
+                }, {
+                    "content_type": "text",
+                    "title": "3",
+                    "payload": othervariables+"seating_space:3,"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+function checkUserRideInfo(sender, driveOrRide) {
+  var results = [];
+
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
+
+    userQuery.on('row', (row) => {
+      results.push(row);
+    });
+    userQuery.on('end', () => {
+      done();
+      if (results.length > 0) {
+        sendTextMessage(sender, "Here are your offers/asks:");
+        pushQueryResults(sender, results);
+        return
+      } else {
+        sendTextMessage(sender, "Looks like you haven't made one yet!");
+        return
+      };
+    });
+
+  });
+}
+function receivedPostback(event) {
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
+    var timeOfPostback = event.timestamp;
+
+    // The 'payload' param is a developer-defined field which is set in a postback
+    // button for Structured Messages.
+    var payload = event.postback.payload;
+
+    console.log("Received postback for user %d and page %d with payload '%s' " +
+        "at %d",
+    senderId, recipientId, payload, timeOfPostback);
+
+    // When a postback is called, we'll send a message back to the sender to
+    // let them know it was successful
+    sendTextMessage(payload, "Postback called");
+}
+function sendTextMessage(recipientId, messageText) {
+
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: messageText,
+            metadata: "DEVELOPER_DEFINED_METADATA"
+        }
+    };
+
+    callSendAPI(messageData);
+
+
+}
 function parseConditions(gatheredInfoString) {
     var conditionsArray = gatheredInfoString.split(',');
     var parsedObject = {};
@@ -725,86 +722,86 @@ function pushQueryResults(senderId, queryresults) {
   callSendAPI(messageData);
   return
 };
-// function receivedDeliveryConfirmation(event) {
-//     var senderId = event.sender.id;
-//     var recipientId = event.recipient.id;
-//     var delivery = event.delivery;
-//     var messageIDs = delivery.mids;
-//     var watermark = delivery.watermark;
-//     var sequenceNumber = delivery.seq;
-//
-//     if (messageIDs) {
-//         messageIDs.forEach(function(messageID) {
-//             // console.log("Received delivery confirmation for message ID: %s", messageID);
-//         });
-//     }
-//
-//     // console.log("All message before %d were delivered.", watermark);
-// }
-// function receivedMessageRead(event) {
-//     var senderId = event.sender.id;
-//     var recipientId = event.recipient.id;
-//
-//     // All messages before watermark (a timestamp) or sequence have been seen.
-//     var watermark = event.read.watermark;
-//     var sequenceNumber = event.read.seq;
-//
-//     console.log("Received message read event for watermark %d and sequence " +
-//         "number %d",
-//     watermark, sequenceNumber);
-// }
-// function receivedAccountLink(event) {
-//     var senderId = event.sender.id;
-//     var recipientId = event.recipient.id;
-//
-//     var status = event.account_linking.status;
-//     var authCode = event.account_linking.authorization_code;
-//
-//     console.log("Received account link event with for user %d with status %s " +
-//         "and auth code %s ",
-//     senderId, status, authCode);
-// }
-// function receivedAuthentication(event) {
-//     var senderId = event.sender.id;
-//     var recipientId = event.recipient.id;
-//     var timeOfAuth = event.timestamp;
-//
-//     // The 'ref' field is set in the 'Send to Messenger' plugin, in the 'data-ref'
-//     // The developer can set this to an arbitrary value to associate the
-//     // authentication callback with the 'Send to Messenger' click event. This is
-//     // a way to do account linking when the user clicks the 'Send to Messenger'
-//     // plugin.
-//     var passThroughParam = event.optin.ref;
-//
-//     console.log("Received authentication for user %d and page %d with pass " +
-//         "through param '%s' at %d",
-//     senderId, recipientId, passThroughParam, timeOfAuth);
-//
-//     // When an authentication is received, we'll send a message back to the sender
-//     // to let them know it was successful.
-//     sendTextMessage(senderId, "Authentication successful");
-// }
-// function callSendAPI(messageData) {
-//     request({
-//         uri: 'https://graph.facebook.com/v2.6/me/messages',
-//         qs: {
-//             access_token: token
-//         },
-//         method: 'POST',
-//         json: messageData
-//
-//     }, function(error, response, body) {
-//         if (!error && response.statusCode == 200) {
-//             // var recipientId = body.recipient_id;
-//             // var messageId = body.message_id;
-//             //
-//             // if (messageId) {
-//             //     console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
-//             // } else {
-//             //     console.log("Successfully called Send API for recipient %s", recipientId);
-//             // }
-//         } else {
-//             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
-//         }
-//     });
-// }
+function receivedDeliveryConfirmation(event) {
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
+    var delivery = event.delivery;
+    var messageIDs = delivery.mids;
+    var watermark = delivery.watermark;
+    var sequenceNumber = delivery.seq;
+
+    if (messageIDs) {
+        messageIDs.forEach(function(messageID) {
+            // console.log("Received delivery confirmation for message ID: %s", messageID);
+        });
+    }
+
+    // console.log("All message before %d were delivered.", watermark);
+}
+function receivedMessageRead(event) {
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
+
+    // All messages before watermark (a timestamp) or sequence have been seen.
+    var watermark = event.read.watermark;
+    var sequenceNumber = event.read.seq;
+
+    console.log("Received message read event for watermark %d and sequence " +
+        "number %d",
+    watermark, sequenceNumber);
+}
+function receivedAccountLink(event) {
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
+
+    var status = event.account_linking.status;
+    var authCode = event.account_linking.authorization_code;
+
+    console.log("Received account link event with for user %d with status %s " +
+        "and auth code %s ",
+    senderId, status, authCode);
+}
+function receivedAuthentication(event) {
+    var senderId = event.sender.id;
+    var recipientId = event.recipient.id;
+    var timeOfAuth = event.timestamp;
+
+    // The 'ref' field is set in the 'Send to Messenger' plugin, in the 'data-ref'
+    // The developer can set this to an arbitrary value to associate the
+    // authentication callback with the 'Send to Messenger' click event. This is
+    // a way to do account linking when the user clicks the 'Send to Messenger'
+    // plugin.
+    var passThroughParam = event.optin.ref;
+
+    console.log("Received authentication for user %d and page %d with pass " +
+        "through param '%s' at %d",
+    senderId, recipientId, passThroughParam, timeOfAuth);
+
+    // When an authentication is received, we'll send a message back to the sender
+    // to let them know it was successful.
+    sendTextMessage(senderId, "Authentication successful");
+}
+function callSendAPI(messageData) {
+    request({
+        uri: 'https://graph.facebook.com/v2.6/me/messages',
+        qs: {
+            access_token: token
+        },
+        method: 'POST',
+        json: messageData
+
+    }, function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            // var recipientId = body.recipient_id;
+            // var messageId = body.message_id;
+            //
+            // if (messageId) {
+            //     console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
+            // } else {
+            //     console.log("Successfully called Send API for recipient %s", recipientId);
+            // }
+        } else {
+            console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
+        }
+    });
+}
