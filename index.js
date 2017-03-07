@@ -364,15 +364,15 @@ function askDepartureDate(recipientId, othervariables) {
                 {
                     "content_type": "text",
                     "title": today,
-                    "payload": othervariables+"departure_date:"+today+","
+                    "payload": othervariables+"departure_date:today,"
                 }, {
                     "content_type": "text",
                     "title": tomorrow,
-                    "payload": othervariables+"departure_date:"+tomorrow+","
+                    "payload": othervariables+"departure_date:tomorrow,"
                 }, {
                     "content_type": "text",
                     "title": dayAfterTomorrow,
-                    "payload": othervariables+"departure_date:"+dayAfterTomorrow+","
+                    "payload": othervariables+"departure_date:dayAfterTomorrow,"
                 }
             ]
         }
