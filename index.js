@@ -337,9 +337,9 @@ function askDayTrip(recipientId, othervariables) {
     callSendAPI(messageData);
 }
 function askDepartureDate(recipientId, othervariables) {
-    var today = moment().format();
-    var tomorrow = moment().add(1, 'days').format();
-    var dayAfterTomorrow = moment().add(2, 'days').format();
+    var today = moment();
+    var tomorrow = moment().add(1, 'days');
+    var dayAfterTomorrow = moment().add(2, 'days');
 
     // var todayTZ = today.tz('America/Vancouver').format();
     // var tomorrowTZ = tomorrow.tz('America/Vancouver').format();
