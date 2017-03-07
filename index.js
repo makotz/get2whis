@@ -519,7 +519,7 @@ function receivedPostback(event) {
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
     sendTextMessage(payload.match, "Hey, someone pinged you!");
-    notificationGenericTemplate(payload.match, payload);
+    notificationGenericTemplate(payload.match, JSON.stringify(payload));
 }
 function sendTextMessage(recipientId, messageText) {
 
