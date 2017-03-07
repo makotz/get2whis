@@ -664,7 +664,7 @@ function pushQueryResults(senderId, queryresults, user) {
         payload: payload,
       }]
     };
-    if (!queryresults[i].asking_price) { genericObject.pop(subtitle) };
+    if (!queryresults[i].asking_price) { delete genericObject.subtitle };
     if (!user) { genericObject.button.pop() };
     elements.push(genericObject);
   }
