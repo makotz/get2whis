@@ -519,7 +519,7 @@ function receivedPostback(event) {
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
     sendTextMessage(payload.match, "Hey, someone pinged you!");
-    notificationGenericTemplate(payload.match, JSON.stringify(payload));
+    notificationGenericTemplate(payload.match, JSON.parse(payload));
 }
 function sendTextMessage(recipientId, messageText) {
 
@@ -695,9 +695,6 @@ function pushQueryResults(senderId, queryresults, user) {
 };
 
 function notificationGenericTemplate(senderId, user) {
-    user = JSON.parse(user);
-    console.log(user);
-    console.log(user.first_name);
     var genericObject = {
       title: user.first_name+" "+user.last_name,
       subtitle: "Offering a ride to you on "+user.departure_date+" from "+user.departure_location,
@@ -709,6 +706,7 @@ function notificationGenericTemplate(senderId, user) {
         url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name
       }]
     };
+    console.log(genericObject.title);
 
     if (user.asking_price) { genericObject.subtitle = "Asking for your ride on "+user.departure_date+" from "+user.departure_location}
 
