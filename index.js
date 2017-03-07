@@ -641,14 +641,10 @@ function pushQueryResults(senderId, queryresults, user) {
         type: "postback",
         title: "Ping " + queryresults[i].first_name,
         payload: user,
-      }
-    ]
+      }]
     };
     console.log('queryresults[i].asking_price is'+queryresults[i].asking_price);
-    if (queryresults[i].asking_price == 'undefined') {
-      genericObject.pop(subtitle);
-    };
-
+    if (queryresults[i].asking_price == 'undefined') { genericObject.pop(subtitle);};
     elements.push(genericObject);
   }
 
@@ -681,9 +677,9 @@ function notificationGenericTemplate(senderId, user) {
         url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name
       }]
     };
-    if (user.asking_price) {
-      genericObject.subtitle = "Asking for your ride on "+user.departure_date+" from "+user.departure_location,
-    }
+
+    if (user.asking_price) { genericObject.subtitle = "Asking for your ride on "+user.departure_date+" from "+user.departure_location}
+
   var messageData = {
     recipient: {
       id: senderId
