@@ -65,7 +65,18 @@ app.get('/webhook/', function(req, res) {
 // Spin up the server
 app.listen(app.get('port'), function() {
     console.log('running on port', app.get('port'))
+    var dayInMilliSeconds = 1000 * 60 * 60 * 24;
+    var today = moment().substract(2, 'days').format();
+    setInterval(function() {
+      console.log("deleting irrelevant data");
+      pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+        client.query("DELETE FROM rider WHERE departure_date <'"+today+"'");
+        client.query("DELETE FROM driver WHERE departure_date <'"+today+"'");
+        done();
+      }
+    }, dayInMilliSeconds );
 })
+
 app.post('/webhook/', function(req, res) {
     var data = req.body;
 
@@ -330,14 +341,14 @@ function askDepartureDate(recipientId, othervariables) {
     var tomorrow = moment().add(1, 'days').format();
     var dayAfterTomorrow = moment().add(2, 'days').format();
 
-    var todayTZ = today.tz('America/Vancouver').format();
-    var tomorrowTZ = tomorrow.tz('America/Vancouver').format();
-    var dayAfterTomorrowTZ = dayAfterTomorrow.tz('America/Vancouver').format();
+    // var todayTZ = today.tz('America/Vancouver').format();
+    // var tomorrowTZ = tomorrow.tz('America/Vancouver').format();
+    // var dayAfterTomorrowTZ = dayAfterTomorrow.tz('America/Vancouver').format();
     //
 
-    var todayButton = dateFormat(todayTZ, "ddd, mmm. dS");
-    var tomorrowButton = dateFormat(tomorrowTZ, "ddd, mmm. dS");
-    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrowTZ, "ddd, mmm. dS");
+    var todayButton = dateFormat(today, "ddd, mmm. dS");
+    var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
+    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
 
     var messageData = {
         recipient: {
@@ -349,15 +360,15 @@ function askDepartureDate(recipientId, othervariables) {
                 {
                     "content_type": "text",
                     "title": todayButton,
-                    "payload": othervariables+"departure_date:"+todayTZ+","
+                    "payload": othervariables+"departure_date:"+today+","
                 }, {
                     "content_type": "text",
                     "title": tomorrowButton,
-                    "payload": othervariables+"departure_date:"+tomorrowTZ+","
+                    "payload": othervariables+"departure_date:"+tomorrow+","
                 }, {
                     "content_type": "text",
                     "title": dayAfterTomorrowButton,
-                    "payload": othervariables+"departure_date:"+dayAfterTomorrowTZ+","
+                    "payload": othervariables+"departure_date:"+dayAfterTomorrow+","
                 }
             ]
         }
