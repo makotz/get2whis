@@ -510,7 +510,7 @@ function receivedPostback(event) {
 
     // The 'payload' param is a developer-defined field which is set in a postback
     // button for Structured Messages.
-    var payload = event.postback.payload;
+    var payload = JSON.parse(event.postback.payload);
 
     console.log("Received postback for user %d and page %d with payload '%s' " +
         "at %d",
@@ -651,7 +651,7 @@ function pushQueryResults(senderId, queryresults, user) {
     }
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
-      subtitle: "Asking $"+queryresults[i].asking_price,
+      subtitle: "Asking $"+queryresults[i].asking_price+ " for ride on "+queryresults[i].departure_date,
       item_url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name,
       image_url: queryresults[i].profile_pic,
       buttons: [{
@@ -661,10 +661,17 @@ function pushQueryResults(senderId, queryresults, user) {
       }, {
         type: "postback",
         title: "Ping " + queryresults[i].first_name,
-        payload: payload,
+        payload: JSON.stringify(payload),
       }]
     };
-    if (!queryresults[i].asking_price) { delete genericObject.subtitle };
+
+    if (!queryresults[i].asking_price) {
+      if (queryresults[i].day_trip == true) {
+        genericObject.subtitle = "A daytrip on "+queryresults[i].departure_date
+      } else {
+        genericObject.subtitle = "One way ride on "+queryresults[i].departure_date+" in the "+queryresults[i].departure_time
+      }
+     };
     if (!user) { genericObject.buttons.pop() };
     elements.push(genericObject);
   }
