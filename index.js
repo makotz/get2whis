@@ -211,9 +211,12 @@ function receivedMessage(event) {
         // keywords and send back the corresponding example. Otherwise, just echo
         // the text we received.
         switch (messageText) {
-            case 'aloha':
-                askDriveOrRide(senderId);
-                break;
+            case 'ski':
+            askDriveOrRide(senderId);
+            break;
+            case 'board':
+            askDriveOrRide(senderId);
+            break;
                 //       case 'receipt':
                 //         sendReceiptMessage(senderId);
                 //         break;
@@ -337,18 +340,18 @@ function askDayTrip(recipientId, othervariables) {
     callSendAPI(messageData);
 }
 function askDepartureDate(recipientId, othervariables) {
-    var today = moment();
-    var tomorrow = moment().add(1, 'days');
-    var dayAfterTomorrow = moment().add(2, 'days');
+    var today = moment().calendar();
+    var tomorrow = moment().add(1, 'days').calendar();
+    var dayAfterTomorrow = moment().add(2, 'days').calendar();
 
     // var todayTZ = today.tz('America/Vancouver').format();
     // var tomorrowTZ = tomorrow.tz('America/Vancouver').format();
     // var dayAfterTomorrowTZ = dayAfterTomorrow.tz('America/Vancouver').format();
     //
 
-    var todayButton = dateFormat(today, "ddd, mmm. dS");
-    var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
-    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
+    // var todayButton = dateFormat(today, "ddd, mmm. dS");
+    // var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
+    // var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
 
     var messageData = {
         recipient: {
@@ -359,15 +362,15 @@ function askDepartureDate(recipientId, othervariables) {
             quick_replies: [
                 {
                     "content_type": "text",
-                    "title": todayButton,
+                    "title": today,
                     "payload": othervariables+"departure_date:"+today+","
                 }, {
                     "content_type": "text",
-                    "title": tomorrowButton,
+                    "title": tomorrow,
                     "payload": othervariables+"departure_date:"+tomorrow+","
                 }, {
                     "content_type": "text",
-                    "title": dayAfterTomorrowButton,
+                    "title": dayAfterTomorrow,
                     "payload": othervariables+"departure_date:"+dayAfterTomorrow+","
                 }
             ]
@@ -552,7 +555,7 @@ function confirmQueryInfo(recipientId, othervariables) {
           id: recipientId
       },
       message: {
-          text: "Alright, let's confirm your inquiry. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + " at around "+ departure_time+"?",
+          text: "Alright, let's confirm your inquiry. You are " + drive_or_ride + " from " + departure_location + " on " + departure_date + " at around "+ departure_time+"?",
           quick_replies: [
               {
                   "content_type": "text",
