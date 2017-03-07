@@ -3,7 +3,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
-const config = require('./config');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
