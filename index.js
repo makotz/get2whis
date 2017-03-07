@@ -66,7 +66,7 @@ app.get('/webhook/', function(req, res) {
 app.listen(app.get('port'), function() {
     console.log('running on port', app.get('port'))
     var dayInMilliSeconds = 1000 * 60 * 60 * 24;
-    var today = moment().substract(2, 'days').format();
+    var today = moment().subtract(2, 'days').format();
     setInterval(function() {
       console.log("deleting irrelevant data");
       pg.connect(process.env.DATABASE_URL, function(err, client, done) {
