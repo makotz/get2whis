@@ -238,7 +238,7 @@ function receivedMessage(event) {
                 //         sendTypingOff(senderId);
                 //         break;
             default:
-                sendTextMessage(senderId, 'Hi there, type "aloha" to begin');
+                sendTextMessage(senderId, 'Hi there, type "ski" or "board" to begin');
         }
     } else if (messageAttachments) {
         sendTextMessage(senderId, "Message with attachment received");
@@ -643,7 +643,8 @@ function pushQueryResults(senderId, queryresults, user) {
 
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
-    var payload = "";
+    var payload = "sup";
+
     if (user) {
       user.match = queryresults[i].sender_id;
       payload = user;
@@ -663,11 +664,8 @@ function pushQueryResults(senderId, queryresults, user) {
         payload: payload,
       }]
     };
-    console.log('queryresults[i].asking_price is'+queryresults[i].asking_price);
-    if (!queryresults[i].asking_price) {
-      genericObject.pop(subtitle);
-      genericObject.button.pop();
-    };
+    if (!queryresults[i].asking_price) { genericObject.pop(subtitle) };
+    if (!user) { genericObject.button.pop() };
     elements.push(genericObject);
   }
 
