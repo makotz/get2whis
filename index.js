@@ -712,7 +712,7 @@ function notificationGenericTemplate(senderId, user) {
     console.log(genericObject.item_url);
     console.log(genericObject.buttons);
 
-    if (user1.asking_price) { genericObject.subtitle = "Asking for your ride on "+user1.departure_date+" from "+user1.departure_location}
+    // if (user1.asking_price) { genericObject.subtitle = "Asking for your ride on "+user1.departure_date+" from "+user1.departure_location}
 
   var messageData = {
     recipient: {
@@ -729,8 +729,7 @@ function notificationGenericTemplate(senderId, user) {
     }
   };
 
-  var messageData2 = JSON.parse(messageData)
-  callSendAPI(messageData2);
+  callSendAPI(messageData);
   return
 };
 function receivedDeliveryConfirmation(event) {
