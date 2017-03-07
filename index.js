@@ -73,9 +73,9 @@ app.listen(app.get('port'), function() {
         client.query("DELETE FROM rider WHERE departure_date <'"+today+"'");
         client.query("DELETE FROM driver WHERE departure_date <'"+today+"'");
         done();
-      }
+      });
     }, dayInMilliSeconds );
-})
+});
 
 app.post('/webhook/', function(req, res) {
     var data = req.body;
