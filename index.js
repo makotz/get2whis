@@ -510,16 +510,16 @@ function receivedPostback(event) {
 
     // The 'payload' param is a developer-defined field which is set in a postback
     // button for Structured Messages.
-    var payload = JSON.parse(event.postback.payload);
+    var payload = event.postback.payload;
 
     console.log("Received postback for user %d and page %d with payload '%s' " +
         "at %d",
-    senderId, recipientId, JSON.stringify(payload), timeOfPostback);
+    senderId, recipientId, payload, timeOfPostback);
 
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
     sendTextMessage(payload.match, "Hey, someone pinged you!");
-    notificationGenericTemplate(payload.match, JSON.parse(payload));
+    notificationGenericTemplate(payload.match, payload);
 }
 function sendTextMessage(recipientId, messageText) {
 
@@ -695,20 +695,21 @@ function pushQueryResults(senderId, queryresults, user) {
 };
 
 function notificationGenericTemplate(senderId, user) {
+    user1 = JSON.parse(user);
     var genericObject = {
-      title: user.first_name+" "+user.last_name,
-      subtitle: "Offering a ride to you on "+user.departure_date+" from "+user.departure_location,
-      item_url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name,
-      image_url: user.profile_pic,
+      title: user1.first_name+" "+user1.last_name,
+      subtitle: "Offering a ride to you on "+user1.departure_date+" from "+user1.departure_location,
+      item_url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name,
+      image_url: user1.profile_pic,
       buttons: [{
         type: "web_url",
-        title: "🔍 & chat with "+user.first_name,
-        url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name
+        title: "🔍 & chat with "+user1.first_name,
+        url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name
       }]
     };
     console.log(genericObject.title);
 
-    if (user.asking_price) { genericObject.subtitle = "Asking for your ride on "+user.departure_date+" from "+user.departure_location}
+    if (user1.asking_price) { genericObject.subtitle = "Asking for your ride on "+user1.departure_date+" from "+user1.departure_location}
 
   var messageData = {
     recipient: {
