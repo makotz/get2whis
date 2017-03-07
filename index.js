@@ -723,7 +723,7 @@ function notificationGenericTemplate(senderId, user) {
         type: "template",
         payload: {
           template_type: "generic",
-          elements: genericObject
+          elements: JSON.parse(genericObject)
         }
       }
     }
