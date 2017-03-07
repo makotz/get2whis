@@ -121,17 +121,17 @@ app.post('/webhook/', function(req, res) {
             // Iterate over each messaging event
             pageEntry.messaging.forEach(function(messagingEvent) {
                 if (messagingEvent.optin) {
-                    receivedAuthentication(messagingEvent);
+                    gf.receivedAuthentication(messagingEvent);
                 } else if (messagingEvent.message) {
-                    receivedMessage(messagingEvent);
+                    gf.receivedMessage(messagingEvent);
                 } else if (messagingEvent.delivery) {
-                    receivedDeliveryConfirmation(messagingEvent);
+                    gf.receivedDeliveryConfirmation(messagingEvent);
                 } else if (messagingEvent.postback) {
-                    receivedPostback(messagingEvent);
+                    gf.receivedPostback(messagingEvent);
                 } else if (messagingEvent.read) {
-                    receivedMessageRead(messagingEvent);
+                    gf.receivedMessageRead(messagingEvent);
                 } else if (messagingEvent.account_linking) {
-                    receivedAccountLink(messagingEvent);
+                    gf.receivedAccountLink(messagingEvent);
                 } else {
                     console.log("Webhook received unknown messagingEvent: ", messagingEvent);
                 }
