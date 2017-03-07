@@ -696,6 +696,8 @@ function pushQueryResults(senderId, queryresults, user) {
 
 function notificationGenericTemplate(senderId, user) {
     user = JSON.parse(user);
+    console.log(user);
+    console.log(user.first_name);
     var genericObject = {
       title: user.first_name+" "+user.last_name,
       subtitle: "Offering a ride to you on "+user.departure_date+" from "+user.departure_location,
