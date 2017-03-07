@@ -3,11 +3,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
-const config = require('./config');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
-var FB = require('fb');
+const pq = require('./parameterQueries');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -57,43 +56,6 @@ app.get('/db/rider', function (request, response) {
   });
 });
 
-app.get('/test', function (f, response) {
-  FB.getLoginStatus(function(response) {
-  if (response.status === 'connected') {
-    // the user is logged in and has authenticated your
-    // app, and response.authResponse supplies
-    // the user's ID, a valid access token, a signed
-    // request, and the time the access token
-    // and signed request each expire
-    var uid = response.authResponse.userID;
-    var accessToken = response.authResponse.accessToken;
-    console.log("Fish");
-  } else if (response.status === 'not_authorized') {
-    console.log('the user is logged in to Facebook, but has not authenticated your app')
-  } else {
-    console.log("Hero");
-  }
-  });
-  // request('https://graph.facebook.com/v2.6/' + sender + '?fields=id,name&access_token=' + token, function(error, response, body) {
-  //     if (!error && response.statusCode == 200) {
-  //       console.log("body is...", body);
-  //     } else {
-  //       console.log("something failed.. :(");
-  //     }
-  // // });
-  // //   client.query('SELECT * FROM rider', function(err, result) {
-  // //     done();
-  // //     if (err)
-  // //      { console.error(err); response.send("Error " + err);
-  // //        respon}
-  // //     else
-  // //      {
-  // //        console.log("loaded db results");
-  // //        response.json(result.rows); }
-  //  });
-});
-
-
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
@@ -101,11 +63,20 @@ app.get('/webhook/', function(req, res) {
     }
     res.send('Error, wrong token')
 })
-
 // Spin up the server
 app.listen(app.get('port'), function() {
     console.log('running on port', app.get('port'))
-})
+    var dayInMilliSeconds = 1000 * 60 * 60 * 24;
+    var today = moment().subtract(2, 'days').format();
+    setInterval(function() {
+      console.log("deleting irrelevant data");
+      pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+        client.query("DELETE FROM rider WHERE departure_date <'"+today+"'");
+        client.query("DELETE FROM driver WHERE departure_date <'"+today+"'");
+        done();
+      });
+    }, dayInMilliSeconds );
+});
 
 app.post('/webhook/', function(req, res) {
     var data = req.body;
@@ -166,10 +137,10 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('check_rides')) {
           if (quickReplyPayload.includes('checkUserDriveOrRide:drive')) {
-            checkRides(senderId, 'drive');
+            checkUserRideInfo(senderId, 'drive');
             return
           } else if (quickReplyPayload.includes('checkUserDriveOrRide:ride')) {
-            checkRides(senderId, 'ride');
+            checkUserRideInfo(senderId, 'ride');
             return
           } else {
             checkUserDriveOrRide(senderId, quickReplyPayload);
@@ -241,21 +212,12 @@ function receivedMessage(event) {
         // keywords and send back the corresponding example. Otherwise, just echo
         // the text we received.
         switch (messageText) {
-            // case 'topsecret':
-            //     sendDriveOrRide(senderId);
-            //     break;
-
-            case 'aloha':
-                askDriveOrRide(senderId);
-                break;
-            // case 'query':
-            //     queryExample(senderId);
-            //     break;
-                //
-                //       case 'generic':
-                //         sendGenericMessage(senderId);
-                //         break;
-                //
+            case 'ski':
+            askDriveOrRide(senderId);
+            break;
+            case 'board':
+            askDriveOrRide(senderId);
+            break;
                 //       case 'receipt':
                 //         sendReceiptMessage(senderId);
                 //         break;
@@ -275,11 +237,6 @@ function receivedMessage(event) {
                 //       case 'typing off':
                 //         sendTypingOff(senderId);
                 //         break;
-                //
-                //       case 'account linking':
-                //         sendAccountLinking(senderId);
-                //         break;
-
             default:
                 sendTextMessage(senderId, 'Hi there, type "aloha" to begin');
         }
@@ -388,13 +345,14 @@ function askDepartureDate(recipientId, othervariables) {
     var tomorrow = moment().add(1, 'days').calendar();
     var dayAfterTomorrow = moment().add(2, 'days').calendar();
 
-    today = moment.tz('America/Vancouver').format();
-    tomorrow = moment.tz('America/Vancouver').format();
-    dayAfterTomorrow = moment.tz('America/Vancouver').format();
+    // var todayTZ = today.tz('America/Vancouver').format();
+    // var tomorrowTZ = tomorrow.tz('America/Vancouver').format();
+    // var dayAfterTomorrowTZ = dayAfterTomorrow.tz('America/Vancouver').format();
+    //
 
-    // today = dateFormat(today, "ddd, mmm. dS");
-    // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
-    // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
+    // var todayButton = dateFormat(today, "ddd, mmm. dS");
+    // var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
+    // var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
 
     var messageData = {
         recipient: {
@@ -406,15 +364,15 @@ function askDepartureDate(recipientId, othervariables) {
                 {
                     "content_type": "text",
                     "title": today,
-                    "payload": othervariables+"departure_date:today,"
+                    "payload": othervariables+"departure_date:"+today+","
                 }, {
                     "content_type": "text",
                     "title": tomorrow,
-                    "payload": othervariables+"departure_date:tomorrow,"
+                    "payload": othervariables+"departure_date:"+tomorrow+","
                 }, {
                     "content_type": "text",
                     "title": dayAfterTomorrow,
-                    "payload": othervariables+"departure_date:dayAfterTomorrow,"
+                    "payload": othervariables+"departure_date:"+dayAfterTomorrow+","
                 }
             ]
         }
@@ -522,6 +480,29 @@ function askAvailableSeats(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 }
+function checkUserRideInfo(sender, driveOrRide) {
+  var results = [];
+
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
+
+    userQuery.on('row', (row) => {
+      results.push(row);
+    });
+    userQuery.on('end', () => {
+      done();
+      if (results.length > 0) {
+        sendTextMessage(sender, "Here are your offers/asks:");
+        pushQueryResults(sender, results);
+        return
+      } else {
+        sendTextMessage(sender, "Looks like you haven't made one yet!");
+        return
+      };
+    });
+
+  });
+}
 function receivedPostback(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
@@ -537,7 +518,8 @@ function receivedPostback(event) {
 
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
-    sendTextMessage(payload, "Postback called");
+    sendTextMessage(payload.match, "Hey, someone pinged you!");
+    notificationGenericTemplate(payload.match, payload);
 }
 function sendTextMessage(recipientId, messageText) {
 
@@ -575,7 +557,7 @@ function confirmQueryInfo(recipientId, othervariables) {
           id: recipientId
       },
       message: {
-          text: "Alright, let's confirm your inquiry. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + " at around "+ departure_time+"?",
+          text: "Alright, let's confirm your inquiry. You are " + drive_or_ride + " from " + departure_location + " on " + departure_date + " at around "+ departure_time+"?",
           quick_replies: [
               {
                   "content_type": "text",
@@ -622,7 +604,7 @@ function saveAndQuery(sender, conditions, userProfile) {
             console.log(results.length);
             if (results.length > 0) {
               sendTextMessage(sender, "Let's get these peeps up!");
-              pushQueryResults(sender, results);
+              pushQueryResults(sender, results, user);
               return
             } else {
               sendTextMessage(sender, "Couldn't find riders 😭");
@@ -647,7 +629,7 @@ function saveAndQuery(sender, conditions, userProfile) {
           console.log(results.length);
           if (results.length > 0) {
             sendTextMessage(sender, "Here are potential drivers:");
-            pushQueryResults(sender, results);
+            pushQueryResults(sender, results, user);
             return
           } else {
             sendTextMessage(sender, "Couldn't find a driver 😭");
@@ -657,27 +639,35 @@ function saveAndQuery(sender, conditions, userProfile) {
        });
     }
 };
-function pushQueryResults(senderId, queryresults) {
+function pushQueryResults(senderId, queryresults, user) {
 
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
-
+    var payload = "";
+    if (user) {
+      user.match = queryresults[i].sender_id;
+      payload = user;
+    }
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
       subtitle: "Asking $"+queryresults[i].asking_price,
-      item_url: "http://facebook.com/profile.php?id="+queryresults[i].sender_id,
+      item_url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name,
       image_url: queryresults[i].profile_pic,
       buttons: [{
+        type: "web_url",
+        title: "🔍 & chat with "+queryresults[i].first_name,
+        url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name
+      }, {
         type: "postback",
-        title: "Chat with"+queryresults[i].first_name,
-        payload: queryresults[i].sender_id
+        title: "Ping " + queryresults[i].first_name,
+        payload: payload,
       }]
     };
-
-    if (queryresults[i].asking_price == 'undefined') {
+    console.log('queryresults[i].asking_price is'+queryresults[i].asking_price);
+    if (!queryresults[i].asking_price) {
       genericObject.pop(subtitle);
+      genericObject.button.pop();
     };
-
     elements.push(genericObject);
   }
 
@@ -695,7 +685,39 @@ function pushQueryResults(senderId, queryresults) {
       }
     }
   };
-  console.log(messageData)
+  callSendAPI(messageData);
+  return
+};
+
+function notificationGenericTemplate(senderId, user) {
+    var genericObject = {
+      title: user.first_name+" "+user.last_name,
+      subtitle: "Offering a ride to you on "+user.departure_date+" from "+user.departure_location,
+      item_url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name,
+      image_url: user.profile_pic,
+      buttons: [{
+        type: "web_url",
+        title: "🔍 & chat with "+user.first_name,
+        url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name
+      }]
+    };
+
+    if (user.asking_price) { genericObject.subtitle = "Asking for your ride on "+user.departure_date+" from "+user.departure_location}
+
+  var messageData = {
+    recipient: {
+      id: senderId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: genericObject
+        }
+      }
+    }
+  };
   callSendAPI(messageData);
   return
 };
@@ -781,27 +803,4 @@ function callSendAPI(messageData) {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
     });
-}
-function checkRides(sender, driveOrRide) {
-  var results = [];
-
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
-
-    userQuery.on('row', (row) => {
-      results.push(row);
-    });
-    userQuery.on('end', () => {
-      done();
-      if (results.length > 0) {
-        sendTextMessage(sender, "Here are your offers/asks:");
-        pushQueryResults(sender, results);
-        return
-      } else {
-        sendTextMessage(sender, "Looks like you haven't made one yet!");
-        return
-      };
-    });
-
-  });
 }
