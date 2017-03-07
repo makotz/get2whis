@@ -708,6 +708,9 @@ function notificationGenericTemplate(senderId, user) {
       }]
     };
     console.log(genericObject.title);
+    console.log(genericObject.subtitle);
+    console.log(genericObject.item_url);
+    console.log(genericObject.buttons);
 
     if (user1.asking_price) { genericObject.subtitle = "Asking for your ride on "+user1.departure_date+" from "+user1.departure_location}
 
