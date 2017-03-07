@@ -7,7 +7,7 @@ const config = require('./config');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
-var FB = require('fb');
+const pq = require('./parameterQueries');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -166,13 +166,13 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('check_rides')) {
           if (quickReplyPayload.includes('checkUserDriveOrRide:drive')) {
-            checkRides(senderId, 'drive');
+            pq.checkUserRideInfo(senderId, 'drive');
             return
           } else if (quickReplyPayload.includes('checkUserDriveOrRide:ride')) {
-            checkRides(senderId, 'ride');
+            pq.checkUserRideInfo(senderId, 'ride');
             return
           } else {
-            checkUserDriveOrRide(senderId, quickReplyPayload);
+            pq.checkUserDriveOrRide(senderId, quickReplyPayload);
             return
           };
         };
@@ -191,38 +191,38 @@ function receivedMessage(event) {
 
 
         if (!quickReplyPayload.includes('drive_or_ride')) {
-          askDriveOrRide(senderId, quickReplyPayload);
+          pq.askDriveOrRide(senderId, quickReplyPayload);
           return
         }
         if (!quickReplyPayload.includes('departure_location')) {
-          askDepartureLocation(senderId, quickReplyPayload);
+          pq.askDepartureLocation(senderId, quickReplyPayload);
           return
         };
 
         if (quickReplyPayload.includes('UBC') && !quickReplyPayload.includes('day_trip')) {
-          askDayTrip(senderId, quickReplyPayload);
+          pq.askDayTrip(senderId, quickReplyPayload);
           return
         };
 
         if (!quickReplyPayload.includes('departure_date')) {
-          askDepartureDate(senderId, quickReplyPayload);
+          pq.askDepartureDate(senderId, quickReplyPayload);
           return
         };
 
         if (!quickReplyPayload.includes('departure_time')) {
           if (quickReplyPayload.includes('day_trip:false') || quickReplyPayload.includes('Whistler')) {
-            askDepartureTime(senderId, quickReplyPayload);
+            pq.askDepartureTime(senderId, quickReplyPayload);
             return
           };
         };
 
         if (quickReplyPayload.includes('looking_for_riders')) {
           if (!quickReplyPayload.includes('seating_space')) {
-            askAvailableSeats(senderId, quickReplyPayload)
+            pq.askAvailableSeats(senderId, quickReplyPayload)
             return
           }
           if (!quickReplyPayload.includes('asking_price')) {
-            askAskingPrice(senderId, quickReplyPayload)
+            pq.askAskingPrice(senderId, quickReplyPayload)
             return
           }
         };
@@ -246,7 +246,7 @@ function receivedMessage(event) {
             //     break;
 
             case 'aloha':
-                askDriveOrRide(senderId);
+                pq.askDriveOrRide(senderId);
                 break;
             // case 'query':
             //     queryExample(senderId);
@@ -287,242 +287,267 @@ function receivedMessage(event) {
         sendTextMessage(senderId, "Message with attachment received");
     }
 }
-function askWhichVariableToChange(recipientId, othervariables) {
-  var messageData = {
-      recipient: {
-          id: recipientId
-      },
-      message: {
-          text: "What do you wanna fix",
-          quick_replies: [
-              {
-                  "content_type": "text",
-                  "title": "Date",
-                  "payload": "departure_date"
-              }, {
-                  "content_type": "text",
-                  "title": "Time",
-                  "payload": "departure_time"
-              }, {
-                  "content_type": "text",
-                  "title": "Location",
-                  "payload": "departure_location"
-              }
-          ]
-      }
-  };
-  callSendAPI(messageData);
-}
-function askDriveOrRide(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Aloha, are you driving or looking for a ride? 🎿",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Driving",
-                    "payload": "drive_or_ride:looking_for_riders,"
-                }, {
-                    "content_type": "text",
-                    "title": "Riding",
-                    "payload": "drive_or_ride:looking_for_drivers,"
-                }, {
-                    "content_type": "text",
-                    "title": "Check my rides",
-                    "payload": "check_rides"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
-function askDepartureLocation(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Where are you leaving from?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "UBC",
-                    "payload": othervariables+"departure_location:UBC,"
-                }, {
-                    "content_type": "text",
-                    "title": "Whistler",
-                    "payload": othervariables+"departure_location:Whistler,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
-function askDayTrip(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Day trip or one way?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Daytrip",
-                    "payload": othervariables+"day_trip:true,"
-                }, {
-                    "content_type": "text",
-                    "title": "One way",
-                    "payload": othervariables+"day_trip:false,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
-function askDepartureDate(recipientId, othervariables) {
-    var today = moment().calendar();
-    var tomorrow = moment().add(1, 'days').calendar();
-    var dayAfterTomorrow = moment().add(2, 'days').calendar();
+// function askWhichVariableToChange(recipientId, othervariables) {
+//   var messageData = {
+//       recipient: {
+//           id: recipientId
+//       },
+//       message: {
+//           text: "What do you wanna fix",
+//           quick_replies: [
+//               {
+//                   "content_type": "text",
+//                   "title": "Date",
+//                   "payload": "departure_date"
+//               }, {
+//                   "content_type": "text",
+//                   "title": "Time",
+//                   "payload": "departure_time"
+//               }, {
+//                   "content_type": "text",
+//                   "title": "Location",
+//                   "payload": "departure_location"
+//               }
+//           ]
+//       }
+//   };
+//   callSendAPI(messageData);
+// }
+// function askDriveOrRide(recipientId) {
+//     var messageData = {
+//         recipient: {
+//             id: recipientId
+//         },
+//         message: {
+//             text: "Aloha, are you driving or looking for a ride? 🎿",
+//             quick_replies: [
+//                 {
+//                     "content_type": "text",
+//                     "title": "Driving",
+//                     "payload": "drive_or_ride:looking_for_riders,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "Riding",
+//                     "payload": "drive_or_ride:looking_for_drivers,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "Check my rides",
+//                     "payload": "check_rides"
+//                 }
+//             ]
+//         }
+//     };
+//     callSendAPI(messageData);
+// }
+// function askDepartureLocation(recipientId, othervariables) {
+//     var messageData = {
+//         recipient: {
+//             id: recipientId
+//         },
+//         message: {
+//             text: "Where are you leaving from?",
+//             quick_replies: [
+//                 {
+//                     "content_type": "text",
+//                     "title": "UBC",
+//                     "payload": othervariables+"departure_location:UBC,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "Whistler",
+//                     "payload": othervariables+"departure_location:Whistler,"
+//                 }
+//             ]
+//         }
+//     };
+//     callSendAPI(messageData);
+// }
+// function askDayTrip(recipientId, othervariables) {
+//     var messageData = {
+//         recipient: {
+//             id: recipientId
+//         },
+//         message: {
+//             text: "Day trip or one way?",
+//             quick_replies: [
+//                 {
+//                     "content_type": "text",
+//                     "title": "Daytrip",
+//                     "payload": othervariables+"day_trip:true,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "One way",
+//                     "payload": othervariables+"day_trip:false,"
+//                 }
+//             ]
+//         }
+//     };
+//     callSendAPI(messageData);
+// }
+// function askDepartureDate(recipientId, othervariables) {
+//     var today = moment().calendar();
+//     var tomorrow = moment().add(1, 'days').calendar();
+//     var dayAfterTomorrow = moment().add(2, 'days').calendar();
+//
+//     // today = moment.tz('America/Vancouver').format();
+//     // tomorrow = moment.tz('America/Vancouver').format();
+//     // dayAfterTomorrow = moment.tz('America/Vancouver').format();
+//     //
+//
+//     // today = dateFormat(today, "ddd, mmm. dS");
+//     // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
+//     // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
+//
+//     var messageData = {
+//         recipient: {
+//             id: recipientId
+//         },
+//         message: {
+//             text: "What day are you riding?",
+//             quick_replies: [
+//                 {
+//                     "content_type": "text",
+//                     "title": today,
+//                     "payload": othervariables+"departure_date:today,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": tomorrow,
+//                     "payload": othervariables+"departure_date:tomorrow,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": dayAfterTomorrow,
+//                     "payload": othervariables+"departure_date:dayAfterTomorrow,"
+//                 }
+//             ]
+//         }
+//     };
+//     callSendAPI(messageData);
+// };
+// function askDepartureTime(recipientId, othervariables) {
+//     var messageData = {
+//         recipient: {
+//             id: recipientId
+//         },
+//         message: {
+//             text: "What 🕗 do you want to go?",
+//             quick_replies: [
+//                 {
+//                     "content_type": "text",
+//                     "title": "🌅 Morning",
+//                     "payload": othervariables+"departure_time:Morning,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "🌇 Evening",
+//                     "payload": othervariables+"departure_time:Evening,"
+//                 }
+//             ]
+//         }
+//     };
+//     callSendAPI(messageData);
+// }
+// function checkUserDriveOrRide(recipientId, othervariables) {
+//     var messageData = {
+//         recipient: {
+//             id: recipientId
+//         },
+//         message: {
+//             text: "Do you wanna check your drive offered or rides asked?",
+//             quick_replies: [
+//                 {
+//                     "content_type": "text",
+//                     "title": "Drive offered",
+//                     "payload": othervariables+"checkUserDriveOrRide:drive,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "Rides asked",
+//                     "payload": othervariables+"checkUserDriveOrRide:ride,"
+//                 }
+//             ]
+//         }
+//     };
+//     callSendAPI(messageData);
+// }
+// function askAskingPrice(recipientId, othervariables) {
+//     var messageData = {
+//         recipient: {
+//             id: recipientId
+//         },
+//         message: {
+//             text: "How much 💰 are you charging per head?",
+//             quick_replies: [
+//               {
+//                 "content_type": "text",
+//                 "title": "😍 Free!",
+//                 "payload": othervariables+"asking_price:0,"
+//             },
+//                 {
+//                     "content_type": "text",
+//                     "title": "5",
+//                     "payload": othervariables+"asking_price:5,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "10",
+//                     "payload": othervariables+"asking_price:10,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "15",
+//                     "payload": othervariables+"asking_price:15,"
+//                 }
+//             ]
+//         }
+//     };
+//     callSendAPI(messageData);
+// }
+// function askAvailableSeats(recipientId, othervariables) {
+//     var messageData = {
+//         recipient: {
+//             id: recipientId
+//         },
+//         message: {
+//             text: "How many 🍑s can you fit?",
+//             quick_replies: [
+//                 {
+//                     "content_type": "text",
+//                     "title": "1",
+//                     "payload": othervariables+"seating_space:1,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "2",
+//                     "payload": othervariables+"seating_space:2,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "3",
+//                     "payload": othervariables+"seating_space:3,"
+//                 }
+//             ]
+//         }
+//     };
+//     callSendAPI(messageData);
+// }
+// function checkUserRideInfo(sender, driveOrRide) {
+//   var results = [];
+//
+//   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+//     var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
+//
+//     userQuery.on('row', (row) => {
+//       results.push(row);
+//     });
+//     userQuery.on('end', () => {
+//       done();
+//       if (results.length > 0) {
+//         sendTextMessage(sender, "Here are your offers/asks:");
+//         pushQueryResults(sender, results);
+//         return
+//       } else {
+//         sendTextMessage(sender, "Looks like you haven't made one yet!");
+//         return
+//       };
+//     });
+//
+//   });
+// }
 
-    // today = moment.tz('America/Vancouver').format();
-    // tomorrow = moment.tz('America/Vancouver').format();
-    // dayAfterTomorrow = moment.tz('America/Vancouver').format();
-    //
 
-    // today = dateFormat(today, "ddd, mmm. dS");
-    // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
-    // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
-
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "What day are you riding?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": today,
-                    "payload": othervariables+"departure_date:today,"
-                }, {
-                    "content_type": "text",
-                    "title": tomorrow,
-                    "payload": othervariables+"departure_date:tomorrow,"
-                }, {
-                    "content_type": "text",
-                    "title": dayAfterTomorrow,
-                    "payload": othervariables+"departure_date:dayAfterTomorrow,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-};
-function askDepartureTime(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "What 🕗 do you want to go?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "🌅 Morning",
-                    "payload": othervariables+"departure_time:Morning,"
-                }, {
-                    "content_type": "text",
-                    "title": "🌇 Evening",
-                    "payload": othervariables+"departure_time:Evening,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
-function checkUserDriveOrRide(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Do you wanna check your drive offered or rides asked?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Drive offered",
-                    "payload": othervariables+"checkUserDriveOrRide:drive,"
-                }, {
-                    "content_type": "text",
-                    "title": "Rides asked",
-                    "payload": othervariables+"checkUserDriveOrRide:ride,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
-function askAskingPrice(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "How much 💰 are you charging per head?",
-            quick_replies: [
-              {
-                "content_type": "text",
-                "title": "😍 Free!",
-                "payload": othervariables+"asking_price:0,"
-            },
-                {
-                    "content_type": "text",
-                    "title": "5",
-                    "payload": othervariables+"asking_price:5,"
-                }, {
-                    "content_type": "text",
-                    "title": "10",
-                    "payload": othervariables+"asking_price:10,"
-                }, {
-                    "content_type": "text",
-                    "title": "15",
-                    "payload": othervariables+"asking_price:15,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
-function askAvailableSeats(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "How many 🍑s can you fit?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "1",
-                    "payload": othervariables+"seating_space:1,"
-                }, {
-                    "content_type": "text",
-                    "title": "2",
-                    "payload": othervariables+"seating_space:2,"
-                }, {
-                    "content_type": "text",
-                    "title": "3",
-                    "payload": othervariables+"seating_space:3,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
 function receivedPostback(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
@@ -556,6 +581,7 @@ function sendTextMessage(recipientId, messageText) {
 
 
 }
+
 function parseConditions(gatheredInfoString) {
     var conditionsArray = gatheredInfoString.split(',');
     var parsedObject = {};
@@ -666,11 +692,11 @@ function pushQueryResults(senderId, queryresults) {
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
       subtitle: "Asking $"+queryresults[i].asking_price,
-      item_url: "http://facebook.com/profile.php?id="+queryresults[i].sender_id,
+      item_url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name,
       image_url: queryresults[i].profile_pic,
       buttons: [{
         type: "postback",
-        title: "Chat with"+queryresults[i].first_name,
+        title: "🔍 & chat with "+queryresults[i].first_name,
         payload: queryresults[i].sender_id
       }]
     };
@@ -696,7 +722,6 @@ function pushQueryResults(senderId, queryresults) {
       }
     }
   };
-  console.log(messageData)
   callSendAPI(messageData);
   return
 };
@@ -782,27 +807,4 @@ function callSendAPI(messageData) {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
     });
-}
-function checkRides(sender, driveOrRide) {
-  var results = [];
-
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
-
-    userQuery.on('row', (row) => {
-      results.push(row);
-    });
-    userQuery.on('end', () => {
-      done();
-      if (results.length > 0) {
-        sendTextMessage(sender, "Here are your offers/asks:");
-        pushQueryResults(sender, results);
-        return
-      } else {
-        sendTextMessage(sender, "Looks like you haven't made one yet!");
-        return
-      };
-    });
-
-  });
 }
