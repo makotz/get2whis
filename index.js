@@ -714,6 +714,7 @@ function notificationGenericTemplate(senderId, user) {
 
     if (user1.asking_price) { genericObject.subtitle = "Asking for your ride on "+user1.departure_date+" from "+user1.departure_location}
 
+    var jsongeneric = JSON.parse(genericObject);
   var messageData = {
     recipient: {
       id: senderId
@@ -723,7 +724,7 @@ function notificationGenericTemplate(senderId, user) {
         type: "template",
         payload: {
           template_type: "generic",
-          elements: JSON.parse(genericObject)
+          elements: jsongeneric
         }
       }
     }
