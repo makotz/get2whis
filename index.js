@@ -55,44 +55,6 @@ app.get('/db/rider', function (request, response) {
     });
   });
 });
-
-app.get('/test', function (f, response) {
-  FB.getLoginStatus(function(response) {
-  if (response.status === 'connected') {
-    // the user is logged in and has authenticated your
-    // app, and response.authResponse supplies
-    // the user's ID, a valid access token, a signed
-    // request, and the time the access token
-    // and signed request each expire
-    var uid = response.authResponse.userID;
-    var accessToken = response.authResponse.accessToken;
-    console.log("Fish");
-  } else if (response.status === 'not_authorized') {
-    console.log('the user is logged in to Facebook, but has not authenticated your app')
-  } else {
-    console.log("Hero");
-  }
-  });
-  // request('https://graph.facebook.com/v2.6/' + sender + '?fields=id,name&access_token=' + token, function(error, response, body) {
-  //     if (!error && response.statusCode == 200) {
-  //       console.log("body is...", body);
-  //     } else {
-  //       console.log("something failed.. :(");
-  //     }
-  // // });
-  // //   client.query('SELECT * FROM rider', function(err, result) {
-  // //     done();
-  // //     if (err)
-  // //      { console.error(err); response.send("Error " + err);
-  // //        respon}
-  // //     else
-  // //      {
-  // //        console.log("loaded db results");
-  // //        response.json(result.rows); }
-  //  });
-});
-
-
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
@@ -100,12 +62,10 @@ app.get('/webhook/', function(req, res) {
     }
     res.send('Error, wrong token')
 })
-
 // Spin up the server
 app.listen(app.get('port'), function() {
     console.log('running on port', app.get('port'))
 })
-
 app.post('/webhook/', function(req, res) {
     var data = req.body;
 
@@ -240,21 +200,9 @@ function receivedMessage(event) {
         // keywords and send back the corresponding example. Otherwise, just echo
         // the text we received.
         switch (messageText) {
-            // case 'topsecret':
-            //     sendDriveOrRide(senderId);
-            //     break;
-
             case 'aloha':
                 askDriveOrRide(senderId);
                 break;
-            // case 'query':
-            //     queryExample(senderId);
-            //     break;
-                //
-                //       case 'generic':
-                //         sendGenericMessage(senderId);
-                //         break;
-                //
                 //       case 'receipt':
                 //         sendReceiptMessage(senderId);
                 //         break;
@@ -274,11 +222,6 @@ function receivedMessage(event) {
                 //       case 'typing off':
                 //         sendTypingOff(senderId);
                 //         break;
-                //
-                //       case 'account linking':
-                //         sendAccountLinking(senderId);
-                //         break;
-
             default:
                 sendTextMessage(senderId, 'Hi there, type "aloha" to begin');
         }
@@ -387,14 +330,14 @@ function askDepartureDate(recipientId, othervariables) {
     var tomorrow = moment().add(1, 'days').calendar();
     var dayAfterTomorrow = moment().add(2, 'days').calendar();
 
-    // today = moment.tz('America/Vancouver').format();
-    // tomorrow = moment.tz('America/Vancouver').format();
-    // dayAfterTomorrow = moment.tz('America/Vancouver').format();
+    var todayTZ = today.tz('America/Vancouver').format();
+    var tomorrowTZ = tomorrow.tz('America/Vancouver').format();
+    var dayAfterTomorrowTZ = dayAfterTomorrow.tz('America/Vancouver').format();
     //
 
-    // today = dateFormat(today, "ddd, mmm. dS");
-    // tomorrow = dateFormat(tomorrow, "ddd, mmm. dS");
-    // dayAfterTomorrow = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
+    var todayButton = dateFormat(todayTZ, "ddd, mmm. dS");
+    var tomorrowButton = dateFormat(tomorrowTZ, "ddd, mmm. dS");
+    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrowTZ, "ddd, mmm. dS");
 
     var messageData = {
         recipient: {
@@ -405,16 +348,16 @@ function askDepartureDate(recipientId, othervariables) {
             quick_replies: [
                 {
                     "content_type": "text",
-                    "title": today,
-                    "payload": othervariables+"departure_date:today,"
+                    "title": todayButton,
+                    "payload": othervariables+"departure_date:"+todayTZ+","
                 }, {
                     "content_type": "text",
-                    "title": tomorrow,
-                    "payload": othervariables+"departure_date:tomorrow,"
+                    "title": tomorrowButton,
+                    "payload": othervariables+"departure_date:"+tomorrowTZ+","
                 }, {
                     "content_type": "text",
-                    "title": dayAfterTomorrow,
-                    "payload": othervariables+"departure_date:dayAfterTomorrow,"
+                    "title": dayAfterTomorrowButton,
+                    "payload": othervariables+"departure_date:"+dayAfterTomorrowTZ+","
                 }
             ]
         }
@@ -560,7 +503,7 @@ function receivedPostback(event) {
 
     // When a postback is called, we'll send a message back to the sender to
     // let them know it was successful
-    sendTextMessage(payload, "Postback called");
+    sendTextMessage(payload.match, "Hey, someone pinged you!");
 }
 function sendTextMessage(recipientId, messageText) {
 
@@ -645,7 +588,7 @@ function saveAndQuery(sender, conditions, userProfile) {
             console.log(results.length);
             if (results.length > 0) {
               sendTextMessage(sender, "Let's get these peeps up!");
-              pushQueryResults(sender, results);
+              pushQueryResults(sender, results, user);
               return
             } else {
               sendTextMessage(sender, "Couldn't find riders 😭");
@@ -670,7 +613,7 @@ function saveAndQuery(sender, conditions, userProfile) {
           console.log(results.length);
           if (results.length > 0) {
             sendTextMessage(sender, "Here are potential drivers:");
-            pushQueryResults(sender, results);
+            pushQueryResults(sender, results, user);
             return
           } else {
             sendTextMessage(sender, "Couldn't find a driver 😭");
@@ -680,23 +623,28 @@ function saveAndQuery(sender, conditions, userProfile) {
        });
     }
 };
-function pushQueryResults(senderId, queryresults) {
+function pushQueryResults(senderId, queryresults, user) {
 
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
-
+    user.match = queryresults[i].sender_id;
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
       subtitle: "Asking $"+queryresults[i].asking_price,
       item_url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name,
       image_url: queryresults[i].profile_pic,
       buttons: [{
-        type: "postback",
+        type: "web_url",
         title: "🔍 & chat with "+queryresults[i].first_name,
-        payload: queryresults[i].sender_id
-      }]
+        url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name
+      }, {
+        type: "postback",
+        title: "Ping " + queryresults[i].first_name,
+        payload: user,
+      }
+    ]
     };
-
+    console.log('queryresults[i].asking_price is'+queryresults[i].asking_price);
     if (queryresults[i].asking_price == 'undefined') {
       genericObject.pop(subtitle);
     };
@@ -714,6 +662,38 @@ function pushQueryResults(senderId, queryresults) {
         payload: {
           template_type: "generic",
           elements: elements
+        }
+      }
+    }
+  };
+  callSendAPI(messageData);
+  return
+};
+function notificationGenericTemplate(senderId, user) {
+    var genericObject = {
+      title: user.first_name+" "+user.last_name,
+      subtitle: "Offering a ride to you on "+user.departure_date+" from "+user.departure_location,
+      item_url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name,
+      image_url: user.profile_pic,
+      buttons: [{
+        type: "web_url",
+        title: "🔍 & chat with "+user.first_name,
+        url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name
+      }]
+    };
+    if (user.asking_price) {
+      genericObject.subtitle = "Asking for your ride on "+user.departure_date+" from "+user.departure_location,
+    }
+  var messageData = {
+    recipient: {
+      id: senderId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: genericObject
         }
       }
     }
