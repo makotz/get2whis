@@ -65,17 +65,18 @@ app.get('/webhook/', function(req, res) {
 // Spin up the server
 app.listen(app.get('port'), function() {
     console.log('running on port', app.get('port'))
-    var dayInMilliSeconds = 1000 * 60 * 60 * 24;
-    var today = moment().subtract(2, 'days').format();
-    setInterval(function() {
-      console.log("deleting irrelevant data");
-      pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query("DELETE FROM rider WHERE departure_date <'"+today+"'");
-        client.query("DELETE FROM driver WHERE departure_date <'"+today+"'");
-        done();
-      });
-    }, dayInMilliSeconds );
 });
+
+var dayInMilliSeconds = 1000 * 60 * 60 * 24;
+var today = moment().subtract(2, 'days').format();
+setInterval(function() {
+  console.log("deleting irrelevant data");
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query("DELETE FROM rider WHERE departure_date <'"+today+"'");
+    client.query("DELETE FROM driver WHERE departure_date <'"+today+"'");
+    done();
+  });
+}, dayInMilliSeconds );
 
 app.post('/webhook/', function(req, res) {
     var data = req.body;
@@ -347,11 +348,14 @@ function askDepartureDate(recipientId, othervariables) {
     // var todayTZ = today.tz('America/Vancouver').format();
     // var tomorrowTZ = tomorrow.tz('America/Vancouver').format();
     // var dayAfterTomorrowTZ = dayAfterTomorrow.tz('America/Vancouver').format();
-    //
 
-    // var todayButton = dateFormat(today, "ddd, mmm. dS");
+    // var todayButton = dateFormat(today, "ddd, mmm. dS");es
     // var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
     // var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
+
+    curl -X POST -H "Content-Type: application/json" -d '{"setting_type":"greeting", "greeting":{"text":"�Hey {{user_first_name}}, welcome to Ubes2Whis 🤖! If you are a ⛷or a 🏂 looking for a ride or offering a
+    e between UBC & Whistler, you have come to the right place. I will find you a ride or 🍑s to fill your 🚗. Type 'ski' or 'board' to get started. 🏔}}' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAAC4BIkkQUIBAKlKZBPE3vrM42NlNbcpkLMZAoi
+    9MrqzJnEHU54bCYZCYAb2DQ88a2LZBdWPIsiZB521ukepY9yHZC8m5AIZCBZCJZCHqcVWUk9TyVAc3snqkz8cHGIQEY7vWq1eexTeAzygMOZA1BEhl0O8oUwC81EVYPtuNJRkwZDZD"
 
     var messageData = {
         recipient: {
