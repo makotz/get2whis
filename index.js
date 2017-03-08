@@ -121,8 +121,6 @@ function receivedMessage(event) {
     var messageId = message.mid;
     var appId = message.app_id;
     var metadata = message.metadata;
-
-    // You may get a text or attachment but not both
     var messageText = message.text;
     var messageAttachments = message.attachments;
     var quickReply = message.quick_reply;
@@ -212,9 +210,9 @@ function receivedMessage(event) {
         // keywords and send back the corresponding example. Otherwise, just echo
         // the text we received.
         switch (messageText) {
+            case 'Ski':
             case 'ski':
-            askDriveOrRide(senderId);
-            break;
+            case 'Board':
             case 'board':
             askDriveOrRide(senderId);
             break;
@@ -661,7 +659,7 @@ function pushQueryResults(senderId, queryresults, user) {
       }, {
         type: "postback",
         title: "Ping " + queryresults[i].first_name,
-        payload: JSON.stringify(payload),
+        payload: payload,
       }]
     };
 
