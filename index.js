@@ -553,16 +553,21 @@ function parseConditions(gatheredInfoString) {
 }
 function confirmQueryInfo(recipientId, othervariables) {
   var parsedObject = parseConditions(othervariables);
-  var drive_or_ride = parsedObject.drive_or_ride;
+  if (parsedObject.drive_or_ride == 'looking_for_riders') {
+    var drive_or_ride = "looking for riders";
+  } else if (parsedObject.drive_or_ride == 'looking_for_drivers') {
+    var drive_or_ride = "looking for a driver";
+  }
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
-  var departure_time = parsedObject.departure_time;
+  var departure_time = "at around "+parsedObject.departure_time;
+  if (departure_time == 'undefined') {departure_time = " (roundtrip)";}
   var messageData = {
       recipient: {
           id: recipientId
       },
       message: {
-          text: "Alright, let's confirm your inquiry. You are " + drive_or_ride + " from " + departure_location + " on " + departure_date + " at around "+ departure_time+"?",
+          text: "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + departure_time+"?",
           quick_replies: [
               {
                   "content_type": "text",
@@ -704,7 +709,7 @@ function notificationGenericTemplate(senderId, user) {
     var user1 = JSON.parse(user);
     var genericObject = [{
       title: user1.first_name+" "+user1.last_name,
-      subtitle: "Offering a ride to you on "+user1.departure_date+" from "+user1.departure_location,
+      subtitle: "Offering a ride "+user1.departure_date+" from "+user1.departure_location,
       item_url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name,
       image_url: user1.profile_pic,
       buttons: [{
@@ -713,12 +718,8 @@ function notificationGenericTemplate(senderId, user) {
         url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name
       }]
     }];
-    console.log(genericObject.title);
-    console.log(genericObject.subtitle);
-    console.log(genericObject.item_url);
-    console.log(genericObject.buttons);
 
-    // if (user1.asking_price) { genericObject.subtitle = "Asking for your ride on "+user1.departure_date+" from "+user1.departure_location}
+    if (user1.asking_price) { genericObject.subtitle = "Asking for your ride "+user1.departure_date+" from "+user1.departure_location}
 
   var messageData = {
     recipient: {
