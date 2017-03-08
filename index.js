@@ -7,6 +7,7 @@ const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
 const pq = require('./parameterQueries');
+const schedule = require('node-schedule');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -28,8 +29,15 @@ app.get('/', function(req, res) {
 pg.defaults.ssl = true;
 // See tables driver and rider with /db/whichever
 app.get('/db/driver', function (request, response) {
+  displayData(driver);
+});
+app.get('/db/rider', function (request, response) {
+  displayData(rider);
+});
+
+function displayData(db) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query('SELECT * FROM driver', function(err, result) {
+    client.query('SELECT * FROM '+db, function(err, result) {
       done();
       if (err)
        { console.error(err); response.send("Error " + err);
@@ -40,22 +48,7 @@ app.get('/db/driver', function (request, response) {
          response.json(result.rows); }
     });
   });
-});
-app.get('/db/rider', function (request, response) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query('SELECT * FROM rider', function(err, result) {
-      done();
-      if (err)
-       { console.error(err); response.send("Error " + err);
-         respon}
-      else
-       {
-         console.log("loaded db results");
-         response.json(result.rows); }
-    });
-  });
-});
-
+}
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
@@ -65,17 +58,22 @@ app.get('/webhook/', function(req, res) {
 })
 // Spin up the server
 app.listen(app.get('port'), function() {
-    console.log('running on port', app.get('port'))
-    var dayInMilliSeconds = 1000 * 60 * 60 * 24;
-    var today = moment().subtract(2, 'days').format();
-    setInterval(function() {
-      console.log("deleting irrelevant data");
-      pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query("DELETE FROM rider WHERE departure_date <'"+today+"'");
-        client.query("DELETE FROM driver WHERE departure_date <'"+today+"'");
-        done();
-      });
-    }, dayInMilliSeconds );
+    console.log('running on port', app.get('port'));
+});
+
+var rule = new schedule.RecurrenceRule();
+rule.dayOfWeek = [new schedule.Range(0, 6)];
+rule.hour = 0;
+rule.minute = 0;
+var yesterday = moment().subtract(1, 'days').format();
+
+var j = schedule.scheduleJob(rule, function(){
+  console.log("deleting irrelevant data");
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query("DELETE FROM rider WHERE departure_date <'"+yesterday+"'");
+    client.query("DELETE FROM driver WHERE departure_date <'"+yesterday+"'");
+    done();
+  });
 });
 
 app.post('/webhook/', function(req, res) {
@@ -157,8 +155,7 @@ function receivedMessage(event) {
             findFBProfile(senderId, quickReplyPayload);
             return
           } else if (quickReplyPayload.includes('false')) {
-            sendTextMessage(senderId, "Okay let's try again!");
-            askDriveOrRide(senderId);
+            sendTextMessage(senderId, "Okay let's try again!", askDriveOrRide(senderId));
             return
           }
         }
@@ -526,7 +523,7 @@ function receivedPostback(event) {
     sendTextMessage(match1, "Hey, someone pinged you!");
     notificationGenericTemplate(match1, payload);
 }
-function sendTextMessage(recipientId, messageText) {
+function sendTextMessage(recipientId, messageText, callback()) {
 
     var messageData = {
         recipient: {
@@ -540,6 +537,7 @@ function sendTextMessage(recipientId, messageText) {
 
     callSendAPI(messageData);
 
+    callback();
 
 }
 function parseConditions(gatheredInfoString) {
@@ -560,14 +558,14 @@ function confirmQueryInfo(recipientId, othervariables) {
   }
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
-  var departure_time = " at around "+parsedObject.departure_time;
-  if (parsedObject.daytrip == 'true') {departure_time = " (roundtrip)";}
+  var finalCondition = " at around "+parsedObject.departure_time;
+  if (parsedObject.daytrip) {finalCondition = " (roundtrip)";}
   var messageData = {
       recipient: {
           id: recipientId
       },
       message: {
-          text: "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + departure_time+"?",
+          text: "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?",
           quick_replies: [
               {
                   "content_type": "text",
@@ -643,8 +641,7 @@ function saveAndQuery(sender, conditions, userProfile) {
             pushQueryResults(sender, results, user);
             return
           } else {
-            sendTextMessage(sender, "Couldn't find a driver 😭");
-            startOver(sender);
+            sendTextMessage(sender, "Couldn't find a driver 😭", startOver(sender));
             return
           };
         });
