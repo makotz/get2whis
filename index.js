@@ -28,27 +28,27 @@ app.get('/', function(req, res) {
 
 pg.defaults.ssl = true;
 // See tables driver and rider with /db/whichever
-app.get('/db/driver', function (request, response) {
-  displayData('driver', request, response);
-});
-app.get('/db/rider', function (request, response) {
-  displayData('rider', request, response);
-});
-
-function displayData(db) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query('SELECT * FROM '+db, function(err, result) {
-      done();
-      if (err)
-       { console.error(err); response.send("Error " + err);
-         response}
-      else
-       {
-         console.log("loaded db results");
-         response.json(result.rows); }
-    });
-  });
-}
+// app.get('/db/driver', function (request, response) {
+//   displayData('driver', request, response);
+// });
+// app.get('/db/rider', function (request, response) {
+//   displayData('rider', request, response);
+// });
+//
+// function displayData(db) {
+//   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+//     client.query('SELECT * FROM '+db, function(err, result) {
+//       done();
+//       if (err)
+//        { console.error(err); response.send("Error " + err);
+//          response}
+//       else
+//        {
+//          console.log("loaded db results");
+//          response.json(result.rows); }
+//     });
+//   });
+// }
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
