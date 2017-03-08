@@ -702,7 +702,7 @@ function pushQueryResults(senderId, queryresults, user) {
 };
 function notificationGenericTemplate(senderId, user) {
     var user1 = JSON.parse(user);
-    var genericObject = {
+    var genericObject = [{
       title: user1.first_name+" "+user1.last_name,
       subtitle: "Offering a ride to you on "+user1.departure_date+" from "+user1.departure_location,
       item_url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name,
@@ -712,7 +712,7 @@ function notificationGenericTemplate(senderId, user) {
         title: "🔍 & chat with "+user1.first_name,
         url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name
       }]
-    };
+    }];
     console.log(genericObject.title);
     console.log(genericObject.subtitle);
     console.log(genericObject.item_url);
