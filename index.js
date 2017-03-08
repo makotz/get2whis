@@ -561,7 +561,7 @@ function confirmQueryInfo(recipientId, othervariables) {
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
   var departure_time = " at around "+parsedObject.departure_time;
-  if (parsedObject.departure_time == 'undefined') {departure_time = " (roundtrip)";}
+  if (parsedObject.daytrip == 'true') {departure_time = " (roundtrip)";}
   var messageData = {
       recipient: {
           id: recipientId
@@ -745,11 +745,11 @@ function startOver(recipientId) {
             id: recipientId
         },
         message: {
-            text: "Push buton to start over.",
+            text: "Push buton to start over",
             quick_replies: [
                 {
                     "content_type": "text",
-                    "title": "Driving",
+                    "title": "Restart",
                     "payload": "start_over"
                 }
             ]
