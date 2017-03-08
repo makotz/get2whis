@@ -133,6 +133,11 @@ function receivedMessage(event) {
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
 
+        if (quickReplyPayload.includes('start_over')) {
+          askDriveOrRide(senderId);
+          return
+        }
+
         if (quickReplyPayload.includes('check_rides')) {
           if (quickReplyPayload.includes('checkUserDriveOrRide:drive')) {
             checkUserRideInfo(senderId, 'drive');
@@ -492,9 +497,11 @@ function checkUserRideInfo(sender, driveOrRide) {
       if (results.length > 0) {
         sendTextMessage(sender, "Here are your offers/asks:");
         pushQueryResults(sender, results);
+        startOver(sender);
         return
       } else {
         sendTextMessage(sender, "Looks like you haven't made one yet!");
+        startOver(sender);
         return
       };
     });
@@ -606,6 +613,7 @@ function saveAndQuery(sender, conditions, userProfile) {
               return
             } else {
               sendTextMessage(sender, "Couldn't find riders 😭");
+              startOver(sender);
               return
             };
           });
@@ -631,6 +639,7 @@ function saveAndQuery(sender, conditions, userProfile) {
             return
           } else {
             sendTextMessage(sender, "Couldn't find a driver 😭");
+            startOver(sender);
             return
           };
         });
@@ -691,7 +700,6 @@ function pushQueryResults(senderId, queryresults, user) {
   callSendAPI(messageData);
   return
 };
-
 function notificationGenericTemplate(senderId, user) {
     var user1 = JSON.parse(user);
     var genericObject = {
@@ -730,6 +738,24 @@ function notificationGenericTemplate(senderId, user) {
   callSendAPI(messageData);
   return
 };
+function startOver(recipientId) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Push buton to start over.",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "Driving",
+                    "payload": "start_over"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
