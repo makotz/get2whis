@@ -523,7 +523,7 @@ function receivedPostback(event) {
     sendTextMessage(match1, "Hey, someone pinged you!");
     notificationGenericTemplate(match1, payload);
 }
-function sendTextMessage(recipientId, messageText, callback()) {
+function sendTextMessage(recipientId, messageText, callback) {
 
     var messageData = {
         recipient: {
