@@ -654,7 +654,7 @@ function pushQueryResults(senderId, queryresults, user) {
 
     if (user) {
       user.match = queryresults[i].sender_id;
-      payload = JSON.parse(user);
+      payload = JSON.stringify(user);
     }
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
