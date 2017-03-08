@@ -560,8 +560,8 @@ function confirmQueryInfo(recipientId, othervariables) {
   }
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
-  var departure_time = "at around "+parsedObject.departure_time;
-  if (departure_time == 'undefined') {departure_time = " (roundtrip)";}
+  var departure_time = " at around "+parsedObject.departure_time;
+  if (parsedObject.departure_time == 'undefined') {departure_time = " (roundtrip)";}
   var messageData = {
       recipient: {
           id: recipientId
