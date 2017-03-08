@@ -29,10 +29,10 @@ app.get('/', function(req, res) {
 pg.defaults.ssl = true;
 // See tables driver and rider with /db/whichever
 app.get('/db/driver', function (request, response) {
-  displayData('driver');
+  displayData('driver', request, response);
 });
 app.get('/db/rider', function (request, response) {
-  displayData('rider');
+  displayData('rider', request, response);
 });
 
 function displayData(db) {
