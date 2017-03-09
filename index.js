@@ -485,10 +485,8 @@ function sendTextMessage(recipientId, messageText, callback) {
             metadata: "DEVELOPER_DEFINED_METADATA"
         }
     };
-
     callSendAPI(messageData);
-
-    callback();
+    if (callback) {callback()};
 
 }
 function parseConditions(gatheredInfoString, callback) {
@@ -498,9 +496,8 @@ function parseConditions(gatheredInfoString, callback) {
         var conditionPair = conditionsArray[i].split(':')
         parsedObject[conditionPair[0]] = conditionPair[1];
     }
+    if (callback) {callback()};
     return parsedObject;
-
-    callback();
 }
 function confirmQueryInfo(recipientId, othervariables) {
   var parsedObject = parseConditions(othervariables);
@@ -814,5 +811,5 @@ function DeleteRecord(payload, callback) {
     console.log(driver_or_rider+ " with id "+ id + " was deleted.")
       done();
     });
-  callback();
+    if (callback) {callback()};
 }
