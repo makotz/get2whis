@@ -7,7 +7,6 @@ const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
 const pq = require('./parameterQueries');
-// const schedule = require('node-schedule');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -60,23 +59,6 @@ app.get('/webhook/', function(req, res) {
 app.listen(app.get('port'), function() {
     console.log('running on port', app.get('port'));
 });
-
-var rule = new schedule.RecurrenceRule();
-rule.dayOfWeek = [new schedule.Range(0, 6)];
-rule.hour = 0;
-rule.minute = 0;
-var yesterday = moment().subtract(1, 'days').format();
-
-var j = schedule.scheduleJob(rule, function(){
-  console.log("deleting irrelevant data");
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query("DELETE FROM rider WHERE departure_date <'"+yesterday+"'");
-    client.query("DELETE FROM driver WHERE departure_date <'"+yesterday+"'");
-    done();
-  });
-});
-
-
 
 app.post('/webhook/', function(req, res) {
     var data = req.body;
