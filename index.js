@@ -641,7 +641,8 @@ function pushQueryResults(senderId, queryresults, user, callback) {
       };
       genericObject.buttons.push(addButton);
     } else if (user == "checkingStatusride") {
-      genericObject.buttons.pop()
+      genericObject.buttons.pop();
+      genericObject.buttons.pop();
       var addButton = {
         type: "postback",
         title: "Trash post",
@@ -666,9 +667,12 @@ function pushQueryResults(senderId, queryresults, user, callback) {
       }
     }
   };
+  if (callback) {
+  callSendAPI(messageData, callback());
+  } else {
   callSendAPI(messageData);
-  if(callback){callback()};
-  return
+  }
+  return;
 };
 
 function notificationGenericTemplate(senderId, user) {
