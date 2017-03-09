@@ -601,7 +601,7 @@ function pushQueryResults(senderId, queryresults, user) {
   for (var i = 0; i < queryresults.length; i++) {
     var payload = "sup";
 
-    if (user) {
+    if (user.profile_pic) {
       user.match = queryresults[i].sender_id;
       payload = JSON.stringify(user);
     };
@@ -667,6 +667,7 @@ function pushQueryResults(senderId, queryresults, user) {
   callSendAPI(messageData);
   return
 };
+
 function notificationGenericTemplate(senderId, user) {
     var user1 = JSON.parse(user);
     var genericObject = [{
