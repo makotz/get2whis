@@ -447,8 +447,7 @@ function checkUserRideInfo(sender, driveOrRide) {
     userQuery.on('end', () => {
       done();
       if (results.length > 0) {
-        sendTextMessage(sender, "Here are your offers/asks:", pushQueryResults(sender, results, user));
-        startOver(sender);
+        sendTextMessage(sender, "Here are your offers/asks:", pushQueryResults(sender, results, user, startOver(sender)));
         return
       } else {
         sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
@@ -814,7 +813,7 @@ function DeleteRecord(payload, callback) {
   var parsedObject = parseConditions(payload);
   if (parsedObject.DELETE_RIDER) {var driver_or_rider = "rider"; var id = parsedObject.DELETE_RIDER} else {var driver_or_rider = "driver";  var id = parsedObject.DELETE_DRIVER};
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query("DELETE FROM '"+driver_or_rider+"'"+" WHERE id = "+id);
+    client.query("DELETE FROM "+driver_or_rider+" WHERE id = "+id);
     console.log(driver_or_rider+ " with id "+ id + " was deleted.")
       done();
     });
