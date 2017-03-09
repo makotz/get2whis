@@ -134,11 +134,10 @@ function receivedMessage(event) {
         };
 
         if (quickReplyPayload.includes('confirmation')) {
-          if (quickReplyPayload.includes('true')){
-            sendTextMessage(senderId, "Chee, lets get you to the slopes!");
+          if (quickReplyPayload.includes('confirmation:true')){
             findFBProfile(senderId, quickReplyPayload);
             return
-          } else if (quickReplyPayload.includes('false')) {
+          } else if (quickReplyPayload.includes('confirmation:false')) {
             sendTextMessage(senderId, "Okay let's try again!", askDriveOrRide(senderId));
             return
           }
@@ -299,9 +298,9 @@ function askDayTrip(recipientId, othervariables) {
     callSendAPI(messageData);
 }
 function askDepartureDate(recipientId, othervariables) {
-    var today = moment().tz('America/Vancouver');
-    var tomorrow = moment().tz('America/Vancouver').add(1, 'days');
-    var dayAfterTomorrow = moment().tz('America/Vancouver').add(2, 'days');
+    var today = moment().format().tz('America/Vancouver');
+    var tomorrow = moment().format().tz('America/Vancouver').add(1, 'days');
+    var dayAfterTomorrow = moment().format().tz('America/Vancouver').add(2, 'days');
     console.log('today is'+today);
 
 
@@ -464,13 +463,13 @@ function receivedPostback(event) {
     var recipientId = event.recipient.id;
     var timeOfPostback = event.timestamp;
     var payload = event.postback.payload;
-    var match1 = JSON.parse(payload).match;
     console.log("Received postback for user %d and page %d with payload '%s' " + "at %d",  senderId, recipientId, payload, timeOfPostback);
 
     if (payload.includes('DELETE')) {
       DeleteRecord(payload, sendTextMessage(senderId, "Deleted relevant record"));
     } else {
-    sendTextMessage(match1, "Hey, someone pinged you!", notificationGenericTemplate(match1, payload));
+      var match1 = JSON.parse(payload).match;
+      sendTextMessage(match1, "Hey, someone pinged you!", notificationGenericTemplate(match1, payload));
     }
 }
 
@@ -485,10 +484,13 @@ function sendTextMessage(recipientId, messageText, callback) {
             metadata: "DEVELOPER_DEFINED_METADATA"
         }
     };
+    if (callback) {
+    callSendAPI(messageData, callback());
+    } else {
     callSendAPI(messageData);
-    if (callback) {callback()};
-
+    }
 }
+
 function parseConditions(gatheredInfoString, callback) {
     var conditionsArray = gatheredInfoString.split(',');
     var parsedObject = {};
@@ -509,7 +511,7 @@ function confirmQueryInfo(recipientId, othervariables) {
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
   var finalCondition = " at around "+parsedObject.departure_time;
-  if (parsedObject.daytrip) {finalCondition = " (roundtrip)";}
+  if (parsedObject.departure_time == 'undefined') {finalCondition = " (roundtrip)";}
   var messageData = {
       recipient: {
           id: recipientId
@@ -595,7 +597,7 @@ function saveAndQuery(sender, conditions, userProfile) {
        });
     }
 };
-function pushQueryResults(senderId, queryresults, user) {
+function pushQueryResults(senderId, queryresults, user, callback) {
 
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
@@ -624,14 +626,15 @@ function pushQueryResults(senderId, queryresults, user) {
 
     if (!queryresults[i].asking_price) {
       if (queryresults[i].day_trip == true) {
-        genericObject.subtitle = "A daytrip on "+queryresults[i].departure_date
+        genericObject.subtitle = "Looking for a ride for a daytrip on "+queryresults[i].departure_date
       } else {
-        genericObject.subtitle = "One way ride on "+queryresults[i].departure_date+" in the "+queryresults[i].departure_time
+        genericObject.subtitle = "Looking for a one way ride on "+queryresults[i].departure_date+" in the "+queryresults[i].departure_time+" from "+queryresults[i].departure_location
       }
      };
     if (!user) { genericObject.buttons.pop() };
     if (user == "checkingStatusdrive") {
-      genericObject.buttons.pop()
+      genericObject.buttons.pop();
+      genericObject.buttons.pop();
       var addButton = {
         type: "postback",
         title: "Trash post",
@@ -665,14 +668,16 @@ function pushQueryResults(senderId, queryresults, user) {
     }
   };
   callSendAPI(messageData);
+  if(callback){callback()};
   return
 };
 
 function notificationGenericTemplate(senderId, user) {
+
     var user1 = JSON.parse(user);
     var genericObject = [{
       title: user1.first_name+" "+user1.last_name,
-      subtitle: "Offering a ride "+user1.departure_date+" from "+user1.departure_location,
+      subtitle: "Offering a one way ride "+user1.departure_date+" from "+user1.departure_location,
       item_url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name,
       image_url: user1.profile_pic,
       buttons: [{
@@ -682,7 +687,7 @@ function notificationGenericTemplate(senderId, user) {
       }]
     }];
 
-    if (user1.asking_price) { genericObject.subtitle = "Asking for your ride "+user1.departure_date+" from "+user1.departure_location}
+    if (user1.asking_price) { genericObject[0].subtitle = "Asking for your ride "+user1.departure_date+" from "+user1.departure_location };
 
   var messageData = {
     recipient: {
@@ -779,7 +784,7 @@ function receivedAuthentication(event) {
     // to let them know it was successful.
     sendTextMessage(senderId, "Authentication successful");
 }
-function callSendAPI(messageData) {
+function callSendAPI(messageData, callback) {
     request({
         uri: 'https://graph.facebook.com/v2.6/me/messages',
         qs: {
@@ -802,6 +807,7 @@ function callSendAPI(messageData) {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
     });
+    if (callback) {callback()};
 }
 
 function DeleteRecord(payload, callback) {
