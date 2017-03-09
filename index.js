@@ -637,7 +637,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
       var addButton = {
         type: "postback",
         title: "Trash post",
-        payload: 'DELETE_DRIVER:'+queryresults[i].id,
+        payload: 'DELETE_DRIVER:'+queryresults[i].driver_id,
       };
       genericObject.buttons.push(addButton);
     } else if (user == "checkingStatusride") {
@@ -646,7 +646,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
       var addButton = {
         type: "postback",
         title: "Trash post",
-        payload: 'DELETE_RIDER:'+queryresults[i].id,
+        payload: 'DELETE_RIDER:'+queryresults[i].rider_id,
       };
       genericObject.buttons.push(addButton);
     }
@@ -798,6 +798,7 @@ function callSendAPI(messageData, callback) {
 
     }, function(error, response, body) {
         if (!error && response.statusCode == 200) {
+            if (callback) {callback()};
             // var recipientId = body.recipient_id;
             // var messageId = body.message_id;
             //
@@ -810,7 +811,6 @@ function callSendAPI(messageData, callback) {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
     });
-    if (callback) {callback()};
 }
 
 function DeleteRecord(payload, callback) {
