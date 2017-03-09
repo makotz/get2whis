@@ -7,6 +7,7 @@ const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
 const pq = require('./parameterQueries');
+const schedule = require('node-schedule');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -18,7 +19,7 @@ app.set('port', (process.env.PORT || 5000))
 app.use(bodyParser.urlencoded({extended: false}))
 
 // Process application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 // Index route
 app.get('/', function(req, res) {
@@ -27,34 +28,27 @@ app.get('/', function(req, res) {
 
 pg.defaults.ssl = true;
 // See tables driver and rider with /db/whichever
-app.get('/db/driver', function (request, response) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query('SELECT * FROM driver', function(err, result) {
-      done();
-      if (err)
-       { console.error(err); response.send("Error " + err);
-         response}
-      else
-       {
-         console.log("loaded db results");
-         response.json(result.rows); }
-    });
-  });
-});
-app.get('/db/rider', function (request, response) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query('SELECT * FROM rider', function(err, result) {
-      done();
-      if (err)
-       { console.error(err); response.send("Error " + err);
-         respon}
-      else
-       {
-         console.log("loaded db results");
-         response.json(result.rows); }
-    });
-  });
-});
+// app.get('/db/driver', function (request, response) {
+//   displayData('driver', request, response);
+// });
+// app.get('/db/rider', function (request, response) {
+//   displayData('rider', request, response);
+// });
+//
+// function displayData(db) {
+//   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+//     client.query('SELECT * FROM '+db, function(err, result) {
+//       done();
+//       if (err)
+//        { console.error(err); response.send("Error " + err);
+//          response}
+//       else
+//        {
+//          console.log("loaded db results");
+//          response.json(result.rows); }
+//     });
+//   });
+// }
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
@@ -64,19 +58,25 @@ app.get('/webhook/', function(req, res) {
 })
 // Spin up the server
 app.listen(app.get('port'), function() {
-    console.log('running on port', app.get('port'))
+    console.log('running on port', app.get('port'));
 });
 
-var dayInMilliSeconds = 1000 * 60 * 60 * 24;
-var today = moment().subtract(2, 'days').format();
-setInterval(function() {
+var rule = new schedule.RecurrenceRule();
+rule.dayOfWeek = [new schedule.Range(0, 6)];
+rule.hour = 0;
+rule.minute = 0;
+var yesterday = moment().subtract(1, 'days').format();
+
+var j = schedule.scheduleJob(rule, function(){
   console.log("deleting irrelevant data");
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query("DELETE FROM rider WHERE departure_date <'"+today+"'");
-    client.query("DELETE FROM driver WHERE departure_date <'"+today+"'");
+    client.query("DELETE FROM rider WHERE departure_date <'"+yesterday+"'");
+    client.query("DELETE FROM driver WHERE departure_date <'"+yesterday+"'");
     done();
   });
-}, dayInMilliSeconds );
+});
+
+
 
 app.post('/webhook/', function(req, res) {
     var data = req.body;
@@ -121,8 +121,6 @@ function receivedMessage(event) {
     var messageId = message.mid;
     var appId = message.app_id;
     var metadata = message.metadata;
-
-    // You may get a text or attachment but not both
     var messageText = message.text;
     var messageAttachments = message.attachments;
     var quickReply = message.quick_reply;
@@ -134,6 +132,11 @@ function receivedMessage(event) {
     } else if (quickReply) {
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
+
+        if (quickReplyPayload.includes('start_over')) {
+          askDriveOrRide(senderId);
+          return
+        }
 
         if (quickReplyPayload.includes('check_rides')) {
           if (quickReplyPayload.includes('checkUserDriveOrRide:drive')) {
@@ -154,8 +157,7 @@ function receivedMessage(event) {
             findFBProfile(senderId, quickReplyPayload);
             return
           } else if (quickReplyPayload.includes('false')) {
-            sendTextMessage(senderId, "Okay let's try again!");
-            askDriveOrRide(senderId);
+            sendTextMessage(senderId, "Okay let's try again!", askDriveOrRide(senderId));
             return
           }
         }
@@ -212,9 +214,9 @@ function receivedMessage(event) {
         // keywords and send back the corresponding example. Otherwise, just echo
         // the text we received.
         switch (messageText) {
+            case 'Ski':
             case 'ski':
-            askDriveOrRide(senderId);
-            break;
+            case 'Board':
             case 'board':
             askDriveOrRide(senderId);
             break;
@@ -238,37 +240,11 @@ function receivedMessage(event) {
                 //         sendTypingOff(senderId);
                 //         break;
             default:
-                sendTextMessage(senderId, 'Hi there, type "aloha" to begin');
+                sendTextMessage(senderId, 'Hi there, type "ski" or "board" to begin');
         }
     } else if (messageAttachments) {
         sendTextMessage(senderId, "Message with attachment received");
     }
-}
-function askWhichVariableToChange(recipientId, othervariables) {
-  var messageData = {
-      recipient: {
-          id: recipientId
-      },
-      message: {
-          text: "What do you wanna fix",
-          quick_replies: [
-              {
-                  "content_type": "text",
-                  "title": "Date",
-                  "payload": "departure_date"
-              }, {
-                  "content_type": "text",
-                  "title": "Time",
-                  "payload": "departure_time"
-              }, {
-                  "content_type": "text",
-                  "title": "Location",
-                  "payload": "departure_location"
-              }
-          ]
-      }
-  };
-  callSendAPI(messageData);
 }
 function askDriveOrRide(recipientId) {
     var messageData = {
@@ -341,21 +317,16 @@ function askDayTrip(recipientId, othervariables) {
     callSendAPI(messageData);
 }
 function askDepartureDate(recipientId, othervariables) {
-    var today = moment().calendar();
-    var tomorrow = moment().add(1, 'days').calendar();
-    var dayAfterTomorrow = moment().add(2, 'days').calendar();
+    var today = moment().tz('America/Vancouver');
+    var tomorrow = moment().tz('America/Vancouver').add(1, 'days');
+    var dayAfterTomorrow = moment().tz('America/Vancouver').add(2, 'days');
+    console.log('today is'+today);
 
-    // var todayTZ = today.tz('America/Vancouver').format();
-    // var tomorrowTZ = tomorrow.tz('America/Vancouver').format();
-    // var dayAfterTomorrowTZ = dayAfterTomorrow.tz('America/Vancouver').format();
 
-    // var todayButton = dateFormat(today, "ddd, mmm. dS");es
-    // var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
-    // var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
-
-    curl -X POST -H "Content-Type: application/json" -d '{"setting_type":"greeting", "greeting":{"text":"�Hey {{user_first_name}}, welcome to Ubes2Whis 🤖! If you are a ⛷or a 🏂 looking for a ride or offering a
-    e between UBC & Whistler, you have come to the right place. I will find you a ride or 🍑s to fill your 🚗. Type 'ski' or 'board' to get started. 🏔}}' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAAC4BIkkQUIBAKlKZBPE3vrM42NlNbcpkLMZAoi
-    9MrqzJnEHU54bCYZCYAb2DQ88a2LZBdWPIsiZB521ukepY9yHZC8m5AIZCBZCJZCHqcVWUk9TyVAc3snqkz8cHGIQEY7vWq1eexTeAzygMOZA1BEhl0O8oUwC81EVYPtuNJRkwZDZD"
+    var todayButton = dateFormat(today, "ddd, mmm. dS");
+    var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
+    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
+    console.log('today button is'+todayButton);
 
     var messageData = {
         recipient: {
@@ -366,16 +337,16 @@ function askDepartureDate(recipientId, othervariables) {
             quick_replies: [
                 {
                     "content_type": "text",
-                    "title": today,
-                    "payload": othervariables+"departure_date:"+today+","
+                    "title": todayButton,
+                    "payload": othervariables+"departure_date:today,"
                 }, {
                     "content_type": "text",
-                    "title": tomorrow,
-                    "payload": othervariables+"departure_date:"+tomorrow+","
+                    "title": tomorrowButton,
+                    "payload": othervariables+"departure_date:tomorrow,"
                 }, {
                     "content_type": "text",
-                    "title": dayAfterTomorrow,
-                    "payload": othervariables+"departure_date:"+dayAfterTomorrow+","
+                    "title": dayAfterTomorrowButton,
+                    "payload": othervariables+"departure_date:dayAfterTomorrow,"
                 }
             ]
         }
@@ -488,18 +459,18 @@ function checkUserRideInfo(sender, driveOrRide) {
 
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
-
+    var user = 'checkingStatus'+driveOrRide
     userQuery.on('row', (row) => {
       results.push(row);
     });
     userQuery.on('end', () => {
       done();
       if (results.length > 0) {
-        sendTextMessage(sender, "Here are your offers/asks:");
-        pushQueryResults(sender, results);
+        sendTextMessage(sender, "Here are your offers/asks:", pushQueryResults(sender, results, user));
+        startOver(sender);
         return
       } else {
-        sendTextMessage(sender, "Looks like you haven't made one yet!");
+        sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
         return
       };
     });
@@ -510,20 +481,18 @@ function receivedPostback(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
     var timeOfPostback = event.timestamp;
-
-    // The 'payload' param is a developer-defined field which is set in a postback
-    // button for Structured Messages.
     var payload = event.postback.payload;
+    var match1 = JSON.parse(payload).match;
+    console.log("Received postback for user %d and page %d with payload '%s' " + "at %d",  senderId, recipientId, payload, timeOfPostback);
 
-    console.log("Received postback for user %d and page %d with payload '%s' " +
-        "at %d",
-    senderId, recipientId, payload, timeOfPostback);
-
-    // When a postback is called, we'll send a message back to the sender to
-    // let them know it was successful
-    sendTextMessage(payload.match, "Hey, someone pinged you!");
+    if (payload.includes('DELETE')) {
+      DeleteRecord(payload, sendTextMessage(senderId, "Deleted relevant record"));
+    } else {
+    sendTextMessage(match1, "Hey, someone pinged you!", notificationGenericTemplate(match1, payload));
+    }
 }
-function sendTextMessage(recipientId, messageText) {
+
+function sendTextMessage(recipientId, messageText, callback) {
 
     var messageData = {
         recipient: {
@@ -537,9 +506,10 @@ function sendTextMessage(recipientId, messageText) {
 
     callSendAPI(messageData);
 
+    callback();
 
 }
-function parseConditions(gatheredInfoString) {
+function parseConditions(gatheredInfoString, callback) {
     var conditionsArray = gatheredInfoString.split(',');
     var parsedObject = {};
     for (var i = 0; i < conditionsArray.length; i++ ) {
@@ -547,19 +517,26 @@ function parseConditions(gatheredInfoString) {
         parsedObject[conditionPair[0]] = conditionPair[1];
     }
     return parsedObject;
+
+    callback();
 }
 function confirmQueryInfo(recipientId, othervariables) {
   var parsedObject = parseConditions(othervariables);
-  var drive_or_ride = parsedObject.drive_or_ride;
+  if (parsedObject.drive_or_ride == 'looking_for_riders') {
+    var drive_or_ride = "looking for riders";
+  } else if (parsedObject.drive_or_ride == 'looking_for_drivers') {
+    var drive_or_ride = "looking for a driver";
+  }
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
-  var departure_time = parsedObject.departure_time;
+  var finalCondition = " at around "+parsedObject.departure_time;
+  if (parsedObject.daytrip) {finalCondition = " (roundtrip)";}
   var messageData = {
       recipient: {
           id: recipientId
       },
       message: {
-          text: "Alright, let's confirm your inquiry. You are " + drive_or_ride + " from " + departure_location + " on " + departure_date + " at around "+ departure_time+"?",
+          text: "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?",
           quick_replies: [
               {
                   "content_type": "text",
@@ -605,11 +582,10 @@ function saveAndQuery(sender, conditions, userProfile) {
             done();
             console.log(results.length);
             if (results.length > 0) {
-              sendTextMessage(sender, "Let's get these peeps up!");
-              pushQueryResults(sender, results, user);
+              sendTextMessage(sender, "Let's get these peeps up!", pushQueryResults(sender, results, user));
               return
             } else {
-              sendTextMessage(sender, "Couldn't find riders 😭");
+              sendTextMessage(sender, "Couldn't find riders 😭", startOver(sender));
               return
             };
           });
@@ -630,11 +606,10 @@ function saveAndQuery(sender, conditions, userProfile) {
           done();
           console.log(results.length);
           if (results.length > 0) {
-            sendTextMessage(sender, "Here are potential drivers:");
-            pushQueryResults(sender, results, user);
+            sendTextMessage(sender, "Here are potential drivers:", pushQueryResults(sender, results, user));
             return
           } else {
-            sendTextMessage(sender, "Couldn't find a driver 😭");
+            sendTextMessage(sender, "Couldn't find a driver 😭", startOver(sender));
             return
           };
         });
@@ -645,10 +620,16 @@ function pushQueryResults(senderId, queryresults, user) {
 
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
-    user.match = queryresults[i].sender_id;
+    var payload = "sup";
+
+    if (user) {
+      user.match = queryresults[i].sender_id;
+      payload = JSON.stringify(user);
+    };
+
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
-      subtitle: "Asking $"+queryresults[i].asking_price,
+      subtitle: "Asking $"+queryresults[i].asking_price+ " for ride on "+queryresults[i].departure_date,
       item_url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name,
       image_url: queryresults[i].profile_pic,
       buttons: [{
@@ -658,11 +639,35 @@ function pushQueryResults(senderId, queryresults, user) {
       }, {
         type: "postback",
         title: "Ping " + queryresults[i].first_name,
-        payload: user,
+        payload: payload,
       }]
     };
-    console.log('queryresults[i].asking_price is'+queryresults[i].asking_price);
-    if (queryresults[i].asking_price == 'undefined') { genericObject.pop(subtitle);};
+
+    if (!queryresults[i].asking_price) {
+      if (queryresults[i].day_trip == true) {
+        genericObject.subtitle = "A daytrip on "+queryresults[i].departure_date
+      } else {
+        genericObject.subtitle = "One way ride on "+queryresults[i].departure_date+" in the "+queryresults[i].departure_time
+      }
+     };
+    if (!user) { genericObject.buttons.pop() };
+    if (user == "checkingStatusdrive") {
+      genericObject.buttons.pop()
+      var addButton = {
+        type: "postback",
+        title: "Trash post",
+        payload: 'DELETE_DRIVER:'+queryresults[i].id,
+      };
+      genericObject.buttons.push(addButton);
+    } else if (user == "checkingStatusride") {
+      genericObject.buttons.pop()
+      var addButton = {
+        type: "postback",
+        title: "Trash post",
+        payload: 'DELETE_RIDER:'+queryresults[i].id,
+      };
+      genericObject.buttons.push(addButton);
+    }
     elements.push(genericObject);
   }
 
@@ -684,19 +689,20 @@ function pushQueryResults(senderId, queryresults, user) {
   return
 };
 function notificationGenericTemplate(senderId, user) {
-    var genericObject = {
-      title: user.first_name+" "+user.last_name,
-      subtitle: "Offering a ride to you on "+user.departure_date+" from "+user.departure_location,
-      item_url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name,
-      image_url: user.profile_pic,
+    var user1 = JSON.parse(user);
+    var genericObject = [{
+      title: user1.first_name+" "+user1.last_name,
+      subtitle: "Offering a ride "+user1.departure_date+" from "+user1.departure_location,
+      item_url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name,
+      image_url: user1.profile_pic,
       buttons: [{
         type: "web_url",
-        title: "🔍 & chat with "+user.first_name,
-        url: 'https://www.facebook.com/search/people/?q='+user.first_name+'%20'+user.last_name
+        title: "🔍 & chat with "+user1.first_name,
+        url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name
       }]
-    };
+    }];
 
-    if (user.asking_price) { genericObject.subtitle = "Asking for your ride on "+user.departure_date+" from "+user.departure_location}
+    if (user1.asking_price) { genericObject.subtitle = "Asking for your ride "+user1.departure_date+" from "+user1.departure_location}
 
   var messageData = {
     recipient: {
@@ -712,9 +718,28 @@ function notificationGenericTemplate(senderId, user) {
       }
     }
   };
+
   callSendAPI(messageData);
   return
 };
+function startOver(recipientId) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Push buton to start over",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "Restart",
+                    "payload": "start_over"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
@@ -797,4 +822,15 @@ function callSendAPI(messageData) {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
     });
+}
+
+function DeleteRecord(payload, callback) {
+  var parsedObject = parseConditions(payload);
+  if (parsedObject.DELETE_RIDER) {var driver_or_rider = "rider"; var id = parsedObject.DELETE_RIDER} else {var driver_or_rider = "driver";  var id = parsedObject.DELETE_DRIVER};
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query("DELETE FROM '"+driver_or_rider+"'"+" WHERE id = "+id);
+    console.log(driver_or_rider+ " with id "+ id + " was deleted.")
+      done();
+    });
+  callback();
 }
