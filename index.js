@@ -476,11 +476,13 @@ function receivedPostback(event) {
         if (conditions.Driver_id) {
           DeleteRecord2('driver',conditions.Driver_id);
           var first_name = findFirstNamebyId('driver', conditions.Driver_id)
-          sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+"'s car is full",startOver(conditions.ping));
+          console.log(first_name);
+          sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+" found a ride",startOver(conditions.ping));
         } else {
           DeleteRecord2('rider',conditions.Rider_id);
           var first_name = findFirstNamebyId('rider', conditions.Rider_id)
-          sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+" found a ride",startOver(conditions.ping));
+          sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+"'s car is full",startOver(conditions.ping));
+
         }
     } else {
       var match1 = JSON.parse(payload).match;
