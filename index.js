@@ -449,7 +449,7 @@ function checkUserRideInfo(sender, driveOrRide) {
       console.log("results are... "+JSON.stringify(results));
       if (results.length > 0) {
         sendTextMessage(sender, "Here are your offers/asks:", pushQueryResults(sender, results, user));
-        setTimeout((startOver(sender)), 2000);
+        startOver(sender);
         return
       } else {
         sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
@@ -469,8 +469,8 @@ function receivedPostback(event) {
 
     if (payload.includes('DELETE')) {
       DeleteRecord(payload);
-      sendTextMessage(senderId, "Deleted post!")
-      setTimeout(startOver(senderId), 2000);
+      sendTextMessage(senderId, "Deleted post!");
+      startOver(senderId);
     } else if (payload.includes('Delete_query')) {
       var conditions = parseConditions(payload);
         if (conditions.Driver_id) {
