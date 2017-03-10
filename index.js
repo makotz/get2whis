@@ -875,8 +875,10 @@ function DeleteRecord(payload, callback) {
 
 function DeleteRecord2(driver_or_rider, id) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    if (err) {console.log(err)};
     client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider+"_id = "+id, function (err, result) {
     if (err) {console.log(err)};
+    if (result) {console.log(result)};
     done();
   });
 });
