@@ -449,7 +449,7 @@ function checkUserRideInfo(sender, driveOrRide) {
       console.log("results are... "+JSON.stringify(results));
       if (results.length > 0) {
         sendTextMessage(sender, "Here are your offers/asks:", pushQueryResults(sender, results, user));
-        setTimeout(startOver(senderId), 2000);
+        setTimeout(startOver(sender), 2000);
         return
       } else {
         sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
