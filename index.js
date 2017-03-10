@@ -409,32 +409,32 @@ function askAskingPrice(recipientId, othervariables) {
     };
     callSendAPI(messageData);
 }
-function askAvailableSeats(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "How many 🍑s can you fit?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "1",
-                    "payload": othervariables+"seating_space:1,"
-                }, {
-                    "content_type": "text",
-                    "title": "2",
-                    "payload": othervariables+"seating_space:2,"
-                }, {
-                    "content_type": "text",
-                    "title": "3",
-                    "payload": othervariables+"seating_space:3,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
+// function askAvailableSeats(recipientId, othervariables) {
+//     var messageData = {
+//         recipient: {
+//             id: recipientId
+//         },
+//         message: {
+//             text: "How many 🍑s can you fit?",
+//             quick_replies: [
+//                 {
+//                     "content_type": "text",
+//                     "title": "1",
+//                     "payload": othervariables+"seating_space:1,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "2",
+//                     "payload": othervariables+"seating_space:2,"
+//                 }, {
+//                     "content_type": "text",
+//                     "title": "3",
+//                     "payload": othervariables+"seating_space:3,"
+//                 }
+//             ]
+//         }
+//     };
+//     callSendAPI(messageData);
+// }
 function checkUserRideInfo(sender, driveOrRide) {
   var results = [];
 
@@ -574,6 +574,7 @@ function saveAndQuery(sender, conditions, userProfile) {
             done();
             console.log("Inquiry is"+inquiry)
             if (results.length > 0) {
+              results.push(inquiry)
               sendTextMessage(sender, "Let's get these peeps up!", pushQueryResults(sender, results, user));
               return
             } else {
@@ -609,13 +610,14 @@ function saveAndQuery(sender, conditions, userProfile) {
     }
 };
 function pushQueryResults(senderId, queryresults, user, callback) {
-
+  var inquiry = queryresults.pop();
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
     var payload = "sup";
 
     if (user.profile_pic) {
       user.match = queryresults[i].sender_id;
+      user.inquiry = inquiry;
       payload = JSON.stringify(user);
     };
 
@@ -643,6 +645,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
       }
      };
     if (!user) { genericObject.buttons.pop() };
+
     if (user == "checkingStatusdrive") {
       genericObject.buttons.pop();
       genericObject.buttons.pop();
@@ -702,7 +705,7 @@ function pingOfferer(senderId, user) {
       }, {
         type: "postback",
         title: "Found a 🚗 already...",
-        payload: 'Delete_query:yes,Driver_id:'++",ping:"+user1.sender_id,
+        payload: 'Delete_query:yes,Driver_id:'+user1.inquiry+",ping:"+user1.sender_id,
       }]
     }];
 
