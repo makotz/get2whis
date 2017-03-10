@@ -619,7 +619,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
 
     if (user.profile_pic) {
       user.match = queryresults[i].sender_id;
-      if (user.asking_price) {
+      if (queryresults[i].asking_price) {
         user.target = queryresults[i].driver_id;
       } else {
         user.target = queryresults[i].rider_id;
