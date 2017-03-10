@@ -475,13 +475,10 @@ function receivedPostback(event) {
       var conditions = parseConditions(payload);
         if (conditions.Driver_id) {
           DeleteRecord2('driver',conditions.Driver_id);
-          var first_name = findFirstNamebyId('driver', conditions.Driver_id)
-          console.log(first_name);
-          sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+" found a ride",startOver(conditions.ping));
+          sendTextMessage(conditions.ping, "Hummm... looks like "+conditions.comeback+" found a ride",startOver(conditions.ping));
         } else {
           DeleteRecord2('rider',conditions.Rider_id);
-          var first_name = findFirstNamebyId('rider', conditions.Rider_id)
-          sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+"'s car is full",startOver(conditions.ping));
+          sendTextMessage(conditions.ping, "Hummm... looks like "+conditions.comeback+"'s car is full",startOver(conditions.ping));
 
         }
     } else {
@@ -627,6 +624,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
         user.target = queryresults[i].rider_id;
       }
       user.sender_id = senderId;
+      user.comeback = queryresults[i].first_name;
       payload = JSON.stringify(user);
     }
 
@@ -715,7 +713,7 @@ function pingOfferer(senderId, user) {
       }, {
         type: "postback",
         title: "Found a 🚗  already...",
-        payload: "Delete_query:yes,Driver_id:"+user1.target+",ping:"+user1.sender_id,
+        payload: "Delete_query:yes,Driver_id:"+user1.target+",ping:"+user1.sender_id+",comeback:"+user1.comeback,
       }]
     }];
 
@@ -725,7 +723,7 @@ function pingOfferer(senderId, user) {
       var alternativeButton = {
         type: "postback",
         title: "Sorry, 🚗  is full",
-        payload: "Delete_query:yes,Rider_id"+user1.target+",ping:"+user1.sender_id,
+        payload: "Delete_query:yes,Rider_id"+user1.target+",ping:"+user1.sender_id+",comeback:"+user1.comeback,
       }
     };
 
