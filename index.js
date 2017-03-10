@@ -195,12 +195,12 @@ function receivedMessage(event) {
         // keywords and send back the corresponding example. Otherwise, just echo
         // the text we received.
         switch (messageText) {
-            case 'Ski':
-            case 'ski':
-            case 'Board':
-            case 'board':
-            askDriveOrRide(senderId);
-            break;
+            // case 'Ski':
+            // case 'ski':
+            // case 'Board':
+            // case 'board':
+            // askDriveOrRide(senderId);
+            // break;
                 //       case 'receipt':
                 //         sendReceiptMessage(senderId);
                 //         break;
@@ -221,7 +221,7 @@ function receivedMessage(event) {
                 //         sendTypingOff(senderId);
                 //         break;
             default:
-                sendTextMessage(senderId, 'Hi there, type "ski" or "board" to begin');
+                start(senderId);
         }
     } else if (messageAttachments) {
         sendTextMessage(senderId, "Message with attachment received");
@@ -749,6 +749,25 @@ function startOver(recipientId) {
     };
     callSendAPI(messageData);
 }
+function start(recipientId) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Tap Start to begin",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "Start",
+                    "payload": "start_over"
+                }
+            ]
+        }
+    };
+    callSendAPI(messageData);
+}
+
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
@@ -830,7 +849,7 @@ function DeleteRecord(payload, callback) {
   var parsedObject = parseConditions(payload);
   if (parsedObject.DELETE_RIDER) {var driver_or_rider = "rider"; var id = parsedObject.DELETE_RIDER} else {var driver_or_rider = "driver";  var id = parsedObject.DELETE_DRIVER};
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query("DELETE FROM "+driver_or_rider+" WHERE"+driver_or_rider +"_id = "+id);
+    client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider +"_id = "+id);
       done();
     });
     if (callback) {callback()};
@@ -838,10 +857,10 @@ function DeleteRecord(payload, callback) {
 
 function DeleteRecord2(driver_or_rider, id) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query("DELETE FROM "+driver_or_rider+" WHERE"+driver_or_rider+"_id = "+id);
+    client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider+"_id = "+id);
     done();
   });
-}
+};
 
 function findFirstNameById(driver_or_rider_table, Id) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
