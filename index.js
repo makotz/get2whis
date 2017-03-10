@@ -624,6 +624,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
       } else {
         user.target = queryresults[i].rider_id;
       }
+      user.sender_id = senderId;
       payload = JSON.stringify(user);
     }
 
