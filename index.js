@@ -728,6 +728,7 @@ function pingOfferer(senderId, user) {
         title: "Sorry, 🚗  is full",
         payload: "Delete_query:yes,Rider_id"+user1.target+",ping:"+user1.sender_id+",comeback:"+user1.comeback+",senderId:"+senderId+",first_name:"+user1.first_name,
       }
+      genericObject[0].buttons.push(alternativeButton);
     };
 
   var messageData = {
