@@ -479,7 +479,6 @@ function receivedPostback(event) {
         } else {
           DeleteRecord2('rider',conditions.Rider_id);
           sendTextMessage(conditions.ping, "Hummm... looks like "+conditions.comeback+"'s car is full",startOver(conditions.ping));
-
         }
     } else {
       var match1 = JSON.parse(payload).match;
@@ -876,16 +875,9 @@ function DeleteRecord(payload, callback) {
 
 function DeleteRecord2(driver_or_rider, id) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider+"_id = "+id);
-    done();
-  });
-};
-
-function findFirstNamebyId(driver_or_rider, id) {
-  var a;
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    a = client.query("SELECT first_name FROM "+driver_or_rider+" WHERE "+driver_or_rider+"_id = "+id);
-    return a
+    client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider+"_id = "+id, function (err, result) {
+    if (err) {console.log(err)};
+  );
     done();
   });
 };
