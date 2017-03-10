@@ -241,7 +241,7 @@ function askDriveOrRide(recipientId) {
                     "payload": "drive_or_ride:looking_for_riders,"
                 }, {
                     "content_type": "text",
-                    "title": "Riding",
+                    "title": "Looking for a ride",
                     "payload": "drive_or_ride:looking_for_drivers,"
                 }, {
                     "content_type": "text",
@@ -449,6 +449,7 @@ function checkUserRideInfo(sender, driveOrRide) {
       console.log("results are... "+JSON.stringify(results));
       if (results.length > 0) {
         sendTextMessage(sender, "Here are your offers/asks:", pushQueryResults(sender, results, user));
+        setTimeout(startOver(senderId), 2000);
         return
       } else {
         sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
@@ -468,7 +469,8 @@ function receivedPostback(event) {
 
     if (payload.includes('DELETE')) {
       DeleteRecord(payload);
-      sendTextMessage(senderId, "Deleted post!", startOver(senderId));
+      sendTextMessage(senderId, "Deleted post!")
+      setTimeout(startOver(senderId), 2000);
     } else if (payload.includes('Delete_query')) {
       var conditions = parseConditions(payload);
         if (conditions.Driver_id) {
@@ -477,7 +479,7 @@ function receivedPostback(event) {
           sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+"'s car is full",startOver(conditions.ping));
         } else {
           DeleteRecord2('rider',conditions.Rider_id);
-          var first_name = findFirstNameById('rider', conditions.Driver_id)
+          var first_name = findFirstNameById('rider', conditions.Rider_id)
           sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+" found a ride",startOver(conditions.ping));
         }
     } else {
@@ -605,7 +607,7 @@ function saveAndQuery(sender, conditions, userProfile) {
         potentialDriver.on('end', () => {
           done();
           if (results.length > 0) {
-            sendTextMessage(sender, "Here are potential drivers:", pushQueryResults(sender, results, user));
+            sendTextMessage(sender, "Here are potential driver(s):", pushQueryResults(sender, results, user));
             return
           } else {
             sendTextMessage(sender, "Couldn't find a driver 😭", startOver(sender));
@@ -716,7 +718,15 @@ function pingOfferer(senderId, user) {
       }]
     }];
 
-    if (user1.asking_price) { genericObject[0].subtitle = "Asking for your ride "+user1.departure_date+" from "+user1.departure_location };
+    if (!user1.asking_price) {
+      genericObject[0].subtitle = "Asking for your ride "+user1.departure_date+" from "+user1.departure_location;
+      genericObject[0].buttons.pop();
+      var alternativeButton = {
+        type: "postback",
+        title: "Sorry, 🚗  is full",
+        payload: 'Delete_query:yes,Rider_id:'+user1.inquiry+",ping:"+user1.sender_id,
+      }
+    };
 
   var messageData = {
     recipient: {
@@ -874,7 +884,7 @@ function DeleteRecord2(driver_or_rider, id) {
   });
 };
 
-function findFirstNameById(driver_or_rider_table, Id) {
+function findFirstNameById(driver_or_rider_table, id) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     var target = client.query("SELECT first_name FROM "+driver_or_rider_table+" WHERE "+driver_or_rider_table+"_id = "+id);
       done();
