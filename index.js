@@ -629,7 +629,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
 
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
-      subtitle: "Asking $"+queryresults[i].asking_price+ " for ride on "+queryresults[i].departure_date+queryresults[i].,
+      subtitle: "Asking $"+queryresults[i].asking_price+ " for ride on "+queryresults[i].departure_date,
       item_url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name,
       image_url: queryresults[i].profile_pic,
       buttons: [{
