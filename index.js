@@ -171,10 +171,10 @@ function receivedMessage(event) {
         };
 
         if (quickReplyPayload.includes('looking_for_riders')) {
-          if (!quickReplyPayload.includes('seating_space')) {
-            askAvailableSeats(senderId, quickReplyPayload)
-            return
-          }
+          // if (!quickReplyPayload.includes('seating_space')) {
+          //   askAvailableSeats(senderId, quickReplyPayload)
+          //   return
+          // }
           if (!quickReplyPayload.includes('asking_price')) {
             askAskingPrice(senderId, quickReplyPayload)
             return
@@ -465,10 +465,21 @@ function receivedPostback(event) {
     console.log("Received postback for user %d and page %d with payload '%s' " + "at %d",  senderId, recipientId, payload, timeOfPostback);
 
     if (payload.includes('DELETE')) {
-      DeleteRecord(payload, sendTextMessage(senderId, "Deleted relevant record"));
+      DeleteRecord(payload, sendTextMessage(senderId, "Deleted request"));
+    } else if (payload.includes('Delete_query')) {
+      var conditions = parseConditions(payload);
+        if (conditions.Driver_id) {
+          DeleteRecord2('driver',conditions.Driver_id);
+          var first_name = findFirstNameById('driver', conditions.Driver_id)
+          sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+"'s car is full",startOver(conditions.ping));
+        } else {
+          DeleteRecord2('rider',conditions.Rider_id);
+          var first_name = findFirstNameById('rider', conditions.Driver_id)
+          sendTextMessage(conditions.ping, "Hummm... looks like "+first_name+" found a ride",startOver(conditions.ping));
+        }
     } else {
       var match1 = JSON.parse(payload).match;
-      sendTextMessage(match1, "Hey, someone pinged you!", notificationGenericTemplate(match1, payload));
+      sendTextMessage(match1, "Hey, a fellow ski bum pinged you!", pingOfferer(match1, payload));
     }
 }
 
@@ -500,6 +511,7 @@ function parseConditions(gatheredInfoString, callback) {
     if (callback) {callback()};
     return parsedObject;
 }
+
 function confirmQueryInfo(recipientId, othervariables) {
   var parsedObject = parseConditions(othervariables);
   if (parsedObject.drive_or_ride == 'looking_for_riders') {
@@ -549,18 +561,18 @@ function saveAndQuery(sender, conditions, userProfile) {
 
     if (user.drive_or_ride == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-          client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, seating_space, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.seating_space, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
+          var inquiry = client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
           if (user.day_trip == "true") {
-            var potentialRiders = client.query("SELECT * FROM rider WHERE day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
+            var potentialRiders = client.query("SELECT * FROM rider WHERE sender_id != "+ sender +" AND day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
           } else {
-            var potentialRiders = client.query("SELECT * FROM rider WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
+            var potentialRiders = client.query("SELECT * FROM rider WHERE sender_id != "+ sender +" AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
           }
           potentialRiders.on('row', (row) => {
             results.push(row);
           });
           potentialRiders.on('end', () => {
             done();
-            console.log(results.length);
+            console.log("Inquiry is"+inquiry)
             if (results.length > 0) {
               sendTextMessage(sender, "Let's get these peeps up!", pushQueryResults(sender, results, user));
               return
@@ -572,19 +584,19 @@ function saveAndQuery(sender, conditions, userProfile) {
         });
     } else if (user.drive_or_ride == 'looking_for_drivers') {
       pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
-        var potentialDriver = client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
+        var inquiry = client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
+        var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != "+ sender +" AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         if (user.day_trip == "true") {
-          var potentialDriver = client.query("SELECT * FROM driver WHERE day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
+          var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != "+ sender +" AND day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         } else {
-          var potentialDriver = client.query("SELECT * FROM driver WHERE departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
+          var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != "+ sender +" AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         }
         potentialDriver.on('row', (row) => {
           results.push(row);
         });
         potentialDriver.on('end', () => {
           done();
-          console.log(results.length);
+          console.log("Inquiry is"+inquiry)
           if (results.length > 0) {
             sendTextMessage(sender, "Here are potential drivers:", pushQueryResults(sender, results, user));
             return
@@ -675,18 +687,22 @@ function pushQueryResults(senderId, queryresults, user, callback) {
   return;
 };
 
-function notificationGenericTemplate(senderId, user) {
+function pingOfferer(senderId, user) {
 
     var user1 = JSON.parse(user);
     var genericObject = [{
       title: user1.first_name+" "+user1.last_name,
-      subtitle: "Offering a one way ride "+user1.departure_date+" from "+user1.departure_location,
+      subtitle: "Offering a one way ride "+user1.departure_date+" from "+user1.departure_location+" for "+user1.asking_price,
       item_url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name,
       image_url: user1.profile_pic,
       buttons: [{
         type: "web_url",
         title: "🔍 & chat with "+user1.first_name,
         url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name
+      }, {
+        type: "postback",
+        title: "Found a 🚗 already...",
+        payload: 'Delete_query:yes,Driver_id:'++",ping:"+user1.sender_id,
       }]
     }];
 
@@ -822,4 +838,19 @@ function DeleteRecord(payload, callback) {
       done();
     });
     if (callback) {callback()};
+}
+
+function DeleteRecord2(driver_or_rider, id) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query("DELETE FROM "+driver_or_rider+" WHERE id = "+id);
+    done();
+  });
+}
+
+function findFirstNameById(driver_or_rider_table, Id) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    var target = client.query("SELECT first_name FROM "+driver_or_rider_table+" WHERE "+driver_or_rider_table+"_id = "+id);
+      done();
+    });
+  console.log("target[0] is..."+target[0]);
 }
