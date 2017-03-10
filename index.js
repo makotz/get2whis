@@ -524,7 +524,7 @@ function confirmQueryInfo(recipientId, othervariables) {
   }
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
-  var finalCondition = " at around "+parsedObject.departure_time;
+  var finalCondition = " in the "+parsedObject.departure_time;
   if (!parsedObject.departure_time) {finalCondition = " (roundtrip)";}
   var messageData = {
       recipient: {
@@ -565,12 +565,12 @@ function saveAndQuery(sender, conditions, userProfile) {
     if (user.drive_or_ride == "looking_for_riders") {
         pg.connect(process.env.DATABASE_URL, function(err, client, done) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
-          var inquiry = client.query("SELECT driver_id FROM driver WHERE sender_id = "+sender+" ORDER BY driver_id DESC LIMIT 1");
-          console.log("Inquiry is"+inquiry)
+          var inquiry = client.query("SELECT driver_id FROM driver WHERE sender_id = '"+sender+"' ORDER BY driver_id DESC LIMIT 1");
+          console.log("Inquiry is"+JSON.parse(inquiry))
           if (user.day_trip == "true") {
-            var potentialRiders = client.query("SELECT * FROM rider WHERE sender_id != "+ sender +" AND day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
+            var potentialRiders = client.query("SELECT * FROM rider WHERE sender_id != '"+ sender +"' AND day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
           } else {
-            var potentialRiders = client.query("SELECT * FROM rider WHERE sender_id != "+ sender +" AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
+            var potentialRiders = client.query("SELECT * FROM rider WHERE sender_id != '"+ sender +"' AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
           }
           potentialRiders.on('row', (row) => {
             results.push(row);
@@ -591,13 +591,13 @@ function saveAndQuery(sender, conditions, userProfile) {
     } else if (user.drive_or_ride == 'looking_for_drivers') {
       pg.connect(process.env.DATABASE_URL, function(err, client, done) {
         client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
-        var inquiry = client.query("SELECT rider_id FROM rider WHERE sender_id = "+sender+" ORDER BY rider_id DESC LIMIT 1");
-        console.log("Inquiry is"+inquiry)
-        var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != "+ sender +" AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
+        var inquiry = client.query("SELECT rider_id FROM rider WHERE sender_id = '"+sender+"' ORDER BY rider_id DESC LIMIT 1");
+        console.log("Inquiry is"+JSON.parse(inquiry))
+        var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != '"+ sender +"' AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         if (user.day_trip == "true") {
-          var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != "+ sender +" AND day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
+          var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != '"+ sender +"' AND day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         } else {
-          var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != "+ sender +" AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
+          var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != '"+ sender +"' AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         }
         potentialDriver.on('row', (row) => {
           results.push(row);
@@ -852,7 +852,14 @@ function callSendAPI(messageData, callback) {
 
 function DeleteRecord(payload, callback) {
   var parsedObject = parseConditions(payload);
-  if (parsedObject.DELETE_RIDER) {var driver_or_rider = "rider"; var id = parsedObject.DELETE_RIDER} else {var driver_or_rider = "driver";  var id = parsedObject.DELETE_DRIVER};
+  console.log("ParsedObject is sdfsd"+parsedObject);
+  if (parsedObject.DELETE_RIDER) {
+    var driver_or_rider = "rider";
+    var id = parsedObject.DELETE_RIDER
+  } else {
+    var driver_or_rider = "driver";
+    var id = parsedObject.DELETE_DRIVER
+  };
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider +"_id = "+id);
       done();
