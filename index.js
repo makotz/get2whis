@@ -224,7 +224,7 @@ function receivedMessage(event) {
                 start(senderId);
         }
     } else if (messageAttachments) {
-        sendTextMessage(senderId, "Message with attachment received");
+      start(senderId);
     }
 }
 function askDriveOrRide(recipientId) {
