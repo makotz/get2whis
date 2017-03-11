@@ -448,8 +448,7 @@ function checkUserRideInfo(sender, driveOrRide) {
       done();
       console.log("results are... "+JSON.stringify(results));
       if (results.length > 0) {
-        sendTextMessage(sender, "Here are your posts:", pushQueryResults(sender, results, user));
-        startOver(sender);
+        sendTextMessage(sender, "Here are your posts:", pushQueryResults(sender, results, user, startOver(sender)));
         return
       } else {
         sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
