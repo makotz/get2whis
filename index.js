@@ -701,9 +701,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
 };
 
 function pingOfferer(senderId, user) {
-
     var user1 = JSON.parse(user);
-    console.log("user is "+user);
     var genericObject = [{
       title: user1.first_name+" "+user1.last_name,
       subtitle: "Offering a ride "+user1.departure_date+" from "+user1.departure_location+" for $"+user1.asking_price,
@@ -828,12 +826,6 @@ function receivedAuthentication(event) {
     var senderId = event.sender.id;
     var recipientId = event.recipient.id;
     var timeOfAuth = event.timestamp;
-
-    // The 'ref' field is set in the 'Send to Messenger' plugin, in the 'data-ref'
-    // The developer can set this to an arbitrary value to associate the
-    // authentication callback with the 'Send to Messenger' click event. This is
-    // a way to do account linking when the user clicks the 'Send to Messenger'
-    // plugin.
     var passThroughParam = event.optin.ref;
 
     console.log("Received authentication for user %d and page %d with pass " +
@@ -853,13 +845,13 @@ function callSendAPI(messageData, callback) {
         method: 'POST',
         json: messageData
 
-    }, function(error, response, body) {
-        if (!error && response.statusCode == 200) {
+    }, function(error, response, body, callback) {
+        if (!error && response.statusCode == 200 && callback) {
+          callback();
         } else {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
     });
-    if (callback) {callback()};
 }
 
 function DeleteRecord(payload, callback) {
