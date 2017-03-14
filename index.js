@@ -813,7 +813,7 @@ function createMessageData(recipientId, Qtext, quickreplypairs) {
     }
   }
     quick_replies.push(quick_reply);
-  }
+  });
   var messageData = {
       recipient: {
           id: recipientId
