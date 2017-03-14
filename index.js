@@ -34,20 +34,20 @@ app.get('/db/rider', function (request, response) {
   displayData('rider', request, response);
 });
 
-function displayData(db, request, response) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query('SELECT * FROM '+db, function(err, result) {
+function displayData(dbsource, request, response) {
+  pg.connect(db, function(err, client, done) {
+    client.query('SELECT * FROM '+dbsource, function(err, result) {
       done();
       if (err) {
         console.error(err); response.send("Error " + err);
         return response
       } else {
-        console.log("loaded db results");
-        return response.json(result.rows); }
+        console.log("loaded: "+dbsource+" results");
+        return response.json(result.rows);
+      }
     });
   });
 }
-
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
