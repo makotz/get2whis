@@ -33,7 +33,6 @@ app.get('/db/driver', function (request, response) {
 app.get('/db/rider', function (request, response) {
   displayData('rider', request, response);
 });
-
 function displayData(dbsource, request, response) {
   pg.connect(db, function(err, client, done) {
     client.query('SELECT * FROM '+dbsource, function(err, result) {
@@ -47,7 +46,7 @@ function displayData(dbsource, request, response) {
       }
     });
   });
-}
+};
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
@@ -318,30 +317,13 @@ function receivedPostback(event) {
     }
 }
 
-function sendTextMessage(recipientId, messageText, callback) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: messageText,
-            metadata: "DEVELOPER_DEFINED_METADATA"
-        }
-    };
-    if (callback) {
-    callSendAPI(messageData, callback());
-    } else {
-    callSendAPI(messageData);
-    }
-}
-
 function parseConditions(gatheredInfoString, callback) {
-    var conditionsArray = gatheredInfoString.split(',');
-    var parsedObject = {};
-    for (var i = 0; i < conditionsArray.length; i++ ) {
+  var parsedObject = {};
+  var conditionsArray = gatheredInfoString.split(',');
+    conditionsArray.forEach(function(i) {
         var conditionPair = conditionsArray[i].split(':')
-        parsedObject[conditionPair[0]] = conditionPair[1];
-    }
+        parsedObject.conditionPair[0] = conditionPair[1];
+    });
     if (callback) {callback()};
     return parsedObject;
 }
@@ -355,7 +337,7 @@ function confirmQueryInfo(recipientId, othervariables) {
   }
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
-  var finalCondition = " in the "+parsedObject.departure_time;
+  var finalCondition = " in the "+parsedObject.departure_time.toLowerCase();
   if (!parsedObject.departure_time) {finalCondition = " (roundtrip)";}
 
     var Qtext = "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?";
@@ -377,6 +359,7 @@ function findFBProfile(sender, conditions) {
         }
     });
 };
+
 function saveAndQuery(sender, conditions, userProfile) {
     var results = [];
     var user = Object.assign(conditions, userProfile);
@@ -428,6 +411,7 @@ function saveAndQuery(sender, conditions, userProfile) {
        });
     }
 };
+
 function pushQueryResults(senderId, queryresults, user, callback) {
   console.log(queryresults)
   var elements = [];
@@ -562,6 +546,7 @@ function pingOfferer(senderId, user) {
   callSendAPI(messageData);
   return
 };
+
 function startOver(recipientId) {
     var Qtext = "Tap Restart to start over";
     var quickreplypairs = [{ "Restart" : "start"}];
@@ -570,79 +555,9 @@ function startOver(recipientId) {
 
 function start(recipientId) {
   var Qtext = "Tap Get Started to start";
-  var quickreplypairs = [{ "Get started" : "start"}];
+  var quickreplypairs = [{ "Get Started" : "start"}];
   callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
-}
-function receivedDeliveryConfirmation(event) {
-    var senderId = event.sender.id;
-    var recipientId = event.recipient.id;
-    var delivery = event.delivery;
-    var messageIDs = delivery.mids;
-    var watermark = delivery.watermark;
-    var sequenceNumber = delivery.seq;
-
-    if (messageIDs) {
-        messageIDs.forEach(function(messageID) {
-            // console.log("Received delivery confirmation for message ID: %s", messageID);
-        });
-    }
-
-    // console.log("All message before %d were delivered.", watermark);
-}
-function receivedMessageRead(event) {
-    var senderId = event.sender.id;
-    var recipientId = event.recipient.id;
-
-    // All messages before watermark (a timestamp) or sequence have been seen.
-    var watermark = event.read.watermark;
-    var sequenceNumber = event.read.seq;
-
-    console.log("Received message read event for watermark %d and sequence " +
-        "number %d",
-    watermark, sequenceNumber);
-}
-function receivedAccountLink(event) {
-    var senderId = event.sender.id;
-    var recipientId = event.recipient.id;
-
-    var status = event.account_linking.status;
-    var authCode = event.account_linking.authorization_code;
-
-    console.log("Received account link event with for user %d with status %s " +
-        "and auth code %s ",
-    senderId, status, authCode);
-}
-function receivedAuthentication(event) {
-    var senderId = event.sender.id;
-    var recipientId = event.recipient.id;
-    var timeOfAuth = event.timestamp;
-    var passThroughParam = event.optin.ref;
-
-    console.log("Received authentication for user %d and page %d with pass " +
-        "through param '%s' at %d",
-    senderId, recipientId, passThroughParam, timeOfAuth);
-
-    // When an authentication is received, we'll send a message back to the sender
-    // to let them know it was successful.
-    sendTextMessage(senderId, "Authentication successful");
-}
-function callSendAPI(messageData, callback) {
-    request({
-        uri: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: {
-            access_token: token
-        },
-        method: 'POST',
-        json: messageData
-
-    }, function(error, response, body, callback) {
-        if (!error && response.statusCode == 200) {
-          if (callback) {callback()};
-        } else {
-            console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
-        }
-    });
-}
+};
 
 function DeleteRecord(payload, callback) {
   var parsedObject = parseConditions(payload);
@@ -693,4 +608,39 @@ function createMessageData(recipientId, Qtext, quickreplypairs) {
       }
   };
   return messageData;
+}
+
+function sendTextMessage(recipientId, messageText, callback) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: messageText,
+            metadata: "DEVELOPER_DEFINED_METADATA"
+        }
+    };
+    if (callback) {
+    callSendAPI(messageData, callback());
+    } else {
+    callSendAPI(messageData);
+    }
+}
+
+function callSendAPI(messageData, callback) {
+  request({
+    uri: 'https://graph.facebook.com/v2.6/me/messages',
+    qs: {
+      access_token: token
+    },
+    method: 'POST',
+    json: messageData
+
+  }, function(error, response, body, callback) {
+    if (!error && response.statusCode == 200) {
+      if (callback) {callback()};
+    } else {
+      console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
+    }
+  });
 }
