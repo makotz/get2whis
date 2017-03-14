@@ -26,28 +26,7 @@ app.get('/', function(req, res) {
 })
 
 pg.defaults.ssl = true;
-// See tables driver and rider with /db/whichever
-// app.get('/db/driver', function (request, response) {
-//   displayData('driver', request, response);
-// });
-// app.get('/db/rider', function (request, response) {
-//   displayData('rider', request, response);
-// });
-//
-// function displayData(db) {
-//   pg.connect(db, function(err, client, done) {
-//     client.query('SELECT * FROM '+db, function(err, result) {
-//       done();
-//       if (err)
-//        { console.error(err); response.send("Error " + err);
-//          response}
-//       else
-//        {
-//          console.log("loaded db results");
-//          response.json(result.rows); }
-//     });
-//   });
-// }
+
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
@@ -62,7 +41,6 @@ app.listen(app.get('port'), function() {
 
 app.post('/webhook/', function(req, res) {
     var data = req.body;
-
     // Make sure this is a page subscription
     if (data.object == 'page') {
         // Iterate over each entry
@@ -70,7 +48,6 @@ app.post('/webhook/', function(req, res) {
         data.entry.forEach(function(pageEntry) {
             var pageID = pageEntry.id;
             var timeOfEvent = pageEntry.time;
-
             // Iterate over each messaging event
             pageEntry.messaging.forEach(function(messagingEvent) {
                 if (messagingEvent.optin) {
@@ -108,7 +85,6 @@ function receivedMessage(event) {
     var quickReply = message.quick_reply;
 
     if (isEcho) {
-        // Just logging message echoes to console
         console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
         return;
     } else if (quickReply) {
@@ -170,15 +146,9 @@ function receivedMessage(event) {
           };
         };
 
-        if (quickReplyPayload.includes('looking_for_riders')) {
-          // if (!quickReplyPayload.includes('seating_space')) {
-          //   askAvailableSeats(senderId, quickReplyPayload)
-          //   return
-          // }
-          if (!quickReplyPayload.includes('asking_price')) {
-            askAskingPrice(senderId, quickReplyPayload)
-            return
-          }
+        if (quickReplyPayload.includes('looking_for_riders') && !quickReplyPayload.includes('asking_price')) {
+          askAskingPrice(senderId, quickReplyPayload)
+          return
         };
 
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_date')) {
@@ -190,67 +160,19 @@ function receivedMessage(event) {
         return;
     }
 
-    if (messageText) {
-        // If we receive a text message, check to see if it matches any special
-        // keywords and send back the corresponding example. Otherwise, just echo
-        // the text we received.
-        switch (messageText) {
-            // case 'Ski':
-            // case 'ski':
-            // case 'Board':
-            // case 'board':
-            // askDriveOrRide(senderId);
-            // break;
-                //       case 'receipt':
-                //         sendReceiptMessage(senderId);
-                //         break;
-                //
-                //       case 'quick reply':
-                //         sendQuickReply(senderId);
-                //         break;
-                //
-                //       case 'read receipt':
-                //         sendReadReceipt(senderId);
-                //         break;
-                //
-                //       case 'typing on':
-                //         sendTypingOn(senderId);
-                //         break;
-                //
-                //       case 'typing off':
-                //         sendTypingOff(senderId);
-                //         break;
-            default:
-                start(senderId);
-        }
-    } else if (messageAttachments) {
+    if (messageText || messageAttachments) {
       start(senderId);
     }
 }
+
 function askDriveOrRide(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Aloha, are you driving or looking for a ride? 🎿",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Driving",
-                    "payload": "drive_or_ride:looking_for_riders,"
-                }, {
-                    "content_type": "text",
-                    "title": "Looking for a ride",
-                    "payload": "drive_or_ride:looking_for_drivers,"
-                }, {
-                    "content_type": "text",
-                    "title": "Check my rides",
-                    "payload": "check_rides"
-                }
-            ]
-        }
-    };
+    var Qtext = "Hey there, are you driving or looking for a ride?"
+    var quickreplypairs = [
+      {"Driving":"drive_or_ride:looking_for_riders,"},
+      {"Looking for a ride":"drive_or_ride:looking_for_drivers,"},
+      {"Check my posts":"check_rides"}
+    ]
+    var messageData = createMessageData(recipientId, Qtext, quickreplypairs)
     callSendAPI(messageData);
 }
 function askDepartureLocation(recipientId, othervariables) {
@@ -879,3 +801,27 @@ function DeleteRecord2(driver_or_rider, id) {
   });
 });
 };
+
+function createMessageData(recipientId, Qtext, quickreplypairs) {
+  var quick_replies = [];
+  quickreplypairs.forEach(keyvaluepair) {
+    for(key in keyvaluepair) {
+    var quick_reply = {
+      "content_type": "text",
+      "title": key,
+      "payload": keyvaluepair[key]
+    }
+  }
+    quick_replies.push(quick_reply);
+  }
+  var messageData = {
+      recipient: {
+          id: recipientId
+      },
+      message: {
+          text: Qtext,
+          quick_replies: quick_replies
+      }
+  };
+  return messageData;
+}
