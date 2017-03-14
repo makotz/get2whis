@@ -6,7 +6,6 @@ const request = require('request');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
-const pq = require('./parameterQueries');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -70,18 +69,10 @@ app.post('/webhook/', function(req, res) {
             var timeOfEvent = pageEntry.time;
             // Iterate over each messaging event
             pageEntry.messaging.forEach(function(messagingEvent) {
-                if (messagingEvent.optin) {
-                    receivedAuthentication(messagingEvent);
-                } else if (messagingEvent.message) {
-                    receivedMessage(messagingEvent);
-                } else if (messagingEvent.delivery) {
-                    receivedDeliveryConfirmation(messagingEvent);
+                if (messagingEvent.message) {
+                  receivedMessage(messagingEvent);
                 } else if (messagingEvent.postback) {
-                    receivedPostback(messagingEvent);
-                } else if (messagingEvent.read) {
-                    receivedMessageRead(messagingEvent);
-                } else if (messagingEvent.account_linking) {
-                    receivedAccountLink(messagingEvent);
+                  receivedPostback(messagingEvent);
                 } else {
                     console.log("Webhook received unknown messagingEvent: ", messagingEvent);
                 }
