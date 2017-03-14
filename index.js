@@ -6,7 +6,6 @@ const request = require('request');
 const pg = require('pg');
 const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
-const pq = require('./parameterQueries');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -27,27 +26,26 @@ app.get('/', function(req, res) {
 
 pg.defaults.ssl = true;
 // See tables driver and rider with /db/whichever
-// app.get('/db/driver', function (request, response) {
-//   displayData('driver', request, response);
-// });
-// app.get('/db/rider', function (request, response) {
-//   displayData('rider', request, response);
-// });
-//
-// function displayData(db) {
-//   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-//     client.query('SELECT * FROM '+db, function(err, result) {
-//       done();
-//       if (err)
-//        { console.error(err); response.send("Error " + err);
-//          response}
-//       else
-//        {
-//          console.log("loaded db results");
-//          response.json(result.rows); }
-//     });
-//   });
-// }
+app.get('/db/driver', function (request, response) {
+  displayData('driver', request, response);
+});
+app.get('/db/rider', function (request, response) {
+  displayData('rider', request, response);
+});
+function displayData(dbsource, request, response) {
+  pg.connect(db, function(err, client, done) {
+    client.query('SELECT * FROM '+dbsource, function(err, result) {
+      done();
+      if (err) {
+        console.error(err); response.send("Error " + err);
+        return response
+      } else {
+        console.log("loaded: "+dbsource+" results");
+        return response.json(result.rows);
+      }
+    });
+  });
+};
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
     if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
@@ -62,7 +60,6 @@ app.listen(app.get('port'), function() {
 
 app.post('/webhook/', function(req, res) {
     var data = req.body;
-
     // Make sure this is a page subscription
     if (data.object == 'page') {
         // Iterate over each entry
@@ -70,21 +67,12 @@ app.post('/webhook/', function(req, res) {
         data.entry.forEach(function(pageEntry) {
             var pageID = pageEntry.id;
             var timeOfEvent = pageEntry.time;
-
             // Iterate over each messaging event
             pageEntry.messaging.forEach(function(messagingEvent) {
-                if (messagingEvent.optin) {
-                    receivedAuthentication(messagingEvent);
-                } else if (messagingEvent.message) {
-                    receivedMessage(messagingEvent);
-                } else if (messagingEvent.delivery) {
-                    receivedDeliveryConfirmation(messagingEvent);
+                if (messagingEvent.message) {
+                  receivedMessage(messagingEvent);
                 } else if (messagingEvent.postback) {
-                    receivedPostback(messagingEvent);
-                } else if (messagingEvent.read) {
-                    receivedMessageRead(messagingEvent);
-                } else if (messagingEvent.account_linking) {
-                    receivedAccountLink(messagingEvent);
+                  receivedPostback(messagingEvent);
                 } else {
                     console.log("Webhook received unknown messagingEvent: ", messagingEvent);
                 }
@@ -108,7 +96,6 @@ function receivedMessage(event) {
     var quickReply = message.quick_reply;
 
     if (isEcho) {
-        // Just logging message echoes to console
         console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
         return;
     } else if (quickReply) {
@@ -135,15 +122,13 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           if (quickReplyPayload.includes('confirmation:true')){
-            findFBProfile(senderId, quickReplyPayload);
+            saveAndQuery(senderId, quickReplyPayload, findFBProfile(senderId));
             return
           } else if (quickReplyPayload.includes('confirmation:false')) {
             sendTextMessage(senderId, "Okay let's try again!", askDriveOrRide(senderId));
             return
           }
         }
-
-
         if (!quickReplyPayload.includes('drive_or_ride')) {
           askDriveOrRide(senderId, quickReplyPayload);
           return
@@ -170,133 +155,48 @@ function receivedMessage(event) {
           };
         };
 
-        if (quickReplyPayload.includes('looking_for_riders')) {
-          // if (!quickReplyPayload.includes('seating_space')) {
-          //   askAvailableSeats(senderId, quickReplyPayload)
-          //   return
-          // }
-          if (!quickReplyPayload.includes('asking_price')) {
-            askAskingPrice(senderId, quickReplyPayload)
-            return
-          }
+        if (quickReplyPayload.includes('looking_for_riders') && !quickReplyPayload.includes('asking_price')) {
+          askAskingPrice(senderId, quickReplyPayload)
+          return
         };
 
         if (quickReplyPayload.includes('drive_or_ride') && quickReplyPayload.includes('departure_location') && quickReplyPayload.includes('departure_date')) {
           confirmQueryInfo(senderId, quickReplyPayload);
           return
         }
-
-        sendTextMessage(senderId, "Quick reply tapped");
-        return;
     }
 
-    if (messageText) {
-        // If we receive a text message, check to see if it matches any special
-        // keywords and send back the corresponding example. Otherwise, just echo
-        // the text we received.
-        switch (messageText) {
-            // case 'Ski':
-            // case 'ski':
-            // case 'Board':
-            // case 'board':
-            // askDriveOrRide(senderId);
-            // break;
-                //       case 'receipt':
-                //         sendReceiptMessage(senderId);
-                //         break;
-                //
-                //       case 'quick reply':
-                //         sendQuickReply(senderId);
-                //         break;
-                //
-                //       case 'read receipt':
-                //         sendReadReceipt(senderId);
-                //         break;
-                //
-                //       case 'typing on':
-                //         sendTypingOn(senderId);
-                //         break;
-                //
-                //       case 'typing off':
-                //         sendTypingOff(senderId);
-                //         break;
-            default:
-                start(senderId);
-        }
-    } else if (messageAttachments) {
+    if (messageText || messageAttachments) {
       start(senderId);
     }
 }
+
 function askDriveOrRide(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Aloha, are you driving or looking for a ride? 🎿",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Driving",
-                    "payload": "drive_or_ride:looking_for_riders,"
-                }, {
-                    "content_type": "text",
-                    "title": "Looking for a ride",
-                    "payload": "drive_or_ride:looking_for_drivers,"
-                }, {
-                    "content_type": "text",
-                    "title": "Check my rides",
-                    "payload": "check_rides"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+    var Qtext = "Hey there, are you driving or looking for a ride?";
+    var quickreplypairs = [
+      {"Driving":"drive_or_ride:looking_for_riders,"},
+      {"Looking for a ride":"drive_or_ride:looking_for_drivers,"},
+      {"Check my posts":"check_rides"}
+    ]
+    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 }
 function askDepartureLocation(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Where are you leaving from?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "UBC",
-                    "payload": othervariables+"departure_location:UBC,"
-                }, {
-                    "content_type": "text",
-                    "title": "Whistler",
-                    "payload": othervariables+"departure_location:Whistler,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+    var Qtext = "Where are you leaving from?";
+    var quickreplypairs = [
+      {"UBC" : othervariables+"departure_location:UBC,"},
+      {"Whistler" : othervariables+"departure_location:Whistler,"}
+    ];
+    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 }
 function askDayTrip(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Day trip or one way?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Daytrip",
-                    "payload": othervariables+"day_trip:true,"
-                }, {
-                    "content_type": "text",
-                    "title": "One way",
-                    "payload": othervariables+"day_trip:false,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+  var Qtext = "Day trip or one way?";
+  var quickreplypairs = [
+    {"Daytrip" : othervariables+"day_trip:true,"},
+    {"One way" : othervariables+"day_trip:false,"}
+  ];
+  callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 }
+
 function askDepartureDate(recipientId, othervariables) {
     var today = moment().tz('America/Vancouver');
     var tomorrow = moment().tz('America/Vancouver').add(1, 'days');
@@ -309,136 +209,49 @@ function askDepartureDate(recipientId, othervariables) {
     var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
     console.log('today button is'+todayButton);
 
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "What day are you riding?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": todayButton,
-                    "payload": othervariables+"departure_date:today,"
-                }, {
-                    "content_type": "text",
-                    "title": tomorrowButton,
-                    "payload": othervariables+"departure_date:tomorrow,"
-                }, {
-                    "content_type": "text",
-                    "title": dayAfterTomorrowButton,
-                    "payload": othervariables+"departure_date:dayAfterTomorrow,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+
+      var Qtext = "What day are you riding?";
+      var quickreplypairs = [
+        { todayButton : othervariables+"departure_date:today,"},
+        { tomorrowButton : othervariables+"departure_date:tomorrow,"},
+        { dayAfterTomorrowButton : othervariables+"departure_date:dayAfterTomorrow,"}
+      ];
+      callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
+
 function askDepartureTime(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "What 🕗 do you want to go?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "🌅 Morning",
-                    "payload": othervariables+"departure_time:Morning,"
-                }, {
-                    "content_type": "text",
-                    "title": "🌇 Evening",
-                    "payload": othervariables+"departure_time:Evening,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
+  var Qtext = "What 🕗 do you want to go?";
+  var quickreplypairs = [
+    { "🌅 Morning" : othervariables+"departure_time:Morning,"},
+    { "🌇 Evening" : othervariables+"departure_time:Evening,"}
+  ];
+  callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+};
+
 function checkUserDriveOrRide(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Do you wanna check your ride(s) offered or ride(s) asked?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Ride(s) offered",
-                    "payload": othervariables+"checkUserDriveOrRide:drive,"
-                }, {
-                    "content_type": "text",
-                    "title": "Ride(s) asked",
-                    "payload": othervariables+"checkUserDriveOrRide:ride,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
+  var Qtext = "Do you wanna check your ride(s) offered or ride(s) asked?";
+  var quickreplypairs = [
+    { "Ride(s) offered" : othervariables+"checkUserDriveOrRide:drive,"},
+    { "Ride(s) asked" : othervariables+"checkUserDriveOrRide:ride,"}
+  ];
+  callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+};
+
 function askAskingPrice(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "How much 💰 are you charging per head?",
-            quick_replies: [
-              {
-                "content_type": "text",
-                "title": "😍 Free!",
-                "payload": othervariables+"asking_price:0,"
-            },
-                {
-                    "content_type": "text",
-                    "title": "5",
-                    "payload": othervariables+"asking_price:5,"
-                }, {
-                    "content_type": "text",
-                    "title": "10",
-                    "payload": othervariables+"asking_price:10,"
-                }, {
-                    "content_type": "text",
-                    "title": "15",
-                    "payload": othervariables+"asking_price:15,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+  var Qtext = "How much 💰 are you charging per head?";
+  var quickreplypairs = [
+    { "😍 Free!" :othervariables+"asking_price:0,"},
+    { "5" : othervariables+"asking_price:5,"},
+    { "10" : othervariables+"asking_price:10,"},
+    { "15" : othervariables+"asking_price:15,"}
+  ];
+  callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 }
-// function askAvailableSeats(recipientId, othervariables) {
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "How many 🍑s can you fit?",
-//             quick_replies: [
-//                 {
-//                     "content_type": "text",
-//                     "title": "1",
-//                     "payload": othervariables+"seating_space:1,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "2",
-//                     "payload": othervariables+"seating_space:2,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "3",
-//                     "payload": othervariables+"seating_space:3,"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// }
+
 function checkUserRideInfo(sender, driveOrRide) {
   var results = [];
 
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+  pg.connect(db, function(err, client, done) {
     var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
     var user = 'checkingStatus'+driveOrRide
     userQuery.on('row', (row) => {
@@ -489,31 +302,13 @@ function receivedPostback(event) {
     }
 }
 
-function sendTextMessage(recipientId, messageText, callback) {
-
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: messageText,
-            metadata: "DEVELOPER_DEFINED_METADATA"
-        }
-    };
-    if (callback) {
-    callSendAPI(messageData, callback());
-    } else {
-    callSendAPI(messageData);
-    }
-}
-
 function parseConditions(gatheredInfoString, callback) {
-    var conditionsArray = gatheredInfoString.split(',');
-    var parsedObject = {};
-    for (var i = 0; i < conditionsArray.length; i++ ) {
-        var conditionPair = conditionsArray[i].split(':')
-        parsedObject[conditionPair[0]] = conditionPair[1];
-    }
+  var parsedObject = {};
+  var conditionsArray = gatheredInfoString.split(',');
+    conditionsArray.forEach(function(i) {
+        var conditionPair = i.split(':')
+        parsedObject.conditionPair[0] = conditionPair[1];
+    });
     if (callback) {callback()};
     return parsedObject;
 }
@@ -527,68 +322,50 @@ function confirmQueryInfo(recipientId, othervariables) {
   }
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
-  var finalCondition = " in the "+parsedObject.departure_time;
+  var finalCondition = " in the "+parsedObject.departure_time.toLowerCase();
   if (!parsedObject.departure_time) {finalCondition = " (roundtrip)";}
-  var messageData = {
-      recipient: {
-          id: recipientId
-      },
-      message: {
-          text: "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?",
-          quick_replies: [
-              {
-                  "content_type": "text",
-                  "title": "Yessir!",
-                  "payload": othervariables+"confirmation:true"
-              }, {
-                  "content_type": "text",
-                  "title": "Uhh no...",
-                  "payload": othervariables+"confirmation:false"
-              }
-          ]
-        }
-  };
-  callSendAPI(messageData);
-}
-function findFBProfile(sender, conditions) {
+
+    var Qtext = "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?";
+    var quickreplypairs = [
+      { "Yessir!" : othervariables+"confirmation:true"},
+      { "Not quite..." : othervariables+"confirmation:false"}
+    ];
+    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+};
+
+function findFBProfile(sender) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            conditions = parseConditions(conditions);
-            var userProfile = JSON.parse(body);
-            saveAndQuery(sender, conditions, userProfile);
+            return JSON.parse(body);
         } else {
             console.log("Could not locate SenderId: %s's Facebook Profile", senderId);
         }
     });
 };
+
 function saveAndQuery(sender, conditions, userProfile) {
-    var results = [];
+    var queryResults = [];
+    var conditions = parseConditions(conditions);
     var user = Object.assign(conditions, userProfile);
 
-    if (user.drive_or_ride == "looking_for_riders") {
-        pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    pg.connect(db, function(err, client, done) {
+      if (user.drive_or_ride == "looking_for_riders") {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
           if (user.day_trip == "true") {
             var potentialRiders = client.query("SELECT * FROM rider WHERE sender_id != '"+ sender +"' AND day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
           } else {
             var potentialRiders = client.query("SELECT * FROM rider WHERE sender_id != '"+ sender +"' AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
           }
-          potentialRiders.on('row', (row) => {
-            results.push(row);
-          });
-          potentialRiders.on('end', () => {
-            done();
-            if (results.length > 0) {
-              sendTextMessage(sender, "Let's get these peeps up!", pushQueryResults(sender, results, user));
-              return
-            } else {
-              sendTextMessage(sender, "Couldn't find riders 😭", startOver(sender));
-              return
-            };
-          });
-        });
-    } else if (user.drive_or_ride == 'looking_for_drivers') {
-      pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+          potentialRiders.on('row', (row) => { queryResults.push(row) });
+          potentialRiders.on('end', () => { done() });
+          if (queryResults.length > 0) {
+            sendTextMessage(sender, "Let's get these peeps up!", pushQueryResults(sender, queryResults, user));
+            return
+          } else {
+            sendTextMessage(sender, "Couldn't find riders 😭", startOver(sender));
+            return
+          };
+      } else if (user.drive_or_ride == 'looking_for_drivers') {
         client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
         var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != '"+ sender +"' AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         if (user.day_trip == "true") {
@@ -596,27 +373,45 @@ function saveAndQuery(sender, conditions, userProfile) {
         } else {
           var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != '"+ sender +"' AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         }
-        potentialDriver.on('row', (row) => {
-          results.push(row);
-        });
-        potentialDriver.on('end', () => {
-          done();
-          if (results.length > 0) {
-            sendTextMessage(sender, "Here are potential driver(s):", pushQueryResults(sender, results, user));
-            return
-          } else {
-            sendTextMessage(sender, "Couldn't find a driver 😭", startOver(sender));
-            return
-          };
-        });
-       });
-    }
+        potentialDriver.on('row', (row) => {queryResults.push(row) });
+        potentialDriver.on('end', () => { done() });
+        if (queryResults.length > 0) {
+          sendTextMessage(sender, "Here are potential driver(s):", pushQueryResults(sender, queryResults, user));
+          return
+        } else {
+          sendTextMessage(sender, "Couldn't find a driver 😭", startOver(sender));
+          return
+        };
+      };
+    });
 };
+
+function createGenericObjects (queryResults) {
+  var genericObjects = [];
+
+  return genericObjects;
+}
+function createGenericMessageData (senderId, elements) {
+  var messageData = {
+    recipient: {
+      id: senderId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: elements
+        }
+      }
+    }
+  };
+  return messageData;
+}
+
 function pushQueryResults(senderId, queryresults, user, callback) {
-  console.log(queryresults)
   var elements = [];
   for (var i = 0; i < queryresults.length; i++) {
-    var payload = "sup";
 
     if (user.profile_pic) {
       user.match = queryresults[i].sender_id;
@@ -627,7 +422,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
       }
       user.sender_id = senderId;
       user.comeback = queryresults[i].first_name;
-      payload = JSON.stringify(user);
+      var payload = JSON.stringify(user);
     }
 
     var genericObject = {
@@ -637,7 +432,7 @@ function pushQueryResults(senderId, queryresults, user, callback) {
       image_url: queryresults[i].profile_pic,
       buttons: [{
         type: "web_url",
-        title: "🔍 & chat with "+queryresults[i].first_name,
+        title: "🔍 & chat with "+queryresults[i].first_name๋,
         url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name
       }, {
         type: "postback",
@@ -746,112 +541,18 @@ function pingOfferer(senderId, user) {
   callSendAPI(messageData);
   return
 };
+
 function startOver(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Tap Restart to start over",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Restart",
-                    "payload": "start"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
+    var Qtext = "Tap Restart to start over";
+    var quickreplypairs = [{ "Restart" : "start"}];
+    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+};
+
 function start(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Tap Get started to begin",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Get started",
-                    "payload": "start_over"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
-function receivedDeliveryConfirmation(event) {
-    var senderId = event.sender.id;
-    var recipientId = event.recipient.id;
-    var delivery = event.delivery;
-    var messageIDs = delivery.mids;
-    var watermark = delivery.watermark;
-    var sequenceNumber = delivery.seq;
-
-    if (messageIDs) {
-        messageIDs.forEach(function(messageID) {
-            // console.log("Received delivery confirmation for message ID: %s", messageID);
-        });
-    }
-
-    // console.log("All message before %d were delivered.", watermark);
-}
-function receivedMessageRead(event) {
-    var senderId = event.sender.id;
-    var recipientId = event.recipient.id;
-
-    // All messages before watermark (a timestamp) or sequence have been seen.
-    var watermark = event.read.watermark;
-    var sequenceNumber = event.read.seq;
-
-    console.log("Received message read event for watermark %d and sequence " +
-        "number %d",
-    watermark, sequenceNumber);
-}
-function receivedAccountLink(event) {
-    var senderId = event.sender.id;
-    var recipientId = event.recipient.id;
-
-    var status = event.account_linking.status;
-    var authCode = event.account_linking.authorization_code;
-
-    console.log("Received account link event with for user %d with status %s " +
-        "and auth code %s ",
-    senderId, status, authCode);
-}
-function receivedAuthentication(event) {
-    var senderId = event.sender.id;
-    var recipientId = event.recipient.id;
-    var timeOfAuth = event.timestamp;
-    var passThroughParam = event.optin.ref;
-
-    console.log("Received authentication for user %d and page %d with pass " +
-        "through param '%s' at %d",
-    senderId, recipientId, passThroughParam, timeOfAuth);
-
-    // When an authentication is received, we'll send a message back to the sender
-    // to let them know it was successful.
-    sendTextMessage(senderId, "Authentication successful");
-}
-function callSendAPI(messageData, callback) {
-    request({
-        uri: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: {
-            access_token: token
-        },
-        method: 'POST',
-        json: messageData
-
-    }, function(error, response, body, callback) {
-        if (!error && response.statusCode == 200 && callback) {
-          callback();
-        } else {
-            console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
-        }
-    });
-}
+  var Qtext = "Tap Get Started to start";
+  var quickreplypairs = [{ "Get Started" : "start"}];
+  callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+};
 
 function DeleteRecord(payload, callback) {
   var parsedObject = parseConditions(payload);
@@ -862,7 +563,7 @@ function DeleteRecord(payload, callback) {
     var driver_or_rider = "driver";
     var id = parsedObject.DELETE_DRIVER
   };
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+  pg.connect(db, function(err, client, done) {
     client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider +"_id = "+id);
       done();
     });
@@ -870,12 +571,71 @@ function DeleteRecord(payload, callback) {
 }
 
 function DeleteRecord2(driver_or_rider, id) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+  pg.connect(db, function(err, client, done) {
     if (err) {console.log(err)};
     client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider+"_id = "+id, function (err, result) {
     if (err) {console.log(err)};
     if (result) {console.log(result)};
     done();
+    });
   });
-});
 };
+
+function createQuickReplyMessageData(recipientId, Qtext, quickreplypairs) {
+  var quick_replies = [];
+  quickreplypairs.forEach( function(keyvaluepair) {
+    for (var key in keyvaluepair) {
+    var quick_reply = {
+      "content_type": "text",
+      "title": key,
+      "payload": keyvaluepair[key]
+    }
+  }
+    quick_replies.push(quick_reply);
+  });
+  var messageData = {
+      recipient: {
+          id: recipientId
+      },
+      message: {
+          text: Qtext,
+          quick_replies: quick_replies
+      }
+  };
+  return messageData;
+}
+
+function sendTextMessage(recipientId, messageText, callback) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: messageText,
+            metadata: "DEVELOPER_DEFINED_METADATA"
+        }
+    };
+    if (callback) {
+    callSendAPI(messageData, callback());
+    } else {
+    callSendAPI(messageData);
+    }
+}
+
+function callSendAPI(messageData, callback) {
+  request({
+    uri: 'https://graph.facebook.com/v2.6/me/messages',
+    qs: {
+      access_token: token
+    },
+    method: 'POST',
+    json: messageData
+
+  }, function(error, response, body, callback) {
+    if (!error && response.statusCode == 200) {
+      if (callback) {callback()};
+    } else {
+      console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
+    }
+  });
+}
