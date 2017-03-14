@@ -804,8 +804,8 @@ function DeleteRecord2(driver_or_rider, id) {
 
 function createMessageData(recipientId, Qtext, quickreplypairs) {
   var quick_replies = [];
-  quickreplypairs.forEach(keyvaluepair) {
-    for(key in keyvaluepair) {
+  quickreplypairs.forEach( function(keyvaluepair) {
+    for (key in keyvaluepair) {
     var quick_reply = {
       "content_type": "text",
       "title": key,
