@@ -770,11 +770,11 @@ function start(recipientId) {
             id: recipientId
         },
         message: {
-            text: "Tap Start to begin",
+            text: "Tap Get started to begin",
             quick_replies: [
                 {
                     "content_type": "text",
-                    "title": "Start",
+                    "title": "Get started",
                     "payload": "start_over"
                 }
             ]
