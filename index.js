@@ -166,59 +166,31 @@ function receivedMessage(event) {
 }
 
 function askDriveOrRide(recipientId) {
-    var Qtext = "Hey there, are you driving or looking for a ride?"
+    var Qtext = "Hey there, are you driving or looking for a ride?";
     var quickreplypairs = [
       {"Driving":"drive_or_ride:looking_for_riders,"},
       {"Looking for a ride":"drive_or_ride:looking_for_drivers,"},
       {"Check my posts":"check_rides"}
     ]
-    var messageData = createMessageData(recipientId, Qtext, quickreplypairs)
-    callSendAPI(messageData);
+    callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
 }
 function askDepartureLocation(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Where are you leaving from?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "UBC",
-                    "payload": othervariables+"departure_location:UBC,"
-                }, {
-                    "content_type": "text",
-                    "title": "Whistler",
-                    "payload": othervariables+"departure_location:Whistler,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+    var Qtext = "Where are you leaving from?";
+    var quickreplypairs = [
+      {"UBC" : othervariables+"departure_location:UBC,"},
+      {"Whistler" : othervariables+"departure_location:Whistler,"}
+    ];
+    callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
 }
 function askDayTrip(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Day trip or one way?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Daytrip",
-                    "payload": othervariables+"day_trip:true,"
-                }, {
-                    "content_type": "text",
-                    "title": "One way",
-                    "payload": othervariables+"day_trip:false,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+  var Qtext = "Day trip or one way?";
+  var quickreplypairs = [
+    {"Daytrip" : othervariables+"day_trip:true,"},
+    {"One way" : othervariables+"day_trip:false,"}
+  ];
+  callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
 }
+
 function askDepartureDate(recipientId, othervariables) {
     var today = moment().tz('America/Vancouver');
     var tomorrow = moment().tz('America/Vancouver').add(1, 'days');
@@ -231,132 +203,46 @@ function askDepartureDate(recipientId, othervariables) {
     var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
     console.log('today button is'+todayButton);
 
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "What day are you riding?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": todayButton,
-                    "payload": othervariables+"departure_date:today,"
-                }, {
-                    "content_type": "text",
-                    "title": tomorrowButton,
-                    "payload": othervariables+"departure_date:tomorrow,"
-                }, {
-                    "content_type": "text",
-                    "title": dayAfterTomorrowButton,
-                    "payload": othervariables+"departure_date:dayAfterTomorrow,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+
+      var Qtext = "What day are you riding?";
+      var quickreplypairs = [
+        { todayButton : othervariables+"departure_date:today,"},
+        { tomorrowButton : othervariables+"departure_date:tomorrow,"},
+        { dayAfterTomorrowButton : othervariables+"departure_date:dayAfterTomorrow,"}
+      ];
+      callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
 };
+
 function askDepartureTime(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "What 🕗 do you want to go?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "🌅 Morning",
-                    "payload": othervariables+"departure_time:Morning,"
-                }, {
-                    "content_type": "text",
-                    "title": "🌇 Evening",
-                    "payload": othervariables+"departure_time:Evening,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
+  var Qtext = "What 🕗 do you want to go?";
+  var quickreplypairs = [
+    { "🌅 Morning" : othervariables+"departure_time:Morning,"},
+    { "🌇 Evening" : othervariables+"departure_time:Evening,"}
+  ];
+  callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
+};
+
 function checkUserDriveOrRide(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Do you wanna check your ride(s) offered or ride(s) asked?",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Ride(s) offered",
-                    "payload": othervariables+"checkUserDriveOrRide:drive,"
-                }, {
-                    "content_type": "text",
-                    "title": "Ride(s) asked",
-                    "payload": othervariables+"checkUserDriveOrRide:ride,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
+  var Qtext = "Do you wanna check your ride(s) offered or ride(s) asked?";
+  var quickreplypairs = [
+    { "Ride(s) offered" : othervariables+"checkUserDriveOrRide:drive,"},
+    { "Ride(s) asked" : othervariables+"checkUserDriveOrRide:ride,"}
+  ];
+  callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
+};
+
+
 function askAskingPrice(recipientId, othervariables) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "How much 💰 are you charging per head?",
-            quick_replies: [
-              {
-                "content_type": "text",
-                "title": "😍 Free!",
-                "payload": othervariables+"asking_price:0,"
-            },
-                {
-                    "content_type": "text",
-                    "title": "5",
-                    "payload": othervariables+"asking_price:5,"
-                }, {
-                    "content_type": "text",
-                    "title": "10",
-                    "payload": othervariables+"asking_price:10,"
-                }, {
-                    "content_type": "text",
-                    "title": "15",
-                    "payload": othervariables+"asking_price:15,"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+  var Qtext = "How much 💰 are you charging per head?";
+  var quickreplypairs = [
+    { "😍 Free!" :othervariables+"asking_price:0,"},
+    { "5" : othervariables+"asking_price:5,"},
+    { "10" : othervariables+"asking_price:10,"},
+    { "15" : othervariables+"asking_price:15,"}
+  ];
+  callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
 }
-// function askAvailableSeats(recipientId, othervariables) {
-//     var messageData = {
-//         recipient: {
-//             id: recipientId
-//         },
-//         message: {
-//             text: "How many 🍑s can you fit?",
-//             quick_replies: [
-//                 {
-//                     "content_type": "text",
-//                     "title": "1",
-//                     "payload": othervariables+"seating_space:1,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "2",
-//                     "payload": othervariables+"seating_space:2,"
-//                 }, {
-//                     "content_type": "text",
-//                     "title": "3",
-//                     "payload": othervariables+"seating_space:3,"
-//                 }
-//             ]
-//         }
-//     };
-//     callSendAPI(messageData);
-// }
+
 function checkUserRideInfo(sender, driveOrRide) {
   var results = [];
 
@@ -412,7 +298,6 @@ function receivedPostback(event) {
 }
 
 function sendTextMessage(recipientId, messageText, callback) {
-
     var messageData = {
         recipient: {
             id: recipientId
@@ -451,27 +336,15 @@ function confirmQueryInfo(recipientId, othervariables) {
   var departure_date = parsedObject.departure_date;
   var finalCondition = " in the "+parsedObject.departure_time;
   if (!parsedObject.departure_time) {finalCondition = " (roundtrip)";}
-  var messageData = {
-      recipient: {
-          id: recipientId
-      },
-      message: {
-          text: "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?",
-          quick_replies: [
-              {
-                  "content_type": "text",
-                  "title": "Yessir!",
-                  "payload": othervariables+"confirmation:true"
-              }, {
-                  "content_type": "text",
-                  "title": "Uhh no...",
-                  "payload": othervariables+"confirmation:false"
-              }
-          ]
-        }
-  };
-  callSendAPI(messageData);
-}
+
+    var Qtext = "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?";
+    var quickreplypairs = [
+      { "Yessir!" : othervariables+"confirmation:true"},
+      { "Not quite..." : othervariables+"confirmation:false"}
+    ];
+    callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
+};
+
 function findFBProfile(sender, conditions) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
@@ -669,40 +542,15 @@ function pingOfferer(senderId, user) {
   return
 };
 function startOver(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Tap Restart to start over",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Restart",
-                    "payload": "start"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
-}
+    var Qtext = "Tap Restart to start over";
+    var quickreplypairs = [{ "Restart" : "start"}];
+    callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
+};
+
 function start(recipientId) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: "Tap Start to begin",
-            quick_replies: [
-                {
-                    "content_type": "text",
-                    "title": "Start",
-                    "payload": "start_over"
-                }
-            ]
-        }
-    };
-    callSendAPI(messageData);
+  var Qtext = "Tap Get Started to start over";
+  var quickreplypairs = [{ "Get started" : "start"}];
+  callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
 }
 function receivedDeliveryConfirmation(event) {
     var senderId = event.sender.id;
@@ -798,8 +646,8 @@ function DeleteRecord2(driver_or_rider, id) {
     if (err) {console.log(err)};
     if (result) {console.log(result)};
     done();
+    });
   });
-});
 };
 
 function createMessageData(recipientId, Qtext, quickreplypairs) {
