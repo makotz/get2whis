@@ -323,8 +323,7 @@ function confirmQueryInfo(recipientId, othervariables) {
   }
   var departure_location = parsedObject.departure_location;
   var departure_date = parsedObject.departure_date;
-  var finalCondition = " in the "+parsedObject.departure_time.toLowerCase();
-  if (!parsedObject.departure_time) {finalCondition = " (roundtrip)";}
+  if (!parsedObject.departure_time) {var finalCondition = " (roundtrip)"} else {var finalCondition = " in the "+parsedObject.departure_time.toLowerCase()};
 
     var Qtext = "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?";
     var quickreplypairs = [
