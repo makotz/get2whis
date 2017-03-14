@@ -35,7 +35,7 @@ pg.defaults.ssl = true;
 // });
 //
 // function displayData(db) {
-//   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+//   pg.connect(db, function(err, client, done) {
 //     client.query('SELECT * FROM '+db, function(err, result) {
 //       done();
 //       if (err)
@@ -438,7 +438,7 @@ function askAskingPrice(recipientId, othervariables) {
 function checkUserRideInfo(sender, driveOrRide) {
   var results = [];
 
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+  pg.connect(db, function(err, client, done) {
     var userQuery = client.query("SELECT * FROM "+ driveOrRide +"r WHERE sender_id = '"+sender+"' LIMIT 10");
     var user = 'checkingStatus'+driveOrRide
     userQuery.on('row', (row) => {
@@ -566,7 +566,7 @@ function saveAndQuery(sender, conditions, userProfile) {
     var user = Object.assign(conditions, userProfile);
 
     if (user.drive_or_ride == "looking_for_riders") {
-        pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+        pg.connect(db, function(err, client, done) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
           if (user.day_trip == "true") {
             var potentialRiders = client.query("SELECT * FROM rider WHERE sender_id != '"+ sender +"' AND day_trip = true AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' LIMIT 10");
@@ -588,7 +588,7 @@ function saveAndQuery(sender, conditions, userProfile) {
           });
         });
     } else if (user.drive_or_ride == 'looking_for_drivers') {
-      pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+      pg.connect(db, function(err, client, done) {
         client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
         var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != '"+ sender +"' AND departure_time = '"+user.departure_time+"' AND departure_date = '"+user.departure_date+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         if (user.day_trip == "true") {
@@ -862,7 +862,7 @@ function DeleteRecord(payload, callback) {
     var driver_or_rider = "driver";
     var id = parsedObject.DELETE_DRIVER
   };
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+  pg.connect(db, function(err, client, done) {
     client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider +"_id = "+id);
       done();
     });
@@ -870,7 +870,7 @@ function DeleteRecord(payload, callback) {
 }
 
 function DeleteRecord2(driver_or_rider, id) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+  pg.connect(db, function(err, client, done) {
     if (err) {console.log(err)};
     client.query("DELETE FROM "+driver_or_rider+" WHERE "+driver_or_rider+"_id = "+id, function (err, result) {
     if (err) {console.log(err)};
