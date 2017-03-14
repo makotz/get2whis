@@ -306,8 +306,9 @@ function parseConditions(gatheredInfoString, callback) {
   var parsedObject = {};
   var conditionsArray = gatheredInfoString.split(',');
     conditionsArray.forEach(function(i) {
-        var conditionPair = i.split(':')
-        parsedObject.conditionPair[0] = conditionPair[1];
+        var conditionPair = i.split(':');
+        console.log(conditionPair);
+        parsedObject[conditionPair[0]] = conditionPair[1];
     });
     if (callback) {callback()};
     return parsedObject;
