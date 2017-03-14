@@ -26,6 +26,27 @@ app.get('/', function(req, res) {
 })
 
 pg.defaults.ssl = true;
+// See tables driver and rider with /db/whichever
+app.get('/db/driver', function (request, response) {
+  displayData('driver', request, response);
+});
+app.get('/db/rider', function (request, response) {
+  displayData('rider', request, response);
+});
+
+function displayData(db, request, response) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query('SELECT * FROM '+db, function(err, result) {
+      done();
+      if (err) {
+        console.error(err); response.send("Error " + err);
+        return response
+      } else {
+        console.log("loaded db results");
+        return response.json(result.rows); }
+    });
+  });
+}
 
 // for Facebook verification
 app.get('/webhook/', function(req, res) {
@@ -548,7 +569,7 @@ function startOver(recipientId) {
 };
 
 function start(recipientId) {
-  var Qtext = "Tap Get Started to start over";
+  var Qtext = "Tap Get Started to start";
   var quickreplypairs = [{ "Get started" : "start"}];
   callSendAPI(createMessageData(recipientId, Qtext, quickreplypairs));
 }
@@ -615,8 +636,8 @@ function callSendAPI(messageData, callback) {
         json: messageData
 
     }, function(error, response, body, callback) {
-        if (!error && response.statusCode == 200 && callback) {
-          callback();
+        if (!error && response.statusCode == 200) {
+          if (callback) {callback()};
         } else {
             console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
         }
