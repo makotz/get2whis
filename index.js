@@ -386,12 +386,12 @@ function saveAndQuery(sender, conditions, userProfile) {
     });
 };
 
-function createGenericObjects (queryResults) {
+function createGenericObjects(queryResults) {
   var genericObjects = [];
-
   return genericObjects;
-}
-function createGenericMessageData (senderId, elements) {
+};
+
+function createGenericMessageData(senderId, elements) {
   var messageData = {
     recipient: {
       id: senderId
@@ -408,6 +408,44 @@ function createGenericMessageData (senderId, elements) {
   };
   return messageData;
 }
+
+function displayInitialSearchResults(senderId, queryResults, user) {
+  var elements = [];
+  queryResults.forEach(function(prospect) {
+    var payload = [];
+    payload.post_owner = prospect.sender_id;
+    // PostId needed for "Delete" button for receiving user
+    if (propspect.driver_id) {var postId = propspect.driver_id} else {var postId = propspect.rider_id}
+    payload.post_id = postId;
+    payload.post_pinger = senderId;
+    payload.post_pinger_first_name = user.first_name;
+
+    var genericObject = {
+      title: prospect.first_name+" "+prospect.last_name,
+      subtitle: "Asking $"+prospect.asking_price+ " for ride on "+prospect.departure_date,
+      item_url: 'https://www.messenger.com/t/ubes2whis?qa='+prospect.first_name+'%20'+prospect.last_name,
+      image_url: prospect.profile_pic,
+      buttons: [{
+        type: "web_url",
+        title: "🔍 & chat with "+prospect.first_name๋,
+        url: 'https://www.messenger.com/t/ubes2whis?qa='+prospect.first_name+'%20'+prospect.last_name
+      }, {
+        type: "postback",
+        title: "Ping " + prospect.first_name,
+        payload: payload,
+      }]
+    };
+    elements.push(genericObject);
+  });
+
+  if (callback) {
+  callSendAPI(createGenericMessageData(senderId, elements), callback());
+  } else {
+  callSendAPI(createGenericMessageData(senderId, elements));
+  }
+  return;
+};
+
 
 function pushQueryResults(senderId, queryresults, user, callback) {
   var elements = [];
@@ -428,12 +466,12 @@ function pushQueryResults(senderId, queryresults, user, callback) {
     var genericObject = {
       title: queryresults[i].first_name+" "+queryresults[i].last_name,
       subtitle: "Asking $"+queryresults[i].asking_price+ " for ride on "+queryresults[i].departure_date,
-      item_url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name,
+      item_url: 'https://www.messenger.com/t/ubes2whis?qa='+queryresults[i].first_name+'%20'+queryresults[i].last_name,
       image_url: queryresults[i].profile_pic,
       buttons: [{
         type: "web_url",
         title: "🔍 & chat with "+queryresults[i].first_name๋,
-        url: 'https://www.facebook.com/search/people/?q='+queryresults[i].first_name+'%20'+queryresults[i].last_name
+        url: 'https://www.messenger.com/t/ubes2whis?qa='+queryresults[i].first_name+'%20'+queryresults[i].last_name
       }, {
         type: "postback",
         title: "Ping " + queryresults[i].first_name,
@@ -499,12 +537,12 @@ function pingOfferer(senderId, user) {
     var genericObject = [{
       title: user1.first_name+" "+user1.last_name,
       subtitle: "Offering a ride "+user1.departure_date+" from "+user1.departure_location+" for $"+user1.asking_price,
-      item_url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name,
+      item_url: 'https://www.messenger.com/t/ubes2whis?qa='+user1.first_name+'%20'+user1.last_name,
       image_url: user1.profile_pic,
       buttons: [{
         type: "web_url",
         title: "🔍 & chat with "+user1.first_name,
-        url: 'https://www.facebook.com/search/people/?q='+user1.first_name+'%20'+user1.last_name
+        url: 'https://www.messenger.com/t/ubes2whis?qa='+user1.first_name+'%20'+user1.last_name
       }, {
         type: "postback",
         title: "Found a 🚗  already...",
