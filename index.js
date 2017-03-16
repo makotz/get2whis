@@ -349,6 +349,7 @@ function saveAndQuery(sender, conditions, userProfile) {
     var queryResults = [];
     var conditions = parseConditions(conditions);
     var user = Object.assign(conditions, userProfile);
+    console.log(JSON.stringify(user));
     user.departure_date = new Date(parseInt(user.departure_date));
 
     pg.connect(db, function(err, client, done) {

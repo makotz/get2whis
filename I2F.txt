@@ -3,3 +3,4 @@
 3. callback function
 4. notification approval?
 5. delete records
+6. rule to ping once
