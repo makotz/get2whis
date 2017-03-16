@@ -370,8 +370,9 @@ function saveAndQuery(sender, conditions, userProfile) {
             console.log("potential riders are"+potentialRiders)
           }
           potentialRiders.on('row', (row) => { queryResults.push(row) });
-          potentialRiders.on('end', () => { done() });
-          if (queryResults.length > 0) {
+          potentialRiders.on('end', () => {
+            done()
+            if (queryResults.length > 0) {
             sendTextMessage(sender, "Let's get these peeps up!", pushQueryResults(sender, queryResults, user));
             return
           } else {
@@ -379,6 +380,7 @@ function saveAndQuery(sender, conditions, userProfile) {
             startOver(sender);
             return
           };
+          });
         });
       } else if (user.drive_or_ride == 'looking_for_drivers') {
         pg.connect(db, function(err, client, done) {
@@ -395,7 +397,8 @@ function saveAndQuery(sender, conditions, userProfile) {
 
         }
         potentialDriver.on('row', (row) => {queryResults.push(row) });
-        potentialDriver.on('end', () => { done() });
+        potentialDriver.on('end', () => {
+          done()
         if (queryResults.length > 0) {
           sendTextMessage(sender, "Here are potential driver(s):", pushQueryResults(sender, queryResults, user));
           return
@@ -404,6 +407,7 @@ function saveAndQuery(sender, conditions, userProfile) {
           startOver(sender);
           return
         };
+        });
       });
     };
 };
