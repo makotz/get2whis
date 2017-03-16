@@ -212,9 +212,9 @@ function askDepartureDate(recipientId, othervariables) {
     var tomorrowButton = moment(tomorrowTimeZone).format("ddd. MMM. Do");
     var dayAfterTomorrowButton = moment(dayAfterTomorrowTimeZone).format("ddd. MMM. Do");
 
-    var todayPostgres = moment(todayTimeZone, "YYYY-MM-DD");
-    var tomorrowPostgres = moment(tomorrowTimeZone, "YYYY-MM-DD");
-    var dayAfterTomorrowPostgres = moment(dayAfterTomorrowTimeZone, "YYYY-MM-DD");
+    var todayPostgres = moment(todayTimeZone).format("YYYY-MM-DD");
+    var tomorrowPostgres = moment(tomorrowTimeZone).format("YYYY-MM-DD");
+    var dayAfterTomorrowPostgres = moment(dayAfterTomorrowTimeZone).format("YYYY-MM-DD");
     console.log("today posgtres is "+todayPostgres);
 
       var Qtext = "What day are you riding?";
@@ -330,7 +330,8 @@ function confirmQueryInfo(recipientId, othervariables) {
   }
   var departure_location = parsedObject.departure_location;
   console.log("Alllllohha"+parsedObject.departure_date);
-  var departure_date = moment(parseInt(parsedObject.departure_date)).format("ddd. MMM. Do");
+  var departure_date = moment(parsedObject.departure_date, "YYYY-MM-DD").format("ddd. MMM. Do");
+  console.log("Alllllohha"+parsedObject.departure_date);
   if (!parsedObject.departure_time) {var finalCondition = " (roundtrip)"} else {var finalCondition = " in the "+parsedObject.departure_time.toLowerCase()};
 
     var Qtext = "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?";
