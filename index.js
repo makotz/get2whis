@@ -340,7 +340,7 @@ function findFBProfile(sender) {
         if (!error && response.statusCode == 200) {
             return JSON.parse(body);
         } else {
-            console.log("Could not locate SenderId: %s's Facebook Profile", senderId);
+            console.log("Could not locate SenderId: %s's Facebook Profile :(", senderId);
         }
     });
 };
