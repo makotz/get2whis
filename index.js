@@ -215,12 +215,11 @@ function askDepartureDate(recipientId, othervariables) {
     console.log('tomorrow tz is ' + tomorrowTimeZone);
     var dayAfterTomorrowTimeZone = moment.tz(dayAfterTomorrow, 'America/Vancouver');
 
-    var todayButton = dateFormat(todayTimeZone, "ddd, mmm. dS");
+    var todayButton = moment(todayTimeZone).format("ddd. MMM. Do");
+    var tomorrowButton = moment(tomorrowTimeZone).format("ddd. MMM. Do");
+    var dayAfterTomorrowButton = moment(dayAfterTomorrowTimeZone).format("ddd. MMM. Do");
     console.log('today button is'+todayButton);
-    var tomorrowButton = dateFormat(tomorrowTimeZone, "ddd, mmm. dS");
     console.log('tomorrow button is ' + tomorrowButton);
-    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrowTimeZone, "ddd, mmm. dS");
-
 
       var Qtext = "What day are you riding?";
       var quickreplypairs = [
