@@ -263,11 +263,10 @@ function checkUserRideInfo(sender, driveOrRide) {
       done();
       console.log("results are... "+JSON.stringify(results));
       if (results.length > 0) {
-        sendTextMessage(sender, "Here are your posts:", pushQueryResults(sender, results, user)); setTimeout(startOver(sender), 5000);
-        return
+        sendTextMessage(sender, "Here are your posts:", pushQueryResults(sender, results, user)); startOver(sender);
       } else {
         sendTextMessage(sender, "Looks like you haven't made one yet!");
-        setTimeout(startOver(sender), 5000);
+        startOver(sender);
         return
       };
     });
@@ -285,19 +284,19 @@ function receivedPostback(event) {
     if (payload.includes('DELETE')) {
       DeleteRecord(payload);
       sendTextMessage(senderId, "Deleted post!");
-      setTimeout(startOver(senderId), 5000);
+      startOver(senderId);
     } else if (payload.includes('Delete_query')) {
       var conditions = parseConditions(payload);
         if (conditions.Driver_id) {
           DeleteRecord2('driver',conditions.Driver_id);
           sendTextMessage(conditions.ping, "Hummm... looks like "+conditions.comeback+" found a ride");
           sendTextMessage(conditions.senderId, "Okay, I let "+conditions.first_name+" know!");
-          setTimeout(startOver(conditions.ping),5000);
+          startOver(conditions.ping);
         } else {
           DeleteRecord2('rider',conditions.Rider_id);
           sendTextMessage(conditions.ping, "Hummm... looks like "+conditions.comeback+"'s car is full");
           sendTextMessage(conditions.senderId, "Okay, I let "+conditions.first_name+" know!");
-          setTimeout(startOver(conditions.ping),5000);
+          startOver(conditions.ping);
         }
     } else {
       var match1 = JSON.parse(payload).match;
@@ -351,6 +350,7 @@ function saveAndQuery(sender, conditions, userProfile) {
     var conditions = parseConditions(conditions);
     var user = Object.assign(conditions, userProfile);
     user.departure_date = new Date(parseInt(user.departure_date));
+    console.log(Object.prototype.toString.call(user.departure_date));
 
     pg.connect(db, function(err, client, done) {
       if (user.drive_or_ride == "looking_for_riders") {
@@ -367,7 +367,7 @@ function saveAndQuery(sender, conditions, userProfile) {
             return
           } else {
             sendTextMessage(sender, "Couldn't find riders 😭");
-            setTimeout(function() {startOver(sender)}, 5000);
+            startOver(sender);
             return
           };
       } else if (user.drive_or_ride == 'looking_for_drivers') {
@@ -385,7 +385,7 @@ function saveAndQuery(sender, conditions, userProfile) {
           return
         } else {
           sendTextMessage(sender, "Couldn't find a driver 😭");
-          setTimeout(startOver(sender), 5000);
+          startOver(sender);
           return
         };
       };
