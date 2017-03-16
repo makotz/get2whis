@@ -349,8 +349,7 @@ function saveAndQuery(sender, conditions, userProfile) {
     var queryResults = [];
     var conditions = parseConditions(conditions);
     var user = Object.assign(conditions, userProfile);
-    var parsedDateNum = ParseInt(user.departure_date);
-    user.departure_date = new Date(parsedDateNum);
+    user.departure_date = new Date(parseInt(user.departure_date));
 
     pg.connect(db, function(err, client, done) {
       if (user.drive_or_ride == "looking_for_riders") {
