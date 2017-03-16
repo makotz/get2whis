@@ -353,6 +353,7 @@ function saveAndQuery(sender, conditions, userProfile) {
     console.log(Object.prototype.toString.call(user.departure_date));
 
     pg.connect(db, function(err, client, done) {
+      console.log("HOw about now "+Object.prototype.toString.call(user.departure_date));
       if (user.drive_or_ride == "looking_for_riders") {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
           if (user.day_trip == "true") {
@@ -589,7 +590,7 @@ function pingOfferer(senderId, user) {
 function startOver(recipientId) {
     var Qtext = "Tap Restart to start over";
     var quickreplypairs = [{ "Restart" : "start"}];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    setTimeOut(callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs)),5000);
 };
 
 function start(recipientId) {
