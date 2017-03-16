@@ -212,11 +212,16 @@ function askDepartureDate(recipientId, othervariables) {
     var tomorrowButton = moment(tomorrowTimeZone).format("ddd. MMM. Do");
     var dayAfterTomorrowButton = moment(dayAfterTomorrowTimeZone).format("ddd. MMM. Do");
 
+    var todayPostgres = moment(todayTimeZone, "YYYY-MM-DD");
+    var tomorrowPostgres = moment(tomorrowTimeZone, "YYYY-MM-DD");
+    var dayAfterTomorrowPostgres = moment(dayAfterTomorrowTimeZone, "YYYY-MM-DD");
+    console.log("today posgtres is "+todayPostgres);
+
       var Qtext = "What day are you riding?";
       var quickreplypairs = [
-        { [todayButton] : othervariables+"departure_date:"+todayTimeZone+","},
-        { [tomorrowButton] : othervariables+"departure_date:"+tomorrowTimeZone+","},
-        { [dayAfterTomorrowButton] : othervariables+"departure_date:"+dayAfterTomorrowTimeZone+","}
+        { [todayButton] : othervariables+"departure_date:"+todayPostgres+","},
+        { [tomorrowButton] : othervariables+"departure_date:"+tomorrowPostgres+","},
+        { [dayAfterTomorrowButton] : othervariables+"departure_date:"+dayAfterTomorrowPostgres+","}
       ];
       callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
@@ -350,11 +355,8 @@ function saveAndQuery(sender, conditions, userProfile) {
     var queryResults = [];
     var conditions = parseConditions(conditions);
     var user = Object.assign(conditions, userProfile);
-    user.departure_date = new Date(parseInt(user.departure_date));
-    console.log(Object.prototype.toString.call(user.departure_date));
 
     pg.connect(db, function(err, client, done) {
-      console.log("HOw about now "+Object.prototype.toString.call(user.departure_date));
       if (user.drive_or_ride == "looking_for_riders") {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
           if (user.day_trip == "true") {
