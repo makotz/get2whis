@@ -122,7 +122,8 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           if (quickReplyPayload.includes('confirmation:true')){
-            saveAndQuery(senderId, quickReplyPayload, findFBProfile(senderId));
+            var userProfile = findFBProfile(senderId);
+            saveAndQuery(senderId, quickReplyPayload, userProfile);
             return
           } else if (quickReplyPayload.includes('confirmation:false')) {
             sendTextMessage(senderId, "Okay let's try again!", askDriveOrRide(senderId));
