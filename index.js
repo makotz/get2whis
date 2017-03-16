@@ -32,6 +32,7 @@ app.get('/db/driver', function (request, response) {
 app.get('/db/rider', function (request, response) {
   displayData('rider', request, response);
 });
+
 function displayData(dbsource, request, response) {
   pg.connect(db, function(err, client, done) {
     client.query('SELECT * FROM '+dbsource, function(err, result) {
@@ -167,7 +168,9 @@ function receivedMessage(event) {
     }
 
     if (messageText || messageAttachments) {
-      start(senderId);
+      if (messageText == "aloha") {
+        askDepartureTime(senderId)
+      } else {start(senderId)}
     }
 }
 
@@ -198,23 +201,32 @@ function askDayTrip(recipientId, othervariables) {
 }
 
 function askDepartureDate(recipientId, othervariables) {
-    var today = moment().tz('America/Vancouver');
-    var tomorrow = moment().tz('America/Vancouver').add(1, 'days');
-    var dayAfterTomorrow = moment().tz('America/Vancouver').add(2, 'days');
-    console.log('today is'+today);
+    var today = new Date();
+    console.log('today regular is ' + today);
+    var tomorrow = new Date();
+    var dayAfterTomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate()+1);
+    console.log('tomorrow regular is ' + tomorrow);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate()+2);
 
+    var todayTimeZone = moment.tz(today, 'America/Vancouver');
+    console.log('today tz is ' + todayTimeZone);
+    var tomorrowTimeZone = moment.tz(tomorrow, 'America/Vancouver');
+    console.log('tomorrow tz is ' + tomorrowTimeZone);
+    var dayAfterTomorrowTimeZone = moment.tz(dayAfterTomorrow, 'America/Vancouver');
 
     var todayButton = dateFormat(today, "ddd, mmm. dS");
-    var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
-    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
     console.log('today button is'+todayButton);
+    var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
+    console.log('tomorrow button is ' + tomorrowButton);
+    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
 
 
       var Qtext = "What day are you riding?";
       var quickreplypairs = [
-        { todayButton : othervariables+"departure_date:today,"},
-        { tomorrowButton : othervariables+"departure_date:tomorrow,"},
-        { dayAfterTomorrowButton : othervariables+"departure_date:dayAfterTomorrow,"}
+        { [todayButton] : othervariables+"departure_date:today,"},
+        { [tomorrowButton] : othervariables+"departure_date:tomorrow,"},
+        { [dayAfterTomorrowButton] : othervariables+"departure_date:dayAfterTomorrow,"}
       ];
       callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
@@ -670,7 +682,7 @@ function callSendAPI(messageData, callback) {
     json: messageData
 
   }, function(error, response, body, callback) {
-    if (!error && response.statusCode == 200) {
+    if (!`err`or && response.statusCode == 200) {
       if (callback) {callback()};
     } else {
       console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
