@@ -357,8 +357,8 @@ function saveAndQuery(sender, conditions, userProfile) {
     console.log("User depart date is "+user.departure_date);
 
 // AND departure_date = '"+user.departure_date+"T00:00:00.000Z'
-    pg.connect(db, function(err, client, done) {
       if (user.drive_or_ride == "looking_for_riders") {
+        pg.connect(db, function(err, client, done) {
           client.query('INSERT INTO driver (sender_id, first_name, last_name, profile_pic, gender, asking_price, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.asking_price, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
           if (user.day_trip == "true") {
             console.log("User depart date object type is "+Object.prototype.toString.call(user.departure_date));
@@ -379,7 +379,9 @@ function saveAndQuery(sender, conditions, userProfile) {
             startOver(sender);
             return
           };
+        });
       } else if (user.drive_or_ride == 'looking_for_drivers') {
+        pg.connect(db, function(err, client, done) {
         client.query('INSERT INTO rider (sender_id, first_name, last_name, profile_pic, gender, departure_location, departure_date, departure_time, day_trip) values($1, $2, $3, $4, $5, $6, $7, $8, $9)', [sender, user.first_name, user.last_name, user.profile_pic, user.gender, user.departure_location, user.departure_date, user.departure_time, user.day_trip]);
         var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != '"+ sender +"' AND departure_time = '"+user.departure_time+"' AND departure_location = '"+ user.departure_location+ "' ORDER BY asking_price LIMIT 10");
         if (user.day_trip == "true") {
@@ -402,8 +404,8 @@ function saveAndQuery(sender, conditions, userProfile) {
           startOver(sender);
           return
         };
-      };
-    });
+      });
+    };
 };
 
 function createGenericObjects(queryResults) {
