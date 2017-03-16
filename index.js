@@ -169,7 +169,7 @@ function receivedMessage(event) {
 
     if (messageText || messageAttachments) {
       if (messageText == "aloha") {
-        askDepartureTime(senderId)
+        askDepartureDate(senderId)
       } else {start(senderId)}
     }
 }
