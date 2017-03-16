@@ -122,15 +122,10 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           if (quickReplyPayload.includes('confirmation:true')){
-            findFBProfile(senderId, function(error, response, body){
-              if (!error && response.statusCode == 200) {
-                saveAndQuery(senderId, quickReplyPayload, response);
-                return
-              } else {
-                  console.log("Could not locate SenderId: %s's Facebook Profile :(", senderId);
-              }
+            findFBProfile(senderId, function(body){
+              saveAndQuery(senderId, quickReplyPayload, body);
+              return
             });
-            return
           } else if (quickReplyPayload.includes('confirmation:false')) {
             sendTextMessage(senderId, "Okay let's try again!", askDriveOrRide(senderId));
             return
@@ -342,10 +337,10 @@ function confirmQueryInfo(recipientId, othervariables) {
     callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
 
-function findFBProfile(sender) {
+function findFBProfile(sender, callback) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            return JSON.parse(body);
+            if (callback) {callback(JSON.parse(body));
         } else {
             console.log("Could not locate SenderId: %s's Facebook Profile :(", senderId);
         }
