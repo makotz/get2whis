@@ -324,7 +324,7 @@ function confirmQueryInfo(recipientId, othervariables) {
     var drive_or_ride = "looking for a driver";
   }
   var departure_location = parsedObject.departure_location;
-  var departure_date = moment(parsedObject.departure_date).format("ddd. MMM. Do");
+  var departure_date = moment(parseInt(parsedObject.departure_date)).format("ddd. MMM. Do");
   if (!parsedObject.departure_time) {var finalCondition = " (roundtrip)"} else {var finalCondition = " in the "+parsedObject.departure_time.toLowerCase()};
 
     var Qtext = "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?";
@@ -349,7 +349,7 @@ function saveAndQuery(sender, conditions, userProfile) {
     var queryResults = [];
     var conditions = parseConditions(conditions);
     var user = Object.assign(conditions, userProfile);
-    user.departure_date = new Date(user.departure_date);
+    user.departure_date = new Date(ParseInt(user.departure_date));
 
     pg.connect(db, function(err, client, done) {
       if (user.drive_or_ride == "looking_for_riders") {
