@@ -122,8 +122,14 @@ function receivedMessage(event) {
 
         if (quickReplyPayload.includes('confirmation')) {
           if (quickReplyPayload.includes('confirmation:true')){
-            var userProfile = findFBProfile(senderId);
-            saveAndQuery(senderId, quickReplyPayload, userProfile);
+            findFBProfile(senderId, function(error, response, body){
+              if (!error && response.statusCode == 200) {
+                saveAndQuery(senderId, quickReplyPayload, response);
+                return
+              } else {
+                  console.log("Could not locate SenderId: %s's Facebook Profile :(", senderId);
+              }
+            });
             return
           } else if (quickReplyPayload.includes('confirmation:false')) {
             sendTextMessage(senderId, "Okay let's try again!", askDriveOrRide(senderId));
@@ -350,7 +356,6 @@ function saveAndQuery(sender, conditions, userProfile) {
     var queryResults = [];
     var conditions = parseConditions(conditions);
     var user = Object.assign(conditions, userProfile);
-    console.log(JSON.stringify(user));
     user.departure_date = new Date(parseInt(user.departure_date));
 
     pg.connect(db, function(err, client, done) {
