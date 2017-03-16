@@ -324,7 +324,7 @@ function confirmQueryInfo(recipientId, othervariables) {
     var drive_or_ride = "looking for a driver";
   }
   var departure_location = parsedObject.departure_location;
-  console.log(parsedObject.departure_date);
+  console.log("Alllllohha"+parsedObject.departure_date);
   var departure_date = moment(parseInt(parsedObject.departure_date)).format("ddd. MMM. Do");
   if (!parsedObject.departure_time) {var finalCondition = " (roundtrip)"} else {var finalCondition = " in the "+parsedObject.departure_time.toLowerCase()};
 
@@ -591,7 +591,7 @@ function pingOfferer(senderId, user) {
 function startOver(recipientId) {
     var Qtext = "Tap Restart to start over";
     var quickreplypairs = [{ "Restart" : "start"}];
-    setTimeout(callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs)),5000);
+    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
 
 function start(recipientId) {
