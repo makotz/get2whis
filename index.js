@@ -215,18 +215,18 @@ function askDepartureDate(recipientId, othervariables) {
     console.log('tomorrow tz is ' + tomorrowTimeZone);
     var dayAfterTomorrowTimeZone = moment.tz(dayAfterTomorrow, 'America/Vancouver');
 
-    var todayButton = dateFormat(today, "ddd, mmm. dS");
+    var todayButton = dateFormat(todayTimeZone, "ddd, mmm. dS");
     console.log('today button is'+todayButton);
-    var tomorrowButton = dateFormat(tomorrow, "ddd, mmm. dS");
+    var tomorrowButton = dateFormat(tomorrowTimeZone, "ddd, mmm. dS");
     console.log('tomorrow button is ' + tomorrowButton);
-    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrow, "ddd, mmm. dS");
+    var dayAfterTomorrowButton = dateFormat(dayAfterTomorrowTimeZone, "ddd, mmm. dS");
 
 
       var Qtext = "What day are you riding?";
       var quickreplypairs = [
-        { [todayButton] : othervariables+"departure_date:today,"},
-        { [tomorrowButton] : othervariables+"departure_date:tomorrow,"},
-        { [dayAfterTomorrowButton] : othervariables+"departure_date:dayAfterTomorrow,"}
+        { [todayButton] : othervariables+"departure_date:"+todayTimeZone+","},
+        { [tomorrowButton] : othervariables+"departure_date:"+tomorrowTimeZone+","},
+        { [dayAfterTomorrowButton] : othervariables+"departure_date:"+dayAfterTomorrowTimeZone+","}
       ];
       callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
