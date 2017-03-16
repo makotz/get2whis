@@ -682,7 +682,7 @@ function callSendAPI(messageData, callback) {
     json: messageData
 
   }, function(error, response, body, callback) {
-    if (!`err`or && response.statusCode == 200) {
+    if (!error && response.statusCode == 200) {
       if (callback) {callback()};
     } else {
       console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
