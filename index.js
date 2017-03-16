@@ -367,7 +367,7 @@ function saveAndQuery(sender, conditions, userProfile) {
             return
           } else {
             sendTextMessage(sender, "Couldn't find riders 😭");
-            setTimeout(startOver(sender), 5000);
+            setTimeout(function() {startOver(sender)}, 5000);
             return
           };
       } else if (user.drive_or_ride == 'looking_for_drivers') {
