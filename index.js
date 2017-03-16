@@ -340,7 +340,7 @@ function confirmQueryInfo(recipientId, othervariables) {
 function findFBProfile(sender, callback) {
     request('https://graph.facebook.com/v2.6/' + sender + '?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=' + token, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            if (callback) {callback(JSON.parse(body)};
+            if (callback) {callback(JSON.parse(body))};
         } else {
             console.log("Could not locate SenderId: %s's Facebook Profile :(", senderId);
         }
