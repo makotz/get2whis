@@ -4,7 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
 const pg = require('pg');
-const dateFormat = require('dateformat');
 const moment = require('moment-timezone');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
@@ -168,9 +167,7 @@ function receivedMessage(event) {
     }
 
     if (messageText || messageAttachments) {
-      if (messageText == "aloha") {
-        askDepartureDate(senderId)
-      } else {start(senderId)}
+      if (messageText == "test") {} else {start(senderId)}
     }
 }
 
@@ -202,24 +199,18 @@ function askDayTrip(recipientId, othervariables) {
 
 function askDepartureDate(recipientId, othervariables) {
     var today = new Date();
-    console.log('today regular is ' + today);
     var tomorrow = new Date();
     var dayAfterTomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate()+1);
-    console.log('tomorrow regular is ' + tomorrow);
     dayAfterTomorrow.setDate(dayAfterTomorrow.getDate()+2);
 
     var todayTimeZone = moment.tz(today, 'America/Vancouver');
-    console.log('today tz is ' + todayTimeZone);
     var tomorrowTimeZone = moment.tz(tomorrow, 'America/Vancouver');
-    console.log('tomorrow tz is ' + tomorrowTimeZone);
     var dayAfterTomorrowTimeZone = moment.tz(dayAfterTomorrow, 'America/Vancouver');
 
     var todayButton = moment(todayTimeZone).format("ddd. MMM. Do");
     var tomorrowButton = moment(tomorrowTimeZone).format("ddd. MMM. Do");
     var dayAfterTomorrowButton = moment(dayAfterTomorrowTimeZone).format("ddd. MMM. Do");
-    console.log('today button is'+todayButton);
-    console.log('tomorrow button is ' + tomorrowButton);
 
       var Qtext = "What day are you riding?";
       var quickreplypairs = [
@@ -333,7 +324,7 @@ function confirmQueryInfo(recipientId, othervariables) {
     var drive_or_ride = "looking for a driver";
   }
   var departure_location = parsedObject.departure_location;
-  var departure_date = parsedObject.departure_date;
+  var departure_date = moment(parsedObject.departure_date).format("ddd. MMM. Do");
   if (!parsedObject.departure_time) {var finalCondition = " (roundtrip)"} else {var finalCondition = " in the "+parsedObject.departure_time.toLowerCase()};
 
     var Qtext = "Alright, let's confirm your search. You are " + drive_or_ride + " from " + departure_location + " " + departure_date + finalCondition+"?";
@@ -358,6 +349,7 @@ function saveAndQuery(sender, conditions, userProfile) {
     var queryResults = [];
     var conditions = parseConditions(conditions);
     var user = Object.assign(conditions, userProfile);
+    user.departure_date = new Date(user.departure_date);
 
     pg.connect(db, function(err, client, done) {
       if (user.drive_or_ride == "looking_for_riders") {
