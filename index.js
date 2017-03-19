@@ -295,14 +295,15 @@ function checkUserRideInfo(sender, driveOrRide) {
             done();
             if (results.length > 0) {
                 series([
-                  sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user)),
-                  startOver(sender)
+                  sendTextMessage(sender, "Here are your posts:", callback),
+                  displayQueryResults(sender, results, user, callback),
+                  startOver(sender, callback)
                 ]);
                 return
             } else {
               series([
-                sendTextMessage(sender, "Looks like you haven't made one yet!"),
-                startOver(sender)
+                sendTextMessage(sender, "Looks like you haven't made one yet!", callback),
+                startOver(sender, callback)
               ]);
                 return
             };
@@ -433,8 +434,8 @@ function saveAndQuery(sender, conditions, userProfile) {
                     return
                 } else {
                     series([
-                      sendTextMessage(sender, "Couldn't find riders 😭"),
-                      startOver(sender)
+                      sendTextMessage(sender, "Couldn't find riders 😭", callback),
+                      startOver(sender, callback)
                     ]);
                     return
                 };
@@ -471,15 +472,15 @@ function saveAndQuery(sender, conditions, userProfile) {
                 done()
                 if (queryResults.length > 0) {
                     series([
-                      sendTextMessage(sender, "Here are potential driver(s):"),
-                      displayQueryResults(sender, queryResults, user),
-                      startOver(sender)
+                      sendTextMessage(sender, "Here are potential driver(s):", callback),
+                      displayQueryResults(sender, queryResults, user, callback),
+                      startOver(sender, callback)
                     ]);
                     return
                 } else {
                   series([
-                    sendTextMessage(sender, "Couldn't find a driver 😭"),
-                    startOver(sender)
+                    sendTextMessage(sender, "Couldn't find a driver 😭", callback),
+                    startOver(sender, callback)
                   ]);
                   return
                 };
@@ -669,7 +670,7 @@ function pingOfferer(senderId, user) {
     return
 };
 
-function startOver(recipientId) {
+function startOver(recipientId, callback) {
     var Qtext = "Tap Restart to start over";
     var quickreplypairs = [
         {
@@ -677,6 +678,7 @@ function startOver(recipientId) {
         }
     ];
     callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    if (callback) {callback()};
 };
 
 function start(recipientId) {
