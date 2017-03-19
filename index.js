@@ -295,15 +295,15 @@ function checkUserRideInfo(sender, driveOrRide) {
             done();
             if (results.length > 0) {
                 series([
-                  sendTextMessage(sender, "Here are your posts:", done),
-                  displayQueryResults(sender, results, user, done),
-                  startOver(sender, done)
+                  sendTextMessage(sender, "Here are your posts:"),
+                  displayQueryResults(sender, results, user),
+                  startOver(sender)
                 ]);
                 return
             } else {
               series([
-                sendTextMessage(sender, "Looks like you haven't made one yet!", done),
-                startOver(sender, done)
+                sendTextMessage(sender, "Looks like you haven't made one yet!"),
+                startOver(sender)
               ]);
                 return
             };
@@ -434,8 +434,8 @@ function saveAndQuery(sender, conditions, userProfile) {
                     return
                 } else {
                     series([
-                      sendTextMessage(sender, "Couldn't find riders 😭", done),
-                      startOver(sender, done)
+                      sendTextMessage(sender, "Couldn't find riders 😭"),
+                      startOver(sender)
                     ]);
                     return
                 };
@@ -472,15 +472,15 @@ function saveAndQuery(sender, conditions, userProfile) {
                 done()
                 if (queryResults.length > 0) {
                     series([
-                      sendTextMessage(sender, "Here are potential driver(s):", done),
-                      displayQueryResults(sender, queryResults, user, done),
-                      startOver(sender, done)
+                      sendTextMessage(sender, "Here are potential driver(s):"),
+                      displayQueryResults(sender, queryResults, user),
+                      startOver(sender)
                     ]);
                     return
                 } else {
                   series([
-                    sendTextMessage(sender, "Couldn't find a driver 😭", done),
-                    startOver(sender, done)
+                    sendTextMessage(sender, "Couldn't find a driver 😭"),
+                    startOver(sender)
                   ]);
                   return
                 };
