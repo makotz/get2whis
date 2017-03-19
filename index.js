@@ -427,8 +427,8 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Let's get these peeps up!", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
+                    startOver(sender);
                     sendTextMessage(sender, "Couldn't find riders 😭");
-                    sendTextMessage(sender, "Check back soon!");
                     return
                 };
             });
@@ -466,8 +466,8 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Here are potential driver(s):", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
+                    startOver(sender);
                     sendTextMessage(sender, "Couldn't find a driver 😭");
-                    sendTextMessage(sender, "Check back soon!");
                     return;
                 }
             });
