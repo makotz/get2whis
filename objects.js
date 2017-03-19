@@ -1,3 +1,4 @@
+const moment = require('moment-timezone');
 module.exports = {
 
   createQuickReplyMessageData: function(recipientId, Qtext, quickreplypairs) {
