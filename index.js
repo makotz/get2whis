@@ -668,7 +668,7 @@ function startOver(recipientId, callback) {
 };
 
 function start(recipientId) {
-    var Qtext = "Tap Get Started to... well... get started duh";
+    var Qtext = "Tap Get Started to well... get started!";
     var quickreplypairs = [
         {
             "Get Started": "start"
