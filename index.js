@@ -678,7 +678,7 @@ function startOver(recipientId, callback) {
         }
     ];
     callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
-    if (callback) {done};
+    if (callback) {callback()};
 };
 
 function start(recipientId) {
