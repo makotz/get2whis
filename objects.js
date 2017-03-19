@@ -24,4 +24,38 @@ module.exports = {
       return messageData;
   },
 
+  trashPostButton: function(driverOrRiderTable, postId) {
+    var button = {
+        type: "postback",
+        title: "Trash post",
+        payload: 'deleteQuery:true,table:'+driverOrRiderTable+ ",id:"+ postId
+    };
+    return button;
+  },
+
+  convertDate: function(dateTime) {
+    var convertedDate = moment(dateTime).format("ddd. MMM. Do");
+    return convertedDate;
+  },
+
+  createGenericMessageData: function(senderId, elements) {
+      var messageData = {
+          recipient: {
+              id: senderId
+          },
+          message: {
+              attachment: {
+                  type: "template",
+                  payload: {
+                      template_type: "generic",
+                      elements: elements
+                  }
+              }
+          }
+      };
+      return messageData;
+  }
+
+  
+
 };

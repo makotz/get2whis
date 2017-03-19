@@ -4,8 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
 const pg = require('pg');
-const obj = require('./objects.js');
 const moment = require('moment-timezone');
+const obj = require('./objects.js');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -426,8 +426,8 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Let's get these peeps up!", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                    sendTextMessage(sender, "Couldn't find riders 😭");
-                    startOver(sender);
+                    return sendTextMessage(sender, "Couldn't find riders 😭");
+                    .then(() => startOver(sender));
                     return
                 };
             });
@@ -465,9 +465,9 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Here are potential driver(s):", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                    sendTextMessage(sender, "Couldn't find a driver 😭");
-                    startOver(sender);
-                    return
+                  return sendTextMessage(sender, "Couldn't find a driver 😭");
+                  .then(() => startOver(sender));
+                  return
                 };
             });
         });
@@ -478,24 +478,6 @@ function createGenericObjects(queryResults) {
     var genericObjects = [];
     return genericObjects;
 };
-
-function createGenericMessageData(senderId, elements) {
-    var messageData = {
-        recipient: {
-            id: senderId
-        },
-        message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    template_type: "generic",
-                    elements: elements
-                }
-            }
-        }
-    };
-    return messageData;
-}
 
 function displayInitialSearchResults(senderId, queryResults, user) {
     var elements = [];
@@ -534,9 +516,9 @@ function displayInitialSearchResults(senderId, queryResults, user) {
     });
 
     if (callback) {
-        callSendAPI(createGenericMessageData(senderId, elements), callback());
+        callSendAPI(obj.createGenericMessageData(senderId, elements), callback());
     } else {
-        callSendAPI(createGenericMessageData(senderId, elements));
+        callSendAPI(obj.createGenericMessageData(senderId, elements));
     }
     return;
 };
@@ -560,7 +542,7 @@ function displayQueryResults(senderId, queryresults, user, callback) {
 
         var genericObject = {
             title: queryresults[i].first_name + " " + queryresults[i].last_name,
-            subtitle: "Asking $" + queryresults[i].asking_price + " for ride on " + queryresults[i].departure_date,
+            subtitle: "Asking $" + queryresults[i].asking_price + " for ride on " + obj.convertDate(queryresults[i].departure_date),
             item_url: 'https://www.facebook.com/search/people/?q=' + queryresults[i].first_name + '%20' + queryresults[i].last_name,
             image_url: queryresults[i].profile_pic,
             buttons: [
@@ -579,9 +561,9 @@ function displayQueryResults(senderId, queryresults, user, callback) {
 
         if (!queryresults[i].asking_price) {
             if (queryresults[i].day_trip == true) {
-                genericObject.subtitle = "Looking for a ride for a daytrip on " + moment(queryresults[i].departure_date).format("ddd. MMM. Do")
+                genericObject.subtitle = "Looking for a ride for a daytrip on " + obj.convertDate(queryresults[i].departure_date)
             } else {
-                genericObject.subtitle = "Looking for a one way ride on " + moment(queryresults[i].departure_date).format("ddd. MMM. Do") + " in the " + queryresults[i].departure_time + " from " + queryresults[i].departure_location
+                genericObject.subtitle = "Looking for a one way ride on " + obj.convertDate(queryresults[i].departure_date) + " in the " + queryresults[i].departure_time + " from " + queryresults[i].departure_location
             }
         };
 
@@ -593,7 +575,7 @@ function displayQueryResults(senderId, queryresults, user, callback) {
         if (user.checkingStatus) {
             genericObject.buttons.pop();
             genericObject.buttons.pop();
-            var additionalButton = trashPostButton(user.checkingStatus, queryresults[i].rider_id)
+            var additionalButton = obj.trashPostButton(user.checkingStatus, queryresults[i].rider_id)
             genericObject.buttons.push(additionalButton);
         }
         elements.push(genericObject);
@@ -620,15 +602,6 @@ function displayQueryResults(senderId, queryresults, user, callback) {
     }
     return;
 };
-
-function trashPostButton(driverOrRiderTable, postId) {
-  var button = {
-      type: "postback",
-      title: "Trash post",
-      payload: 'deleteQuery:true,table:'+driverOrRiderTable+ ",id:"+ postId
-  };
-  return button;
-}
 
 function pingOfferer(senderId, user) {
     var user1 = JSON.parse(user);
