@@ -287,22 +287,22 @@ function checkUserRideInfo(sender, driveOrRide) {
     var results = [];
     pg.connect(db, function(err, client, done) {
         var userQuery = client.query("SELECT * FROM " + driveOrRide + "r WHERE sender_id = '" + sender + "' LIMIT 10");
-        var user = {checkingStatus:driveOrRide};
+        var user = {
+            checkingStatus: driveOrRide
+        };
         userQuery.on('row', (row) => {
             results.push(row);
         });
         userQuery.on('end', () => {
             done();
             if (results.length > 0) {
-                  sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user, startOver(sender, callback)))
-                }
+                sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user, startOver(sender, callback)))
                 return
             } else {
                 sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
                 return
             };
         });
-
     });
 }
 
@@ -317,8 +317,8 @@ function receivedPostback(event) {
     var payloadData = parseConditions(payload);
 
     if (payloadData.deleteQuery) {
-      DeleteRecord2(payloadData.driverOrRiderTable, payloadData.postId);
-      sendTextMessage(senderId, "Deleted post!");
+        DeleteRecord2(payloadData.driverOrRiderTable, payloadData.postId);
+        sendTextMessage(senderId, "Deleted post!");
     }
     if (payload.includes('Delete_query')) {
         var conditions = parseConditions(payload);
@@ -427,7 +427,7 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Let's get these peeps up!", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                  sendTextMessage(sender, "Couldn't find riders 😭", startOver(sender))
+                    sendTextMessage(sender, "Couldn't find riders 😭", startOver(sender))
                     return
                 };
             });
@@ -462,12 +462,12 @@ function saveAndQuery(sender, conditions, userProfile) {
             potentialDriver.on('end', () => {
                 done()
                 if (queryResults.length > 0) {
-                      sendTextMessage(sender, "Here are potential driver(s):" displayQueryResults(sender, queryResults, user, startOver(sender)))};
+                    sendTextMessage(sender, "Here are potential driver(s):", displayQueryResults(sender, queryResults, user, startOver(sender)))
                     return
                 } else {
-                    sendTextMessage(sender, "Couldn't find a driver 😭", startOver(sender))}
-                  return
-                };
+                    sendTextMessage(sender, "Couldn't find a driver 😭", startOver(sender))
+                    return;
+                }
             });
         });
     };
@@ -662,7 +662,9 @@ function startOver(recipientId, callback) {
         }
     ];
     callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
-    if (callback) {callback()};
+    if (callback) {
+        callback()
+    };
 };
 
 function start(recipientId) {
@@ -720,7 +722,11 @@ function sendTextMessage(recipientId, messageText, callback) {
             metadata: "DEVELOPER_DEFINED_METADATA"
         }
     };
-    if (callback) {callSendAPI(messageData, callback)} else {callSendAPI(messageData)};
+    if (callback) {
+        callSendAPI(messageData, callback)
+    } else {
+        callSendAPI(messageData)
+    };
 }
 
 function callSendAPI(messageData, callback) {
