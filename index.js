@@ -6,6 +6,7 @@ const request = require('request');
 const pg = require('pg');
 const moment = require('moment-timezone');
 const obj = require('./objects.js');
+const series = require('async/series');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -293,11 +294,16 @@ function checkUserRideInfo(sender, driveOrRide) {
         userQuery.on('end', () => {
             done();
             if (results.length > 0) {
-                sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user));
-                startOver(sender);
+                async.series([
+                  sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user)),
+                  startOver(sender)
+                ]);
+                return
             } else {
-                sendTextMessage(sender, "Looks like you haven't made one yet!");
-                startOver(sender);
+              async.series([
+                sendTextMessage(sender, "Looks like you haven't made one yet!"),
+                startOver(sender)
+              ]);
                 return
             };
         });
@@ -426,8 +432,10 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Let's get these peeps up!", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                    return sendTextMessage(sender, "Couldn't find riders 😭")
-                    .then(() => startOver(sender));
+                    async.series([
+                      sendTextMessage(sender, "Couldn't find riders 😭"),
+                      startOver(sender)
+                    ]);
                     return
                 };
             });
@@ -462,11 +470,17 @@ function saveAndQuery(sender, conditions, userProfile) {
             potentialDriver.on('end', () => {
                 done()
                 if (queryResults.length > 0) {
-                    sendTextMessage(sender, "Here are potential driver(s):", displayQueryResults(sender, queryResults, user));
+                    async.series([
+                      sendTextMessage(sender, "Here are potential driver(s):"),
+                      displayQueryResults(sender, queryResults, user),
+                      startOver(sender)
+                    ]);
                     return
                 } else {
-                  return sendTextMessage(sender, "Couldn't find a driver 😭")
-                  .then(() => startOver(sender));
+                  async.series([
+                    sendTextMessage(sender, "Couldn't find a driver 😭"),
+                    startOver(sender)
+                  ]);
                   return
                 };
             });
