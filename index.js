@@ -294,13 +294,13 @@ function checkUserRideInfo(sender, driveOrRide) {
         userQuery.on('end', () => {
             done();
             if (results.length > 0) {
-                async.series([
+                series([
                   sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user)),
                   startOver(sender)
                 ]);
                 return
             } else {
-              async.series([
+              series([
                 sendTextMessage(sender, "Looks like you haven't made one yet!"),
                 startOver(sender)
               ]);
@@ -432,7 +432,7 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Let's get these peeps up!", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                    async.series([
+                    series([
                       sendTextMessage(sender, "Couldn't find riders 😭"),
                       startOver(sender)
                     ]);
@@ -470,14 +470,14 @@ function saveAndQuery(sender, conditions, userProfile) {
             potentialDriver.on('end', () => {
                 done()
                 if (queryResults.length > 0) {
-                    async.series([
+                    series([
                       sendTextMessage(sender, "Here are potential driver(s):"),
                       displayQueryResults(sender, queryResults, user),
                       startOver(sender)
                     ]);
                     return
                 } else {
-                  async.series([
+                  series([
                     sendTextMessage(sender, "Couldn't find a driver 😭"),
                     startOver(sender)
                   ]);
