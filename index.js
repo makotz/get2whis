@@ -295,15 +295,15 @@ function checkUserRideInfo(sender, driveOrRide) {
             done();
             if (results.length > 0) {
                 async.series([
-                  sendTextMessage(sender, "Here are your posts:"),
-                  displayQueryResults(sender, results, user),
-                  startOver(sender)
+                  function(callback) {sendTextMessage(sender, "Here are your posts:", callback)},
+                  function(callback) {displayQueryResults(sender, results, user, callback)},
+                  function(callback) {startOver(sender, callback)}
                 ]);
                 return
             } else {
               async.series([
-                sendTextMessage(sender, "Looks like you haven't made one yet!"),
-                startOver(sender)
+                function(callback) {sendTextMessage(sender, "Looks like you haven't made one yet!", callback)},
+                function(callback) {startOver(sender,callback)}
               ]);
                 return
             };
@@ -434,8 +434,8 @@ function saveAndQuery(sender, conditions, userProfile) {
                     return
                 } else {
                     async.series([
-                      sendTextMessage(sender, "Couldn't find riders 😭"),
-                      startOver(sender)
+                      function(callback) {sendTextMessage(sender, "Couldn't find riders 😭", callback)},
+                      function(callback) {startOver(sender,callback)}
                     ]);
                     return
                 };
@@ -472,15 +472,19 @@ function saveAndQuery(sender, conditions, userProfile) {
                 done()
                 if (queryResults.length > 0) {
                     async.series([
-                      sendTextMessage(sender, "Here are potential driver(s):"),
-                      displayQueryResults(sender, queryResults, user),
-                      startOver(sender)
-                    ]);
+                      function (callback) {
+                      sendTextMessage(sender, "Here are potential driver(s):", callback)
+                      },
+                      function (callback) {displayQueryResults(sender, queryResults, user, callback)
+                      },
+                      function (callback) {startOver(sender, callback)}
+                      ]);
                     return
                 } else {
                   async.series([
-                    sendTextMessage(sender, "Couldn't find a driver 😭"),
-                    startOver(sender)
+                    function (callback){
+                    sendTextMessage(sender, "Couldn't find a driver 😭", callback)},
+                    function (callback) { startOver(sender, callback)}
                   ]);
                   return
                 };
