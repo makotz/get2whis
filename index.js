@@ -736,11 +736,8 @@ function sendTextMessage(recipientId, messageText, callback) {
             metadata: "DEVELOPER_DEFINED_METADATA"
         }
     };
-    if (callback) {
-        callSendAPI(messageData, callback());
-    } else {
-        callSendAPI(messageData);
-    }
+    callSendAPI(messageData);
+    if (callback) {callback()};
 }
 
 function callSendAPI(messageData, callback) {
