@@ -296,10 +296,10 @@ function checkUserRideInfo(sender, driveOrRide) {
         userQuery.on('end', () => {
             done();
             if (results.length > 0) {
-                sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user, startOver(sender)))
+                sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user))
                 return
             } else {
-                sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
+                sendTextMessage(sender, "Looks like you haven't made one yet!");
                 return
             };
         });
@@ -427,7 +427,8 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Let's get these peeps up!", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                    sendTextMessage(sender, "Couldn't find riders 😭", startOver(sender))
+                    sendTextMessage(sender, "Couldn't find riders 😭");
+                    sendTextMessage(sender, "Check back soon!");
                     return
                 };
             });
@@ -462,10 +463,11 @@ function saveAndQuery(sender, conditions, userProfile) {
             potentialDriver.on('end', () => {
                 done()
                 if (queryResults.length > 0) {
-                    sendTextMessage(sender, "Here are potential driver(s):", displayQueryResults(sender, queryResults, user, startOver(sender)))
+                    sendTextMessage(sender, "Here are potential driver(s):", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                    sendTextMessage(sender, "Couldn't find a driver 😭", startOver(sender))
+                    sendTextMessage(sender, "Couldn't find a driver 😭");
+                    sendTextMessage(sender, "Check back soon!");
                     return;
                 }
             });
