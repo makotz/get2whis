@@ -1,4 +1,5 @@
 const moment = require('moment-timezone');
+
 module.exports = {
 
   createQuickReplyMessageData: function(recipientId, Qtext, quickreplypairs) {
@@ -55,5 +56,69 @@ module.exports = {
           }
       };
       return messageData;
-  }
+  },
+
+  receivedAuthentication: function(event) {
+      var senderID = event.sender.id;
+      var recipientID = event.recipient.id;
+      var timeOfAuth = event.timestamp;
+
+      // The 'ref' field is set in the 'Send to Messenger' plugin, in the 'data-ref'
+      // The developer can set this to an arbitrary value to associate the
+      // authentication callback with the 'Send to Messenger' click event. This is
+      // a way to do account linking when the user clicks the 'Send to Messenger'
+      // plugin.
+      var passThroughParam = event.optin.ref;
+
+      console.log("Received authentication for user %d and page %d with pass " +
+          "through param '%s' at %d",
+      senderID, recipientID, passThroughParam, timeOfAuth);
+
+      // When an authentication is received, we'll send a message back to the sender
+      // to let them know it was successful.
+      // sendTextMessage(senderID, "Authentication successful");
+  },
+
+  receivedDeliveryConfirmation: function(event) {
+      var senderID = event.sender.id;
+      var recipientID = event.recipient.id;
+      var delivery = event.delivery;
+      var messageIDs = delivery.mids;
+      var watermark = delivery.watermark;
+      var sequenceNumber = delivery.seq;
+
+      if (messageIDs) {
+          messageIDs.forEach(function(messageID) {
+              console.log("Received delivery confirmation for message ID: %s", messageID);
+          });
+      }
+
+      console.log("All message before %d were delivered.", watermark);
+  },
+
+  receivedMessageRead: function(event) {
+      var senderID = event.sender.id;
+      var recipientID = event.recipient.id;
+
+      // All messages before watermark (a timestamp) or sequence have been seen.
+      var watermark = event.read.watermark;
+      var sequenceNumber = event.read.seq;
+
+      console.log("Received message read event for watermark %d and sequence " +
+          "number %d",
+      watermark, sequenceNumber);
+  },
+
+  receivedAccountLink: function(event) {
+      var senderID = event.sender.id;
+      var recipientID = event.recipient.id;
+
+      var status = event.account_linking.status;
+      var authCode = event.account_linking.authorization_code;
+
+      console.log("Received account link event with for user %d with status %s " +
+          "and auth code %s ",
+      senderID, status, authCode);
+  };
+
 };
