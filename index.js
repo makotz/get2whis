@@ -426,7 +426,7 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Let's get these peeps up!", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                    return sendTextMessage(sender, "Couldn't find riders 😭");
+                    return sendTextMessage(sender, "Couldn't find riders 😭")
                     .then(() => startOver(sender));
                     return
                 };
@@ -465,7 +465,7 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Here are potential driver(s):", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                  return sendTextMessage(sender, "Couldn't find a driver 😭");
+                  return sendTextMessage(sender, "Couldn't find a driver 😭")
                   .then(() => startOver(sender));
                   return
                 };

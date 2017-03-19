@@ -56,6 +56,5 @@ module.exports = {
       return messageData;
   }
 
-  
 
 };
