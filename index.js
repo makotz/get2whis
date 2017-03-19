@@ -817,3 +817,4 @@ function receivedAccountLink(event) {
     console.log("Received account link event with for user %d with status %s " +
         "and auth code %s ",
     senderID, status, authCode);
+)
