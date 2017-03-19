@@ -1,21 +1,16 @@
 function checkPingLimit(driverOrRiderTable, postId, senderId) {
   var results = [];
   pg.connect(db, function(err, client, done) {
-      var limitQuery = client.query("SELECT * FROM pingTable WHERE " + driverOrRiderTable + " WHERE sender_id = '" + senderId + "'");
-      var user = {
-          checkingStatus: driveOrRide
-      };
-      userQuery.on('row', (row) => {
+      var limitQuery = client.query("SELECT * FROM pingTable WHERE table_name = '" + driverOrRiderTable + "' AND WHERE sender_id = '" + senderId + "' AND WHERE post_id = '"+postId+"'");
+      limitQuery.on('row', (row) => {
           results.push(row);
       });
-      userQuery.on('end', () => {
+      limitQuery.on('end', () => {
           done();
-          if (results.length > 0) {
-              sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user))
-              return
+          if (results.length > 1) {
+              return false
           } else {
-              sendTextMessage(sender, "Looks like you haven't made one yet!");
-              return
+              return true
           };
       });
   });

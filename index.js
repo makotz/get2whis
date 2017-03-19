@@ -327,6 +327,7 @@ function receivedPostback(event) {
     if (payloadData.deleteQuery) {
         DeleteRecord2(payloadData.driverOrRiderTable, payloadData.postId);
     }
+
     if (payload.includes('Delete_query')) {
         var conditions = parseConditions(payload);
         if (conditions.Driver_id) {
@@ -342,6 +343,13 @@ function receivedPostback(event) {
         }
     } else {
         var match1 = JSON.parse(payload).match;
+        // var user1 = JSON.parse(payload);
+        // if (!user1.asking_price) {
+        //   var driverOrRiderTable = "rider";
+        // } else {
+        //   var driverOrRiderTable = "driver";
+        // }
+        // if (checkPingLimit(driverOrRiderTable, user1.target, user1.sender_id))
         sendTextMessage(match1, "Hey, a fellow ski bum pinged you!", pingOfferer(match1, payload));
     }
 }
@@ -512,12 +520,11 @@ function displayInitialSearchResults(senderId, queryResults, user) {
                     type: "web_url",
                     title: "🔍 & chat with " + prospect.first_name๋,
                     url: 'https://www.facebook.com/search/people/?q=' + prospect.first_name + '%20' + prospect.last_name
+                }, {
+                    type: "postback",
+                    title: "Ping " + prospect.first_name,
+                    payload: payload
                 }
-                // , {
-                //     type: "postback",
-                //     title: "Ping " + prospect.first_name,
-                //     payload: payload
-                // }
             ]
         };
         elements.push(genericObject);
@@ -585,7 +592,8 @@ function displayQueryResults(senderId, queryresults, user, callback) {
             genericObject.buttons.pop();
             var additionalButton = obj.trashPostButton(user.checkingStatus, queryresults[i].rider_id)
             genericObject.buttons.push(additionalButton);
-        }
+        };
+
         elements.push(genericObject);
     }
 
@@ -778,7 +786,6 @@ function receivedAuthentication(event) {
     // to let them know it was successful.
     sendTextMessage(senderID, "Authentication successful");
 }
-
 function receivedDeliveryConfirmation(event) {
     var senderID = event.sender.id;
     var recipientID = event.recipient.id;
@@ -817,4 +824,4 @@ function receivedAccountLink(event) {
     console.log("Received account link event with for user %d with status %s " +
         "and auth code %s ",
     senderID, status, authCode);
-)
+};
