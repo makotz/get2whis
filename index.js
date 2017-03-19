@@ -180,7 +180,7 @@ function askDriveOrRide(recipientId) {
         }, {
             "Looking for a ride": "drive_or_ride:looking_for_drivers,"
         }, {
-            "Check my posts": "check_rides"
+            "Check my posts": "check_rides:true,"
         }
     ]
     callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
@@ -521,11 +521,12 @@ function displayInitialSearchResults(senderId, queryResults, user) {
                     type: "web_url",
                     title: "🔍 & chat with " + prospect.first_name๋,
                     url: 'https://www.facebook.com/search/people/?q=' + prospect.first_name + '%20' + prospect.last_name
-                }, {
-                    type: "postback",
-                    title: "Ping " + prospect.first_name,
-                    payload: payload
                 }
+                // , {
+                //     type: "postback",
+                //     title: "Ping " + prospect.first_name,
+                //     payload: payload
+                // }
             ]
         };
         elements.push(genericObject);
@@ -566,19 +567,20 @@ function displayQueryResults(senderId, queryresults, user, callback) {
                     type: "web_url",
                     title: "🔍 & chat with " + queryresults[i].first_name,
                     url: 'https://www.facebook.com/search/people/?q=' + queryresults[i].first_name + '%20' + queryresults[i].last_name
-                }, {
-                    type: "postback",
-                    title: "Ping " + queryresults[i].first_name,
-                    payload: payload
                 }
+                // , {
+                //     type: "postback",
+                //     title: "Ping " + queryresults[i].first_name,
+                //     payload: payload
+                // }
             ]
         };
 
         if (!queryresults[i].asking_price) {
             if (queryresults[i].day_trip == true) {
-                genericObject.subtitle = "Looking for a ride for a daytrip on " + queryresults[i].departure_date
+                genericObject.subtitle = "Looking for a ride for a daytrip on " + moment(queryresults[i].departure_date).format("ddd. MMM. Do")
             } else {
-                genericObject.subtitle = "Looking for a one way ride on " + queryresults[i].departure_date + " in the " + queryresults[i].departure_time + " from " + queryresults[i].departure_location
+                genericObject.subtitle = "Looking for a one way ride on " + moment(queryresults[i].departure_date).format("ddd. MMM. Do") + " in the " + queryresults[i].departure_time + " from " + queryresults[i].departure_location
             }
         };
 
