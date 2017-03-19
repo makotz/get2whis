@@ -296,7 +296,7 @@ function checkUserRideInfo(sender, driveOrRide) {
         userQuery.on('end', () => {
             done();
             if (results.length > 0) {
-                sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user, startOver(sender, callback)))
+                sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user, startOver(sender)))
                 return
             } else {
                 sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
