@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
 const pg = require('pg');
+const obj = require('./objects.js');
 const moment = require('moment-timezone');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
@@ -183,7 +184,7 @@ function askDriveOrRide(recipientId) {
             "Check my posts": "check_rides:true,"
         }
     ]
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 }
 function askDepartureLocation(recipientId, othervariables) {
     var Qtext = "Where are you leaving from?";
@@ -194,7 +195,7 @@ function askDepartureLocation(recipientId, othervariables) {
             "Whistler": othervariables + "departure_location:Whistler,"
         }
     ];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 }
 function askDayTrip(recipientId, othervariables) {
     var Qtext = "Day trip or one way?";
@@ -205,7 +206,7 @@ function askDayTrip(recipientId, othervariables) {
             "One way": othervariables + "day_trip:false,"
         }
     ];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 }
 
 function askDepartureDate(recipientId, othervariables) {
@@ -238,7 +239,7 @@ function askDepartureDate(recipientId, othervariables) {
             [dayAfterTomorrowButton]: othervariables + "departure_date:" + dayAfterTomorrowPostgres + ","
         }
     ];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
 
 function askDepartureTime(recipientId, othervariables) {
@@ -250,7 +251,7 @@ function askDepartureTime(recipientId, othervariables) {
             "🌇 Evening": othervariables + "departure_time:Evening,"
         }
     ];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
 
 function checkUserDriveOrRide(recipientId, othervariables) {
@@ -262,7 +263,7 @@ function checkUserDriveOrRide(recipientId, othervariables) {
             "Ride(s) asked": othervariables + "checkUserDriveOrRide:ride,"
         }
     ];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
 
 function askAskingPrice(recipientId, othervariables) {
@@ -278,7 +279,7 @@ function askAskingPrice(recipientId, othervariables) {
             "15": othervariables + "asking_price:15,"
         }
     ];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 }
 
 function checkUserRideInfo(sender, driveOrRide) {
@@ -374,7 +375,7 @@ function confirmQueryInfo(recipientId, othervariables) {
             "Not quite...": othervariables + "confirmation:false"
         }
     ];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
 
 function findFBProfile(sender, conditions) {
@@ -688,7 +689,7 @@ function startOver(recipientId) {
             "Restart": "start"
         }
     ];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
 
 function start(recipientId) {
@@ -698,7 +699,7 @@ function start(recipientId) {
             "Get Started": "start"
         }
     ];
-    callSendAPI(createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
+    callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
 };
 
 function DeleteRecord(payload, callback) {
@@ -735,30 +736,6 @@ function DeleteRecord2(driver_or_rider, id) {
         });
     });
 };
-
-function createQuickReplyMessageData(recipientId, Qtext, quickreplypairs) {
-    var quick_replies = [];
-    quickreplypairs.forEach(function(keyvaluepair) {
-        for (var key in keyvaluepair) {
-            var quick_reply = {
-                "content_type": "text",
-                "title": key,
-                "payload": keyvaluepair[key]
-            }
-        }
-        quick_replies.push(quick_reply);
-    });
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: Qtext,
-            quick_replies: quick_replies
-        }
-    };
-    return messageData;
-}
 
 function sendTextMessage(recipientId, messageText, callback) {
     var messageData = {

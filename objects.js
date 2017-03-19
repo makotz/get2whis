@@ -22,9 +22,6 @@ module.exports = {
           }
       };
       return messageData;
-  }
+  },
 
-  sayHelloInSpanish: function() {
-    return "Hola";
-  }
 };
