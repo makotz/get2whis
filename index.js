@@ -294,17 +294,12 @@ function checkUserRideInfo(sender, driveOrRide) {
         userQuery.on('end', () => {
             done();
             if (results.length > 0) {
-                async.series([
-                  function(callback) {sendTextMessage(sender, "Here are your posts:", callback)},
-                  function(callback) {displayQueryResults(sender, results, user, callback)},
-                  function(callback) {startOver(sender, callback)}
-                ]);
+                  sendTextMessage(sender, "Here are your posts:", displayQueryResults(sender, results, user, startOver(sender, callback)))
+                }
                 return
             } else {
-              async.series([
-                function(callback) {sendTextMessage(sender, "Looks like you haven't made one yet!", callback)},
-                function(callback) {startOver(sender,callback)}
-              ]);
+                sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender))
+              }
                 return
             };
         });
@@ -433,10 +428,7 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Let's get these peeps up!", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                    async.series([
-                      function(callback) {sendTextMessage(sender, "Couldn't find riders 😭", callback)},
-                      function(callback) {startOver(sender,callback)}
-                    ]);
+                  sendTextMessage(sender, "Couldn't find riders 😭", startOver(sender))
                     return
                 };
             });
@@ -471,21 +463,10 @@ function saveAndQuery(sender, conditions, userProfile) {
             potentialDriver.on('end', () => {
                 done()
                 if (queryResults.length > 0) {
-                    async.series([
-                      function (callback) {
-                      sendTextMessage(sender, "Here are potential driver(s):", callback)
-                      },
-                      function (callback) {displayQueryResults(sender, queryResults, user, callback)
-                      },
-                      function (callback) {startOver(sender, callback)}
-                      ]);
+                      sendTextMessage(sender, "Here are potential driver(s):" displayQueryResults(sender, queryResults, user, startOver(sender)))};
                     return
                 } else {
-                  async.series([
-                    function (callback){
-                    sendTextMessage(sender, "Couldn't find a driver 😭", callback)},
-                    function (callback) { startOver(sender, callback)}
-                  ]);
+                    sendTextMessage(sender, "Couldn't find a driver 😭", startOver(sender))}
                   return
                 };
             });
@@ -615,7 +596,7 @@ function displayQueryResults(senderId, queryresults, user, callback) {
         }
     };
     if (callback) {
-        callSendAPI(messageData, callback());
+        callSendAPI(messageData, callback);
     } else {
         callSendAPI(messageData);
     }
@@ -740,8 +721,7 @@ function sendTextMessage(recipientId, messageText, callback) {
             metadata: "DEVELOPER_DEFINED_METADATA"
         }
     };
-    callSendAPI(messageData);
-    if (callback) {callback()};
+    if (callback) {callSendAPI(messageData, callback)} else {callSendAPI(messageData)};
 }
 
 function callSendAPI(messageData, callback) {
