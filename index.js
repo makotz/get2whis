@@ -298,8 +298,7 @@ function checkUserRideInfo(sender, driveOrRide) {
                 }
                 return
             } else {
-                sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender))
-              }
+                sendTextMessage(sender, "Looks like you haven't made one yet!", startOver(sender));
                 return
             };
         });
