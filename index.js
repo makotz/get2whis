@@ -6,7 +6,7 @@ const request = require('request');
 const pg = require('pg');
 const moment = require('moment-timezone');
 const obj = require('./objects.js');
-const series = require('async/series');
+const async = require('async');
 const app = express();
 const token = process.env.FB_PAGE_ACCESS_TOKEN;
 const db = process.env.DATABASE_URL;
@@ -294,14 +294,14 @@ function checkUserRideInfo(sender, driveOrRide) {
         userQuery.on('end', () => {
             done();
             if (results.length > 0) {
-                series([
+                async.series([
                   sendTextMessage(sender, "Here are your posts:"),
                   displayQueryResults(sender, results, user),
                   startOver(sender)
                 ]);
                 return
             } else {
-              series([
+              async.series([
                 sendTextMessage(sender, "Looks like you haven't made one yet!"),
                 startOver(sender)
               ]);
@@ -433,7 +433,7 @@ function saveAndQuery(sender, conditions, userProfile) {
                     sendTextMessage(sender, "Let's get these peeps up!", displayQueryResults(sender, queryResults, user));
                     return
                 } else {
-                    series([
+                    async.series([
                       sendTextMessage(sender, "Couldn't find riders 😭"),
                       startOver(sender)
                     ]);
@@ -471,14 +471,14 @@ function saveAndQuery(sender, conditions, userProfile) {
             potentialDriver.on('end', () => {
                 done()
                 if (queryResults.length > 0) {
-                    series([
+                    async.series([
                       sendTextMessage(sender, "Here are potential driver(s):"),
                       displayQueryResults(sender, queryResults, user),
                       startOver(sender)
                     ]);
                     return
                 } else {
-                  series([
+                  async.series([
                     sendTextMessage(sender, "Couldn't find a driver 😭"),
                     startOver(sender)
                   ]);
