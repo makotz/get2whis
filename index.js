@@ -535,13 +535,10 @@ function displayQueryResults(senderId, queryresults, payload, callback) {
         elements.push(genericObject);
     }
 
-    obj.createGenericMessageData(senderId, elements);
-    // returns messageData
-
     if (callback) {
-        callSendAPI(messageData, callback);
+        callSendAPI(obj.createGenericMessageData(senderId, elements), callback);
     } else {
-        callSendAPI(messageData);
+        callSendAPI(obj.createGenericMessageData(senderId, elements));
     }
     return;
 };
