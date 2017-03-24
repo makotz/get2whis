@@ -30,7 +30,7 @@ module.exports = {
     var button = {
         type: "postback",
         title: "Trash post",
-        payload: 'deleteQuery:true,table:'+driverOrRiderTable+ ",id:"+ postId
+        payload: '{deleteQuery:true,table:'+driverOrRiderTable+ ",postId:"+ postId+"}"
     };
     return button;
   },
@@ -121,4 +121,26 @@ module.exports = {
       senderID, status, authCode);
   }
 
+  createGenericObject: function(object) {
+      var genericObject = {
+          title: object.title,
+          subtitle: object.subtitle,
+          item_url: object.item_url,
+          image_url: object.image_url
+      };
+      if (object.buttons) {
+        var buttons = [];
+        object.buttons.forEach(function(button) {
+          var insertButton =  {
+          type: button.type,
+          title: button.title,
+          url: button.url
+        };
+        buttons.push(insertButton);
+      })
+        genericObject.buttons = buttons;
+      };
+
+      return genericObject;
+  };
 }
