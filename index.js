@@ -680,17 +680,16 @@ function checkPingLimit(driverOrRiderTable, postId, senderId) {
     pg.connect(db, function(err, client, done) {
         var limitQuery = client.query("SELECT * FROM ping_table WHERE table_name = '" + driverOrRiderTable + "' AND WHERE sender_id = '" + senderId + "' AND WHERE post_id = '" + postId + "'");
         limitQuery.on('row', (row) => {
-            results.push(row);
+            results.push(row)
         });
         limitQuery.on('end', () => {
-            done();
-            console.log("Got here");
+            done()
             if (results.length > 2) {
+              console.log("Got here too yee");
                 return false
-                console.log("Got here too");
             } else {
+              console.log("Got here too");
                 return true
-                console.log("Got here too");
             };
         });
     });
