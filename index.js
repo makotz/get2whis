@@ -677,19 +677,20 @@ function callSendAPI(messageData, callback) {
 
 function checkPingLimit(driverOrRiderTable, postId, senderId) {
     var results = [];
-    console.log("Got here");
     pg.connect(db, function(err, client, done) {
         var limitQuery = client.query("SELECT * FROM ping_table WHERE table_name = '" + driverOrRiderTable + "' AND WHERE sender_id = '" + senderId + "' AND WHERE post_id = '" + postId + "'");
-        console.log("Got here too");
         limitQuery.on('row', (row) => {
             results.push(row);
         });
         limitQuery.on('end', () => {
             done();
+            console.log("Got here");
             if (results.length > 2) {
                 return false
+                console.log("Got here too");
             } else {
                 return true
+                console.log("Got here too");
             };
         });
     });
