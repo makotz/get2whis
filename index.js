@@ -569,7 +569,7 @@ function pingPostOwner(senderId, payload) {
         var alternativeButton = {
             type: "postback",
             title: "Sorry, 🚗  is full",
-            payload: "{deleteQuery: true, driverOrRiderTable: rider, postId:" + payload.match_driver_id + ", sender_id:" + payload.sender_id + ", match_first_name:" + payload.match_first_name + ", senderId:" + senderId + ", first_name:" + payload.first_name+ "}"
+            payload: '{"deleteQuery": true, "driverOrRiderTable": "rider", "postId":' + payload.match_driver_id + ', "sender_id":' + payload.sender_id + ', "match_first_name":"' + payload.match_first_name + '", "senderId":' + senderId + ', "first_name":"' + payload.first_name+ '"}'
         }
         genericObject[0].buttons.push(alternativeButton);
     };
