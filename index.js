@@ -434,7 +434,6 @@ function saveAndQuery(sender, conditions, userProfile) {
                     return
                 } else {
                     sendTextMessage(sender, "Couldn't find riders 😭");
-                    startOver(sender, "Check back soon!");
                     return
                 };
             });
@@ -595,9 +594,9 @@ function startOver(recipientId, callback) {
         }
     ];
     callSendAPI(obj.createQuickReplyMessageData(recipientId, Qtext, quickreplypairs));
-    if (callback) {
-        callback()
-    };
+    // if (callback) {
+    //     callback()
+    // };
 };
 
 function start(recipientId) {
