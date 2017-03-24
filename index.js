@@ -339,7 +339,7 @@ function receivedPostback(event) {
     } else {
         addPing(payloadJSON.driverOrRiderTable, payloadJSON.match_sender_id, payloadJSON.sender_id);
         if (checkPingLimit(payloadJSON.driverOrRiderTable, payloadJSON.match_sender_id, payloadJSON.sender_id)) {
-          sendTextMessage(payloadJSON.sender_id, "Sent a ping!");
+            sendTextMessage(payloadJSON.sender_id, "Sent a ping!");
             sendTextMessage(payloadJSON.match_sender_id, "Hey, a fellow ski bum pinged you!");
             pingPostOwner(payloadJSON.match_sender_id, payload);
         } else {
@@ -677,14 +677,16 @@ function callSendAPI(messageData, callback) {
 
 function checkPingLimit(driverOrRiderTable, postId, senderId) {
     var results = [];
+    console.log("Got here");
     pg.connect(db, function(err, client, done) {
         var limitQuery = client.query("SELECT * FROM ping_table WHERE table_name = '" + driverOrRiderTable + "' AND WHERE sender_id = '" + senderId + "' AND WHERE post_id = '" + postId + "'");
+        console.log("Got here too");
         limitQuery.on('row', (row) => {
             results.push(row);
         });
         limitQuery.on('end', () => {
             done();
-            if (results.length > 1) {
+            if (results.length > 2) {
                 return false
             } else {
                 return true
