@@ -455,12 +455,9 @@ function saveAndQuery(sender, conditions, userProfile) {
             if (user.day_trip == "true") {
                 console.log("User depart date is " + user.departure_date);
                 var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != '" + sender + "' AND day_trip = true AND departure_date = '" + user.departure_date + "' AND departure_location = '" + user.departure_location + "' ORDER BY asking_price LIMIT 10");
-                console.log("potential driver are" + potentialDriver)
             } else {
                 console.log("User depart date is " + user.departure_date);
                 var potentialDriver = client.query("SELECT * FROM driver WHERE sender_id != '" + sender + "' AND departure_time = '" + user.departure_time + "' AND departure_date = '" + user.departure_date + "' AND departure_location = '" + user.departure_location + "' ORDER BY asking_price LIMIT 10");
-                console.log("potential driver are" + potentialDriver)
-
             }
             potentialDriver.on('row', (row) => {
                 queryResults.push(row)
@@ -494,8 +491,8 @@ function displayQueryResults(senderId, queryresults, payload, callback) {
                 payload.match_rider_id = queryresults[i].rider_id;
             }
             payload.match_first_name = queryresults[i].first_name;
-            var payload = JSON.stringify(payload);
         }
+        var payload = JSON.stringify(payload);
 
         var object = {
             title: queryresults[i].first_name + " " + queryresults[i].last_name,
