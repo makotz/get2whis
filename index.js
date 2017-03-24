@@ -494,7 +494,7 @@ function displayQueryResults(senderId, queryresults, payload, callback) {
         }
         var payload = JSON.stringify(payload);
 
-        var object = {
+        var genericObject = {
             title: queryresults[i].first_name + " " + queryresults[i].last_name,
             subtitle: "Asking $" + queryresults[i].asking_price + " for ride on " + obj.convertDate(queryresults[i].departure_date),
             item_url: 'https://www.facebook.com/search/people/?q=' + queryresults[i].first_name + '%20' + queryresults[i].last_name,
@@ -512,7 +512,7 @@ function displayQueryResults(senderId, queryresults, payload, callback) {
             ]
         };
 
-        var genericObject = obj.createGenericObject(object);
+        // var genericObject = obj.createGenericObject(object);
 
         if (!queryresults[i].asking_price) {
             if (queryresults[i].day_trip == true) {
