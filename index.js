@@ -339,8 +339,8 @@ function receivedPostback(event) {
     } else {
         addPing(payloadJSON.driverOrRiderTable, payloadJSON.match_sender_id, payloadJSON.sender_id);
         if (checkPingLimit(payloadJSON.driverOrRiderTable, payloadJSON.match_sender_id, payloadJSON.sender_id)) {
+          sendTextMessage(payloadJSON.sender_id, "Sent a ping!");
             sendTextMessage(payloadJSON.match_sender_id, "Hey, a fellow ski bum pinged you!");
-            sendTextMessage(payloadJSON.sender_id, "Sent a ping!");
             pingPostOwner(payloadJSON.match_sender_id, payload);
         } else {
             sendTextMessage(payloadJSON.sender_id, "Uh oh, you've already pinged this offer!");
