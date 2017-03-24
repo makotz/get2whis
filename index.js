@@ -515,8 +515,7 @@ function displayQueryResults(senderId, queryresults, payload, callback) {
             ]
         };
 
-        obj.createGenericObject(object);
-        // returns genericObject
+        var genericObject = obj.createGenericObject(object);
 
         if (!queryresults[i].asking_price) {
             if (queryresults[i].day_trip == true) {
