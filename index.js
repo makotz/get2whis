@@ -677,7 +677,7 @@ function callSendAPI(messageData, callback) {
 function checkPingLimit(driverOrRiderTable, postId, senderId) {
     var results = [];
     pg.connect(db, function(err, client, done) {
-        var limitQuery = client.query("SELECT * FROM pingTable WHERE table_name = '" + driverOrRiderTable + "' AND WHERE sender_id = '" + senderId + "' AND WHERE post_id = '" + postId + "'");
+        var limitQuery = client.query("SELECT * FROM ping_table WHERE table_name = '" + driverOrRiderTable + "' AND WHERE sender_id = '" + senderId + "' AND WHERE post_id = '" + postId + "'");
         limitQuery.on('row', (row) => {
             results.push(row);
         });
@@ -695,6 +695,6 @@ function checkPingLimit(driverOrRiderTable, postId, senderId) {
 function addPing(driverOrRiderTable, postId, senderId) {
     console.log("Adding Ping");
     pg.connect(db, function(err, client, done) {
-        client.query('INSERT INTO pingTable (driver_or_rider_table, post_id, sender_id) values($1, $2, $3,)', [driverOrRiderTable, postId, senderId]);
+        client.query('INSERT INTO ping_table (table_name, post_id, sender_id) values($1, $2, $3)', [driverOrRiderTable, postId, senderId]);
     });
 };
