@@ -574,9 +574,7 @@ function pingPostOwner(senderId, payload) {
         genericObject[0].buttons.push(alternativeButton);
     };
 
-    obj.createGenericMessageData(senderId, genericObject)
-
-    callSendAPI(messageData);
+    callSendAPI(obj.createGenericMessageData(senderId, genericObject));
     return
 };
 
