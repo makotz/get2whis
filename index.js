@@ -696,6 +696,6 @@ function checkPingLimit(driverOrRiderTable, postId, senderId) {
 function addPing(driverOrRiderTable, postId, senderId) {
     console.log("Adding Ping");
     pg.connect(db, function(err, client, done) {
-        client.query('INSERT INTO ping_table (table_name, post_id, sender_id) values($1, $2, $3)', [driverOrRiderTable, parseInt(postId), parseInt(senderId)]);
+        client.query('INSERT INTO ping_table (table_name, post_id, sender_id) values($1, $2, $3)', [driverOrRiderTable, postId, senderId]);
     });
 };
